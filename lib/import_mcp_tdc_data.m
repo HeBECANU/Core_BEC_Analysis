@@ -1,9 +1,27 @@
 function [mcp_tdc_data,import_opts]=import_mcp_tdc_data(import_opts)
 %import_mcp_tdc_data -a wrapper that allows the import_mcp_tdc_data_core to be cached
+%import_mcp_tdc_data -a wrapper that allows the import_mcp_tdc_data_core to be cached
 cache_opts=[];
 cache_opts.verbose=0;
+
+if ~isfield(import_opts,'force_load_save')
+    import_opts.force_load_save=false;
+end
 cache_opts.force_cache_load=import_opts.force_load_save;
 import_opts=rmfield(import_opts,'force_load_save');
+
+if ~isfield(import_opts,'force_forc')
+    import_opts.force_forc=false;
+end
+
+% if ~isfield(import_opts,'no_save')
+%     %to be completed, requires modification to function_cache
+% end
+
+if import_opts.force_forc %if force_forc then have to skip the cache
+    import_opts.force_reimport=true;
+end
+    
 cache_opts.force_recalc=import_opts.force_reimport;
 import_opts=rmfield(import_opts,'force_reimport');
 outputs=function_cache(cache_opts,@import_mcp_tdc_data_core,{import_opts});
