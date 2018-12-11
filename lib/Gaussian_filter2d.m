@@ -1,6 +1,7 @@
 
 function g=Gaussian_filter2d(Filter_size, sigma)
-%make a 2d gaussian filter
+%make a 2d gaussian filter with a non round gaussian
+%needs some unit tests
 
 %size=5; %filter size, odd number
 sizex=Filter_size(1);

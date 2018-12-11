@@ -1,4 +1,4 @@
-Copyright (c) 2009, Jan Simon
+Copyright (c) 2009, Bruno Luong
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

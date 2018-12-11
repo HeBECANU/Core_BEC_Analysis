@@ -1,5 +1,4 @@
 function [count edges mid loc] = histcn(X, varargin)
-%from https://au.mathworks.com/matlabcentral/fileexchange/23897-n-dimensional-histogram?focused=5198474&tab=function
 % function [count edges mid loc] = histcn(X, edge1, edge2, ..., edgeN)
 %
 % Purpose: compute n-dimensional histogram
