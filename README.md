@@ -1,12 +1,12 @@
-# Simple_BEC_Analysis
+# Core_BEC_Analysis
 **Bryce M. Henson**  
 
+The basics needed for BEC analysis in the He* group.
 
 ## To Do
-- [ ] standard project structure
-- [ ] Combine functions that are found in multiple repos
-
-
+- [X] standard project structure
+- [X] Combine functions that are found in multiple repos
+- [ ] More documentation of the functionality provided
 
 ## Install
 ``` 
