@@ -39,7 +39,10 @@ function[out]=fft_tx(t,x,varargin)
 % MAT-files required: none
 %
 % Known BUGS/ Possible Improvements
+%    - skipable sort for inputs that are already sorted
+%    - skipable resular sampling check
 %    - chosable resampling stratagey
+%    - add verbosity option
 %
 % Author: Bryce Henson
 % email: Bryce.Henson@live.com
@@ -67,7 +70,6 @@ else
     error('you have tried to input the wrong shape in x')
 end  
 
-
 p = inputParser;
 addParameter(p,'window','none',@(x) sum(contains({'none','hamming','gauss','blackman','hanning'},x))==1);
 addParameter(p,'win_param',{},@(x) true);
@@ -82,11 +84,12 @@ window_param=p.Results.win_param;
 x=x(i);
 %find the number of sampling times present
 sample_times=uniquetol(t(1:end-1)-t(2:end),1e-10); %avoid machine error
-if size(sample_times,1)>1 %if not uniform
+if numel(sample_times)>1 %if not uniform
     fprintf('resampling\n');
-    dyn_res_factor=10+500*abs(std(sample_times)/mean(sample_times));
-    t_resample=linspace(min(t),max(t),size(t,1)*dyn_res_factor);
-    x=interp1(t,x,t_resample,'spline')';
+    %the algorithm for chosing how many points to resample with needs improving
+    dyn_res_factor=10+10*abs(std(sample_times)/mean(sample_times));
+    t_resample=linspace(min(t),max(t),numel(t)*dyn_res_factor);
+    x=interp1(t,x,t_resample,'spline');
     t=t_resample;
 end
 dt = (t(2)-t(1));             % Sampling period
@@ -112,16 +115,13 @@ if ~isequal(window_fun,'none')
     x=x.*win;
 end
 
-
-
 if pad<1
     error('pad cant be less than one')
 elseif pad~=1
     x=[x,zeros(1,round(len_before_pad*(pad-1)))];
 end
 
-len = numel(x);             % Length of signal
-fs=fs;%*len_before_pad/len;
+len = numel(x);  % Length of signal
 %disp(num2str(L))
 %t = (0:L-1)*T;        % Time vector
 y = fft(x);
@@ -129,7 +129,7 @@ amp = y/len_before_pad;
 if  mod(len,2) %odd case
     niq=ceil(len/2);
     amp = amp(1:niq);
-    amp(2:end) = 2*amp(2:end);
+    amp(2:end) = 2*amp(2:end); %multiply all non DC values by 2 because of half cut
     f = fs/len*((0:niq-1));
 else
     niq=len/2+1;
