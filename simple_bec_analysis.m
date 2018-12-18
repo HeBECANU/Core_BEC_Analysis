@@ -4,7 +4,7 @@
 % for our uses this is a very reasonable practice, for bigger projects it could get a tad out of hand
 %%%%------------------------start user var-------------------------------%
 %first we need to point at the data directory
-import_opts.dir='C:\scratch\mag sensitive halo pop scan\data\run 2\';
+import_opts.dir='Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\';
 %then what the MCP-TDC data files are called 
 % the practice after 2016 is for it to just be 'd' eg d123.txt
 import_opts.file_name='d';
