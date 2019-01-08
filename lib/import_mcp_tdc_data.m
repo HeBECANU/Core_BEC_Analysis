@@ -27,7 +27,12 @@ import_opts=rmfield(import_opts,'force_reimport');
 if import_opts.force_forc %if force_forc then have to skip the cache
     import_opts.force_reimport=true;
 end
-    
+if ~isfield(import_opts,'force_reimport')
+    import_opts.force_reimport=false;
+end
+cache_opts.force_recalc=import_opts.force_reimport;
+import_opts=rmfield(import_opts,'force_reimport');
+
 outputs=function_cache(cache_opts,@import_mcp_tdc_data_core,{import_opts});
 mcp_tdc_data=outputs{1};
 end
