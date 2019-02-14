@@ -1,7 +1,10 @@
 function shots=find_data_files(import_opts)
 %finds the the files that match the format (in name only) of a data file
 %could add an option to check the first few lines of the data file
-%Bryce Hensson
+%Bryce Henson
+
+%check that the folder exists
+if exist(import_opts.dir,'dir')~=7, error('import directory does not exist'), end
 dirq=dir(import_opts.dir);
 dir_names={dirq.name};
 dir_names={dir_names{3:end}};
