@@ -10,7 +10,7 @@ The basics needed for BEC analysis in the He* group.
 
 ## Install
 ``` 
-git clone --recursive https://github.com/brycehenson/Simple_BEC_Analysis.git
+git clone --recursive https://github.com/brycehenson/Core_BEC_Analysis.git
 ```
 then to update 
 ```
@@ -32,3 +32,4 @@ This project would not have been possible without the many open source tools tha
 * ***Denis Gilbert***  [M-file Header Template](https://au.mathworks.com/matlabcentral/fileexchange/4908-m-file-header-template)
 * ***DrosteEffect***  [CIECAM02](https://github.com/DrosteEffect/CIECAM02)
 * ***Bruno Luong*** [histcn](https://au.mathworks.com/matlabcentral/fileexchange/23897-n-dimensional-histogram)
+* ***Kenneth Johnson*** [elementwise power](https://au.mathworks.com/matlabcentral/fileexchange/44574-elementwise-power)
