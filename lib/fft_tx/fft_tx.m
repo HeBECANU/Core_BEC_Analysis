@@ -1,9 +1,10 @@
 function[out]=fft_tx(t,x,varargin)
 % fft_tx - general purpose fft
-% built to hande most use cases: uneven data, windowing, padding to increase the freq sampling. 
-% all built to keep the returned amplitudes correct, this will mean that the power is wrong.
+% built to hande most use cases: uneven data, windowing & padding to increase the freq sampling. 
+% all built to keep the returned amplitudes correct, this will mean that the integerated power 
+% is wrong.
 % https://dsp.stackexchange.com/questions/7788/setup-frequency-array-properly
-% uses the spread in the sampling times to dynamicaly change the resampling
+% Uses the spread in the sampling times to dynamicaly change the resampling
 % ratio
 
 % Syntax:   freq_amp=fft_tx(times,val)
