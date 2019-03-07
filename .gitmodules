@@ -7,3 +7,6 @@
 [submodule "lib/sewm"]
 	path = lib/sewm
 	url = https://github.com/spicydonkey/sewm.git
+[submodule "lib/bootstrap_error"]
+	path = lib/bootstrap_error
+	url = https://github.com/brycehenson/bootstrap_error.git
