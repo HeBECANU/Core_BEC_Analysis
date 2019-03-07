@@ -14,8 +14,7 @@ git clone --recursive https://github.com/brycehenson/Core_BEC_Analysis.git
 ```
 then to update 
 ```
-git submodule update --init --recursive
-git submodule foreach --recursive git pull origin master
+git submodule update --remote --merge
 ```
 
 
