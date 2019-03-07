@@ -2,7 +2,7 @@ function  data=txy_importer(filepath,filenum)
 %this function imports txy files faster by using strongly a matched import
 %double precision
 %simply pass the filepath and file number
-% 31/10/16 DKS - filenum will accept integer and int string - error raised
+% 2019-10-31 DKS - filenum will accept integer and int string - error raised
 %   for  non-int/str filenum
 %% ERROR CHECK
 % Check filenum variable type
