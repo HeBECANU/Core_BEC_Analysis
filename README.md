@@ -1,12 +1,7 @@
 # Core_BEC_Analysis
 **Bryce M. Henson**  
-
-The basics needed for BEC analysis in the He* group.
-
-## To Do
-- [X] standard project structure
-- [X] Combine functions that are found in multiple repos
-- [ ] More documentation of the functionality provided
+A reasonably comprehensive library analysis of data generated in the He* BEC group.
+**Status:** This Code is **ready for use in other projects**. Unit Testing is implemented for **most** functions. Integration/system testing is **not** implemented.
 
 ## Install
 ``` 
@@ -17,6 +12,11 @@ then to update
 git submodule update --init --recursive --remote --merge
 ```
 
+## To Do
+Contributions from students in the He* BEC group or other experienced persons are highly encouraged. Drop me an [email](mailto:bryce.m.henson+github.Core_BEC_Analysis@gmail.com?subject=I%20would%20Like%20to%20Contribute[github][Core_BEC_Analysis]) to gain acess.
+- [X] standard project structure
+- [X] Combine functions that are found in multiple repos
+- [ ] More documentation of the functionality provided
 
 
 ## Contributions  
