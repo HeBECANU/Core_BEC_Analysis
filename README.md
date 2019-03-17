@@ -1,6 +1,6 @@
 # Core_BEC_Analysis
 **Bryce M. Henson**  
-A reasonably comprehensive library analysis of data generated in the He* BEC group.
+A reasonably comprehensive library analysis of data generated in the He* BEC group.  
 **Status:** This Code is **ready for use in other projects**. Unit Testing is implemented for **most** functions. Integration/system testing is **not** implemented.
 
 ## Install
