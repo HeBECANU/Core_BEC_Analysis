@@ -1,4 +1,5 @@
 % cell vertcat
+%TODO: header, example, test
 function C = cell_vertcat(c)
 C=cell(1,size(c,2));
 

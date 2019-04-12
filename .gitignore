@@ -6,3 +6,5 @@
 *.dropbox
 # winows files
 *.ini
+# windows thumb
+*.db
