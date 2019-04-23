@@ -10,3 +10,6 @@
 [submodule "lib/bootstrap_error"]
 	path = lib/bootstrap_error
 	url = https://github.com/brycehenson/bootstrap_error.git
+[submodule "bin/export_fig"]
+	path = bin/export_fig
+	url = https://github.com/altmany/export_fig.git
