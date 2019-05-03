@@ -32,3 +32,4 @@ This project would not have been possible without the many open source tools tha
 * ***DrosteEffect***  [CIECAM02](https://github.com/DrosteEffect/CIECAM02)
 * ***Bruno Luong*** [histcn](https://au.mathworks.com/matlabcentral/fileexchange/23897-n-dimensional-histogram)
 * ***Kenneth Johnson*** [elementwise power](https://au.mathworks.com/matlabcentral/fileexchange/44574-elementwise-power)
+* ***James*** [isalmost](https://au.mathworks.com/matlabcentral/fileexchange/15816-isalmost)
