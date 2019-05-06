@@ -1,5 +1,6 @@
 function [min_val,idxy]=min_diff_vec_brute(in)
 %min_diff - fing the minimum absolute difference between every element and all other elements in a vector (exluding itself)
+%THIS FUNCTION IS THE BRUTE FORCE IMPLEMENTATION AND SHOULD NOT BE USED OTHER THAN FOR BENCHMARKING HOW BAD IT IS
 
 % Syntax:  [min_val,idxy]=min_diff_vec(data_vector,tol[optional])
 % Example: 
@@ -12,7 +13,7 @@ function [min_val,idxy]=min_diff_vec_brute(in)
 %
 % Known BUGS/ Possible Improvements
 %   -add option for when difference must be greater than some tolerance
-%   -try a sorted vector version
+
 % Author: Bryce Henson
 % email: Bryce.Henson[a circle]live.com  %YOU MUST INCLUDE '[matlab][min_diff_vec]' in the subject line OR I WILL NOT REPLY
 % Last revision:2019-05-03
@@ -24,6 +25,7 @@ function [min_val,idxy]=min_diff_vec_brute(in)
 % calculate the difference matrix 
 % equiv to minus(in,in') for R2016b and later
 
+warning('THIS FUNCTION IS THE BRUTE FORCE IMPLEMENTATION AND SHOULD NOT BE USED OTHER THAN FOR BENCHMARKING HOW BAD IT IS')
 diff_mat=abs(bsxfun(@minus, in ,in'));
 sd=size(diff_mat);
 n=sd(1);
