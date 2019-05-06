@@ -13,9 +13,6 @@
 [submodule "bin/export_fig"]
 	path = bin/export_fig
 	url = https://github.com/altmany/export_fig.git
-[submodule "errorbarxy"]
-	path = errorbarxy
-	url = https://github.com/cthissen/errorbarxy.git
 [submodule "bin/errorbarxy"]
 	path = bin/errorbarxy
 	url = https://github.com/cthissen/errorbarxy.git
