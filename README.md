@@ -34,4 +34,5 @@ This project would not have been possible without the many open source tools tha
 * ***Kenneth Johnson*** [elementwise power](https://au.mathworks.com/matlabcentral/fileexchange/44574-elementwise-power)
 * ***James*** [isalmost](https://au.mathworks.com/matlabcentral/fileexchange/15816-isalmost)
 * ***Yair Altman*** [export_fig](https://github.com/altmany/export_fig)
+* ***Christopher Thissen*** [errorbarxy](https://github.com/cthissen/errorbarxy)
 

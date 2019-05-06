@@ -16,3 +16,6 @@
 [submodule "errorbarxy"]
 	path = errorbarxy
 	url = https://github.com/cthissen/errorbarxy.git
+[submodule "bin/errorbarxy"]
+	path = bin/errorbarxy
+	url = https://github.com/cthissen/errorbarxy.git
