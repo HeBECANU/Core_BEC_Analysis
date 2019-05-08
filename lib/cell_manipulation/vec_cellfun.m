@@ -5,7 +5,13 @@ function out=vec_cellfun(fun,x)
 %a=arrayfun(fun,x,'UniformOutput',0);
 %out=cat(1,a{:});
 
+if size(x,2)~=1
+    error('x should be a column vector')
+end
 first_out=fun(x(1));
+if size(first_out,1)>1 
+    error('function output is the wrong dimension needs to return a row vector')
+end
 in_vecl_len=size(x,1);
 out=repmat(nan*first_out,[in_vecl_len,1]);
 out(1,:)=first_out;
