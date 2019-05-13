@@ -1,4 +1,4 @@
-function [v, inf] = closest_value(arr, val)
+function [v, idx] = closest_value(arr, val)
 % Returns value and index of arr that is closest to val. If several entries
 % are equally close, return the first. Works fine up to machine error (e.g.
 % [v, i] = closest_value([4.8, 5], 4.9) will return [5, 2], since in float
@@ -9,27 +9,31 @@ function [v, inf] = closest_value(arr, val)
 % arr : increasingly ordered array
 % val : scalar in R
 
+%BMH 20190507 com: this function needs a test script
+
+%BMH 20190507 change: var inf to idx to prevent variable clash
+
 
 len = length(arr);
-inf = 1;
+idx = 1;
 sup = len;
 
 % Binary search for index
-while sup - inf > 1
-    med = floor((sup + inf)/2);
+while sup - idx > 1
+    med = floor((sup + idx)/2);
     
     % Replace >= here with > to obtain the last index instead of the first.
     if arr(med) >= val 
         sup = med;
     else
-        inf = med;
+        idx = med;
     end
 end
 
 % Replace < here with <= to obtain the last index instead of the first.
-if sup - inf == 1 && abs(arr(sup) - val) < abs(arr(inf) - val)
-    inf = sup;
+if sup - idx == 1 && abs(arr(sup) - val) < abs(arr(idx) - val)
+    idx = sup;
 end  
 
-v = arr(inf);
+v = arr(idx);
 end

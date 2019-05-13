@@ -40,8 +40,9 @@ function[out]=fft_tx(t,x,varargin)
 % MAT-files required: none
 %
 % Known BUGS/ Possible Improvements
+%    - better default window params
 %    - skipable sort for inputs that are already sorted
-%    - skipable resular sampling check
+%    - skipable regular sampling check
 %    - chosable resampling stratagey
 %    - add verbosity option
 %
@@ -71,8 +72,9 @@ else
     error('you have tried to input the wrong shape in x')
 end  
 
+win_ok_fun=@(x) sum(contains({'none','hamming','gauss','blackman','hanning','kaiser','chebyshev','bohmanwin','blackmanharris'},x))==1;
 p = inputParser;
-addParameter(p,'window','none',@(x) sum(contains({'none','hamming','gauss','blackman','hanning'},x))==1);
+addParameter(p,'window','none',win_ok_fun);
 addParameter(p,'win_param',{},@(x) true);
 addParameter(p,'padding','',@(x) isfloat(x) && x>=1);
 parse(p,varargin{:});
@@ -108,6 +110,14 @@ switch window_fun
         win=blackman(len_before_pad,window_param{:})'; 
     case 'hanning'
         win=hann(len_before_pad,window_param{:})'; 
+    case 'kaiser'
+        win=kaiser(len_before_pad,window_param{:})';
+    case 'chebyshev'
+        win=chebwin(len_before_pad,window_param{:})';
+    case 'bohmanwin'
+        win=bohmanwin(len_before_pad)';
+    case 'blackmanharris'
+        win=blackmanharris(len_before_pad)';
     case 'none'
         %do nothing
 end

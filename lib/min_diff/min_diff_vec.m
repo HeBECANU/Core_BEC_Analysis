@@ -23,6 +23,12 @@ function [min_val,idxy]=min_diff_vec(in,diff_tol)
 % could save a tiny bit of time if idxy is not to be returned by not storing order or doing the lookup at the
 % end line
 
+if numel(in)==1
+    warning('only a single value was passed in, output is not defined')
+    min_val=nan;
+    idxy=nan;
+else
+
 [in_sorted,order]=sort(in);
 diff_vec=abs(diff(in_sorted));
 if nargin>1 && ~isempty(diff_tol)
@@ -31,5 +37,6 @@ end
 
 [min_val,idx]=min(diff_vec);
 idxy=sort(order([idx,idx+1]));
+end
 
 end
