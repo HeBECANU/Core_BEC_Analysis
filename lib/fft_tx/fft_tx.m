@@ -40,11 +40,15 @@ function[out]=fft_tx(t,x,varargin)
 % MAT-files required: none
 %
 % Known BUGS/ Possible Improvements
+%    - in out as struct
+%    - add power and amplitude normalization with tests
 %    - better default window params
 %    - skipable sort for inputs that are already sorted
 %    - skipable regular sampling check
 %    - chosable resampling stratagey
 %    - add verbosity option
+%    - use x and t as col vectors in the code
+%    - add option to padd to power of 2 for more speed if its close
 %
 % Author: Bryce Henson
 % email: Bryce.Henson@live.com
@@ -52,7 +56,18 @@ function[out]=fft_tx(t,x,varargin)
 
 %------------- BEGIN CODE --------------
 
+%% turn x,t inputs into row vectors
 %adaptively deal with the data if its in row or col fromat
+%this method of checking sizes is faster than doing x(:)
+% - test with x,t 2e6 elements
+%   - input wrong way (col vec)
+%     - case method ~14ms
+%     - x(:) method ~17ms
+%   - input right way (row vec)
+%     - case method ~100us
+%     - x(:) method ~18ms
+% TODO change code to use col vectors
+
 if size(size(t),2)==2
     if size(t,1)~=1 && size(t,2)==1
         t=t';
@@ -72,34 +87,55 @@ else
     error('you have tried to input the wrong shape in x')
 end  
 
+
+%% parse the optional inputs
 win_ok_fun=@(x) sum(contains({'none','hamming','gauss','blackman','hanning','kaiser','chebyshev','bohmanwin','blackmanharris'},x))==1;
+is_c_logical=@(in) isequal(in,true) || isequal(in,false); %can x be cast as a logical
 p = inputParser;
 addParameter(p,'window','none',win_ok_fun);
 addParameter(p,'win_param',{},@(x) true);
 addParameter(p,'padding','',@(x) isfloat(x) && x>=1);
+addParameter(p,'issorted',0,is_c_logical);
+addParameter(p,'verbose',1,@(x) round(x)==x && x>=0);
 parse(p,varargin{:});
 pad=p.Results.padding;
 window_fun=p.Results.window;
 window_param=p.Results.win_param;
+xsorted=p.Results.issorted;
+verbose=p.Results.verbose;
 
-%first sort the data
-[t,i]=sort(t);
-x=x(i);
-%find the number of sampling times present
-sample_times=uniquetol(t(1:end-1)-t(2:end),1e-10); %avoid machine error
-if numel(sample_times)>1 %if not uniform
-    fprintf('resampling\n');
-    %the algorithm for chosing how many points to resample with needs improving
-    dyn_res_factor=10+10*abs(std(sample_times)/mean(sample_times));
-    t_resample=linspace(min(t),max(t),numel(t)*dyn_res_factor);
+%% sort the data if needed
+if ~xsorted
+    [t,sort_idx]=sort(t);
+    x=x(sort_idx);
+end
+
+%% resample the data if needed
+% TODO: some user options for resampling stratagies
+
+% find if the range of subsequent sample time differences exceeds machine error
+% linspace generated tvecs have a range of 2*eps(tend)
+time_diffs=diff(t); 
+if range(time_diffs)>10*eps(t(end)) 
+    if verbose>=1
+        fprintf('%s:resampling inputs \n',mfilename);
+    end
+    %TODO: this algorithm needs improving
+    %  https://escholarship.org/uc/item/4rb242mv
+    %  https://www.math.ucdavis.edu/~strohmer/research/sampling/irsampl.html
+    %  https://www.eurasip.org/Proceedings/Eusipco/Eusipco2011/papers/1569428115.pdf
+    dyn_res_factor=10+10*abs(std(time_diffs)/mean(time_diffs));
+    num_resamp=2^nextpow2(numel(t)*dyn_res_factor); %for faster fft wa can round to powers of 2
+    t_resample=linspace(min(t),max(t),num_resamp);
     x=interp1(t,x,t_resample,'spline');
     t=t_resample;
 end
+
+
 dt = (t(2)-t(1));             % Sampling period
 %disp(num2str(dt))
 fs=1/dt;
 len_before_pad = numel(x);             % Length of signal
-
 %apply windowing function
 switch window_fun
     case 'hamming'
@@ -154,3 +190,14 @@ out=[f;amp];
 
 
 end
+
+
+%% alternate way of turning inputs into row vec
+% if sum(size(x)==1)==0
+%  error('you have tried to input the wrong shape in x')
+% end
+% if sum(size(t)==1)==0
+%  error('you have tried to input the wrong shape in t')
+% end
+% x=x(:)';
+% t=t(:)';

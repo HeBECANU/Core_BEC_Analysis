@@ -1,5 +1,10 @@
 %constants
-%should make this a class to prevent any accedental setting of the values from outside
+
+%TODO
+% - add subsections eg SI,imperial, customary
+% - include the units
+% - make this a class so the values cant be set
+
 global const
 %fundemental
 const.c = 299792458; %speed of light (m/s)

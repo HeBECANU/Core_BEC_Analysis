@@ -25,9 +25,13 @@ if ~isfield(options,'components_min_amp') || isnan(options.components_min_amp)
     options.components_min_amp=1e-4;
 end
 
+
 mean_xdat=mean(xdat);
 std_xdat=std(xdat);
-fft_dat=fft_tx(tdat,xdat-mean_xdat,'window','chebyshev','win_param',{300},'padding',100);
+
+padding_factor=bound(1e7/numel(xdat),1,100);%value will be between 0 and 100
+%TODO: allow this option to be ignored
+fft_dat=fft_tx(tdat,xdat-mean_xdat,'window','chebyshev','win_param',{300},'padding',padding_factor);
 
 %mask the fft data to lie within freq_lims
 fft_idx_lims=fast_sorted_mask(fft_dat(1,:),options.freq_limits(1),options.freq_limits(2));
