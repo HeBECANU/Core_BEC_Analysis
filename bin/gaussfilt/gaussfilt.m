@@ -24,7 +24,8 @@ end
 
 if uniform
     filter = dt*a*exp(-0.5*((t - mean(t)).^2)/(sigma2));
-    i = filter < dt*a*1.e-6;
+    %Bryce 20190523 change - i want the smoothing down to numerical error
+    i = filter < dt*a*1.e-10;  %1.e-6
     filter(i) = [];
     zfilt = conv(z,filter,'same');
     onesToFilt = ones(size(z));     % remove edge effect from conv 
