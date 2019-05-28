@@ -33,6 +33,12 @@ end
 cache_opts.force_recalc=import_opts.force_reimport;
 import_opts=rmfield(import_opts,'force_reimport');
 
+if import_opts.save_cache_in_data_dir
+    cache_opts.mock_working_dir=import_opts.dir;
+    cache_opts.path_directions={1,'dir'};
+end
+
+
 outputs=function_cache(cache_opts,@import_mcp_tdc_data_core,{import_opts});
 mcp_tdc_data=outputs{1};
 end
