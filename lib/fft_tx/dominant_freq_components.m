@@ -57,9 +57,10 @@ components.freq=components.freq(:);
 components.amp=components.amp(:);
 components.phase=components.phase(:);
 
-components.freq=components.freq(1:options.num_components);
-components.amp=components.amp(1:options.num_components);
-components.phase=components.phase(1:options.num_components);
+num_comp=min([options.num_components,numel(components.freq)]);
+components.freq=components.freq(1:num_comp);
+components.amp=components.amp(1:num_comp);
+components.phase=components.phase(1:num_comp);
 
 details=[];
 details.fft_dat=fft_dat;
