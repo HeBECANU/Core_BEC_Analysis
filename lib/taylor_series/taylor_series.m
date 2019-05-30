@@ -1,5 +1,5 @@
 function out=taylor_series(x,derivs,offset)
-x=x(:);
+x=col_vec(x);
 derivs=derivs(:);
 %i want to calulate the result of a taylor series evaluation at the points x
 factor=factorial(0:(numel(derivs)-1))';
