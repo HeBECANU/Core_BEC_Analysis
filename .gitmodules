@@ -16,3 +16,6 @@
 [submodule "bin/errorbarxy"]
 	path = bin/errorbarxy
 	url = https://github.com/cthissen/errorbarxy.git
+[submodule "lib/fast_search_histogram"]
+	path = lib/fast_search_histogram
+	url = https://github.com/brycehenson/fast_search_histogram.git

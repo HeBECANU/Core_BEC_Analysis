@@ -43,34 +43,59 @@ data=import_mcp_tdc_data(import_opts);
 % the one we care the most about is counts_txy
 % we can look at the first file's distribution of detections in time
 
-sfigure(1); %quiet figure that wont steal focus
+stfig(1); %quiet figure that wont steal focus, 
+%          also has the option to show what function called it which is useful when you have lots of functions making figs
 clf
-set(gcf,'color','w')%beige kills
-histogram(data.counts_txy{1}(:,1),linspace(0,1,1e3))
+%lets make a basic histogram of the time arrivals of atoms
+histogram(data.counts_txy{1}(:,1),linspace(0,1,1e3),'k')
 xlabel('time(s)')
 ylabel('counts')
 
 %% Combining multiple shots
 % now lets plot the same thing but for the first 10 shots combined
 txy_multiple_shots=vertcat(data.counts_txy{1:10});
-
-sfigure(1);
+% lets do a better histogram, if you take a histogram with bins that are smaller than normal and then smooth(convolve
+% with a guassian) you get something called a kernel density estimation which reduced the problems histograms have with
+% hiding features (eg a big dip in counts that is smaller than the bin width)
+% i have made a function that does this
+% set up the options for the smooth histograming function
+opt_in.xdat=txy_multiple_shots;
+opt_in.max=2.0;
+opt_in.min=0;
+opt_in.bins=1e5;
+opt_in.sigma=1e-4; %timescale that you wish to observe
+opt_in.bin_factor=100; %how much smaller than this timescale that the bins should be 10-100 is good
+out_struct=smooth_hist(opt_in);
+stfig('count rate TOF & spectrum','add_stack',1); %this time we will give the figure a name and prepend the function that called it
 clf
-set(gcf,'color','w')
-[counts,edges] = histcounts(txy_multiple_shots(:,1),linspace(0,1,1e5));
-edges=(edges(2:end)+edges(1:end-1))/2; %find the bin center
-plot(edges,counts,'k')
-xlabel('time(s)')
-ylabel('counts')
+subplot(2,1,1)
+plot(out_struct.bin.centers,out_struct.count_rate.smooth*1e-3)
+ylabel('count rate (khz)')
+xlabel('time (s)')
+xlim([0.4,0.7])
+subplot(2,1,2)
 
-%% FFT
-%lets take the FFT of this histogram
-sfigure(1)
-set(gcf,'color','w')
-fftout=fft_tx(edges,counts,'padding',3,'window','blackman');
-semilogy(fftout(1,:),abs(fftout(2,:)))
-xlabel('Frequency (Hz)')
-ylabel('count modulation')
+%% Investigating the spectrum
+% use a fft to find what frequency components are
+% this fft_tx function makes taking a fft much easier, it handles the padding and windowing which can be annoying to get
+% right. It spits out the bin frequencies and amplitudes.
+fft_out=fft_tx(out_struct.bin.centers,out_struct.count_rate.smooth,'window','chebyshev','win_param',{300},'padding',10);
+
+subplot(2,1,2)
+cla
+semilogy(details.fft_dat(1,:),abs(details.fft_dat(2,:)))
+hold on
+semilogy(fft_out(1,:),abs(fft_out(2,:)))
+xlim([0,1000])
+ylim([1e2,1e6])
+
+%% Finding the main components in the spectrum
+% this function will find the dominant freqency componets in a timeseries
+dom_opt=[];
+dom_opt.num_components=10;
+[components,details]=dominant_freq_components(out_struct.bin.centers,out_struct.count_rate.smooth,dom_opt);
+
 
 % That should give you a decent start
 % for more advanced applications you will want to loop over each shot
+% have a look through the lib folder for more things
