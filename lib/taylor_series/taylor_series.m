@@ -1,5 +1,5 @@
 function out=taylor_series(x,derivs,offset)
-x=x(:);
+x=col_vec(x);
 derivs=derivs(:);
 if nargin==2
     offset=0;
