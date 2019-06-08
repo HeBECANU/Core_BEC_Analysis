@@ -19,7 +19,7 @@ if ~isfield(in_struct,'bins')
     in_struct.bins=round(in_struct.bin_factor*in_struct.bins);
 end
 
-in_struct.xdat=in_struct.xdat(:);
+in_struct.xdat=col_vec(in_struct.xdat);
 
 %function that resturns a gaussian smoothed histogram
 edges=linspace(in_struct.min,in_struct.max,in_struct.bins+1)';
