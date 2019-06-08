@@ -1,5 +1,9 @@
 %constants
-%should make this a class to prevent any accidental setting of the values from outside
+%TODO
+% - add subsections eg SI,imperial, customary
+% - include the units
+% - make this a class so the values cant be set
+% - add references for all values
 global const
 %fundamental
 const.c = 299792458; %speed of light (m/s)

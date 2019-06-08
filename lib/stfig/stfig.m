@@ -58,10 +58,10 @@ sep_str=': ';
 
 %parse user inputs
 p = inputParser;
-is_logical=@(in) isequal(in,true) || isequal(in,false);
-addParameter(p,'add_stack',false,is_logical);
-addParameter(p,'show_handle',false,is_logical);
-addParameter(p,'return_cwin',false,is_logical);
+is_c_logical=@(in) isequal(in,true) || isequal(in,false); %can x be cast as a logical
+addParameter(p,'add_stack',false,is_c_logical);
+addParameter(p,'show_handle',false,is_c_logical);
+addParameter(p,'return_cwin',false,is_c_logical);
 parse(p,varargin{:});
 
 add_stack_to_text=p.Results.add_stack;
