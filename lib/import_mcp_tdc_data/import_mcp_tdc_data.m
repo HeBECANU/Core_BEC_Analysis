@@ -33,11 +33,26 @@ end
 cache_opts.force_recalc=import_opts.force_reimport;
 import_opts=rmfield(import_opts,'force_reimport');
 
-if import_opts.save_cache_in_data_dir
+if isfield(import_opts,'out_dir')
+    warning('out_dir option has been changed to cache_save_dir to be more verbose,please update your code')
+    import_opts.cache_save_dir=import_opts.out_dir;
+end
+
+if isfield(import_opts,'cache_save_dir') && ~isempty(import_opts.cache_save_dir)
+    %consider using save_cache_in_data_dir option intead of manualy specifying this output dir
+    % this is so that runing the same analysis with the data residing in a different path will still used the cached
+    % redult
+    cache_opts.dir = import_opts.cache_save_dir;
+end
+
+if isfield(import_opts,'save_cache_in_data_dir') && import_opts.save_cache_in_data_dir
     cache_opts.mock_working_dir=import_opts.dir;
     cache_opts.path_directions={1,'dir'};
 end
 
+if isfield(import_opts,'save_cache_in_data_dir') && import_opts.save_cache_in_data_dir && isfield(import_opts,'out_dir')
+    error(' do not specify save_cache_in_data_dir and out_dir at the same time')
+end
 
 outputs=function_cache(cache_opts,@import_mcp_tdc_data_core,{import_opts});
 mcp_tdc_data=outputs{1};
@@ -198,10 +213,10 @@ end
 %         clear('data')
 %     end
 % end
-
-
-%if ~isa(import_opts.force_reimport,'logical') ,error('Bad Input:force_reimport'), end
-%if ~isfield(import_opts, 'force_reimport') ,error('Bad Input:force_reimport'), end
+% 
+% 
+% if ~isa(import_opts.force_reimport,'logical') ,error('Bad Input:force_reimport'), end
+% if ~isfield(import_opts, 'force_reimport') ,error('Bad Input:force_reimport'), end
 %     %saving the data takes a while, some comparisons:
 %     if import_opts.mat_save
 %         fprintf('Saving mat file...')
