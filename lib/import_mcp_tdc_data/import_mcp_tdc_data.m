@@ -34,7 +34,7 @@ cache_opts.force_recalc=import_opts.force_reimport;
 import_opts=rmfield(import_opts,'force_reimport');
 
 if isfield(import_opts,'out_dir')
-    cache_opts.dir = import_opts.cache_dir;
+    cache_opts.dir = import_opts.out_dir;
 end
 outputs=function_cache(cache_opts,@import_mcp_tdc_data_core,{import_opts});
 mcp_tdc_data=outputs{1};

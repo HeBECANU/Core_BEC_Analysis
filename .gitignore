@@ -8,3 +8,5 @@
 *.ini
 # windows thumb
 *.db
+# Sandboxing
+/scratch
