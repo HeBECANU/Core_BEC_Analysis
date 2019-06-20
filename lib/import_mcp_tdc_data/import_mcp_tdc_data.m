@@ -33,6 +33,9 @@ end
 cache_opts.force_recalc=import_opts.force_reimport;
 import_opts=rmfield(import_opts,'force_reimport');
 
+if isfield(import_opts,'out_dir')
+    cache_opts.dir = import_opts.out_dir;
+end
 outputs=function_cache(cache_opts,@import_mcp_tdc_data_core,{import_opts});
 mcp_tdc_data=outputs{1};
 end
@@ -192,10 +195,10 @@ end
 %         clear('data')
 %     end
 % end
-
-
-%if ~isa(import_opts.force_reimport,'logical') ,error('Bad Input:force_reimport'), end
-%if ~isfield(import_opts, 'force_reimport') ,error('Bad Input:force_reimport'), end
+% 
+% 
+% if ~isa(import_opts.force_reimport,'logical') ,error('Bad Input:force_reimport'), end
+% if ~isfield(import_opts, 'force_reimport') ,error('Bad Input:force_reimport'), end
 %     %saving the data takes a while, some comparisons:
 %     if import_opts.mat_save
 %         fprintf('Saving mat file...')

@@ -16,3 +16,8 @@ for ii=1:nfields
 end
 
 end
+
+
+
+% Tests to run:
+%     Variable table sizes
