@@ -7,13 +7,16 @@ file_pointer=fullfile(dir,new_file);
 if isequal(computer,'PCWIN64')   
     %only works for win64
     reply=GetFileTime(file_pointer);
-    time_posix_write=posixtime(datetime(reply.Write));
+    time_posix_write=posixtime(datetime(reply.Write,'TimeZone','Local'));
 else
     file_dir=dir(file_pointer);
     time_posix_write=posixtime(datetime(file_dir.datenum,'ConvertFrom','datenum'));
 end
-time_posix_now=posixtime(datetime('now'));
-logic_file_done_writing=(time_posix_write+wait_for_mod)<time_posix_now;
+time_posix_now=posixtime(datetime('now','TimeZone','Local'));
+%fprintf('%f\n',time_posix_write)
+%fprintf('%f\n',time_posix_now)
+
+logic_file_done_writing=(time_posix_write+wait_for_mod)<time_posix_now
 
 if logic_file_done_writing
     %checks that the last charater of the file is a newline
