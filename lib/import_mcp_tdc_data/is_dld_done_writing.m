@@ -16,7 +16,7 @@ time_posix_now=posixtime(datetime('now','TimeZone','Local'));
 %fprintf('%f\n',time_posix_write)
 %fprintf('%f\n',time_posix_now)
 
-logic_file_done_writing=(time_posix_write+wait_for_mod)<time_posix_now
+logic_file_done_writing=(time_posix_write+wait_for_mod)<time_posix_now;
 
 if logic_file_done_writing
     %checks that the last charater of the file is a newline
