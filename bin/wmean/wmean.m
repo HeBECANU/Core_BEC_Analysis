@@ -38,7 +38,7 @@ if (all(w(:)==0))
     error('At least one weight must be non-zero.');
 end
 
-if nargin==2, 
+if nargin==2
   % Determine which dimension SUM will use
   dim = min(find(size(x)~=1));
   if isempty(dim), dim = 1; end

@@ -62,18 +62,11 @@ if (isnan(parsed_input.sigma) || parsed_input.sigma==0) && ~isnan(parsed_input.b
     error('cant specify bin width using bin_factor when sigma is zero')
 end
 
-
-
-
 if isnan(parsed_input.lims)
     bin_limits=[nanmin(xdata),nanmax(xdata)];
 else
     bin_limits=parsed_input.lims;
 end
-
-
-
-
 
 if ~isnan(parsed_input.bin_factor)
     bin_width=parsed_input.sigma/parsed_input.bin_factor;
