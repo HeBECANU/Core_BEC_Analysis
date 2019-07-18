@@ -1,4 +1,4 @@
-function msg_out = cli_header(varargin)
+function cli_header(varargin)
     % A function that makes nice sub headers in the console
     % Works OK with numeric substitution, but needs a length checking
     % function.
@@ -16,10 +16,11 @@ function msg_out = cli_header(varargin)
         fprintf("cli_header accepts varargin, cell args will be removed next version.\n")
         args = varargin{1};
     end
-    
+    v=1;
     if numel(args) == 1 %text only
         msg = args{1};
         lvl = 0;%If no header level is passed, assumed to be top-level
+        
     else
         if isfloat(args{1}) %Passing header level
             lvl = args{1};

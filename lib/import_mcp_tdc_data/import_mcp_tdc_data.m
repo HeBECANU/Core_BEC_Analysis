@@ -145,40 +145,47 @@ for ii=1:size(import_opts.shot_num,2)
     elseif ~is_dld_done_writing(import_opts.dir,[import_opts.file_name,num2str(import_opts.shot_num(ii)),'.txt'],import_opts.mod_wait)
         fprintf(2,'\n data file not done writing will not process %04i \n %04i\n',import_opts.shot_num(ii),ii)
     else
-        if ~import_opts.from_archive 
+        dld_ok = false;
+         if ~import_opts.from_archive 
             % If you trust the directory, you can bypass the following function.
             % This can cut runtime in half, but is only safe if data isn't
             % currently being taken.
             if ~is_dld_done_writing(import_opts.dir,[import_opts.file_name,num2str(import_opts.shot_num(ii)),'.txt'],import_opts.mod_wait)
                 fprintf(2,'\n data file not done writing will not process %04i \n %04i\n',import_opts.shot_num(ii),ii)
-            end
-        else
-         mcp_tdc_data.time_create_write(ii,:)=data_tcreate([import_opts.dir,import_opts.file_name],num2str(import_opts.shot_num(ii)));
-         %if the txy_forc does not exist, if import_opts.force_forc, or the forc file was earlier than the dld file (re) make it
-         if ~convert_dld_to_txy && ...
-                 ~(exist([import_opts.dir,import_opts.file_name,'_txy_forc',num2str(import_opts.shot_num(ii)),'.txt'],'file')==2)
-             convert_dld_to_txy=true;
-         elseif ~convert_dld_to_txy
-            %check that the _txy_forc file was created after the raw dld file
-            time_forc=data_tcreate([import_opts.dir,import_opts.file_name,'_txy_forc'],num2str(import_opts.shot_num(ii)));
-            if time_forc(2) < mcp_tdc_data.time_create_write(ii,2)
-            	convert_dld_to_txy=true;
-                
+            else
+                dld_ok = true;
             end
          else
+             dld_ok = true;
          end
+         if dld_ok
+             mcp_tdc_data.time_create_write(ii,:)=data_tcreate([import_opts.dir,import_opts.file_name],num2str(import_opts.shot_num(ii)));
+             %if the txy_forc does not exist, if import_opts.force_forc, or the forc file was earlier than the dld file (re) make it
+             if ~convert_dld_to_txy && ...
+                     ~(exist([import_opts.dir,import_opts.file_name,'_txy_forc',num2str(import_opts.shot_num(ii)),'.txt'],'file')==2)
+                 convert_dld_to_txy=true;
+             elseif ~convert_dld_to_txy
+                %check that the _txy_forc file was created after the raw dld file
+                time_forc=data_tcreate([import_opts.dir,import_opts.file_name,'_txy_forc'],num2str(import_opts.shot_num(ii)));
+                if time_forc(2) < mcp_tdc_data.time_create_write(ii,2)
+                    convert_dld_to_txy=true;
 
-         if convert_dld_to_txy
-             dld_raw_to_txy([import_opts.dir,import_opts.file_name],import_opts.shot_num(ii),import_opts.shot_num(ii));
+                end
+             else
+             end
+
+             if convert_dld_to_txy
+                 dld_raw_to_txy([import_opts.dir,import_opts.file_name],import_opts.shot_num(ii),import_opts.shot_num(ii));
+             end
+             %ineffecient to read back what whas just written
+             txydata=txy_importer([import_opts.dir,import_opts.file_name],num2str(import_opts.shot_num(ii)));
+             txydata=masktxy(txydata,import_opts.txylim); %mask for counts in the window txylim     
+             %rotate the counts into the trap axis
+             alpha=-import_opts.dld_xy_rot;
+             mcp_tdc_data.counts_txy{ii}=txydata*[1 0 0;0 cos(alpha) -sin(alpha); 0 sin(alpha) cos(alpha)];
+             mcp_tdc_data.num_counts(ii)=size(txydata,1);
+             mcp_tdc_data.shot_num(ii)=import_opts.shot_num(ii);
          end
-         %ineffecient to read back what whas just written
-         txydata=txy_importer([import_opts.dir,import_opts.file_name],num2str(import_opts.shot_num(ii)));
-         txydata=masktxy(txydata,import_opts.txylim); %mask for counts in the window txylim     
-         %rotate the counts into the trap axis
-         alpha=-import_opts.dld_xy_rot;
-         mcp_tdc_data.counts_txy{ii}=txydata*[1 0 0;0 cos(alpha) -sin(alpha); 0 sin(alpha) cos(alpha)];
-         mcp_tdc_data.num_counts(ii)=size(txydata,1);
-         mcp_tdc_data.shot_num(ii)=import_opts.shot_num(ii);
         end
     end %file exists condition
     fprintf('\b\b\b\b%04i',ii)
