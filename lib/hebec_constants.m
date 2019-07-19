@@ -4,6 +4,9 @@
 % - include the units
 % - make this a class so the values cant be set
 % - add references for all values
+% - include transitions
+
+
 global const
 %fundamental
 const.c = 299792458; %speed of light (m/s)

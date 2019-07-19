@@ -2,6 +2,13 @@ function shots=find_data_files(import_opts)
 %finds the the files that match the format (in name only) of a data file
 %could add an option to check the first few lines of the data file
 %Bryce Henson
+% TODO
+% standard function header
+
+
+if ~isfield(import_opts, 'file_name') ,import_opts.file_name='d'; end
+
+
 
 %check that the folder exists
 if exist(import_opts.dir,'dir')~=7, error('import directory does not exist'), end

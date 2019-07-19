@@ -43,8 +43,8 @@ min_pk_sep=options.components_diff_freq/diff(tdat([1,end])); %peak sep in hz
 min_pk_sep_idx=round(min_pk_sep/diff(fft_dat(1,1:2))); %peak sep in fft bins
 [pks_unsorted,pks_idx] = findpeaks(abs(fft_dat(2,:)),...
     'MinPeakHeight',std_xdat*options.components_min_amp,...
-    'MinPeakDistance',min_pk_sep_idx,...
-    'NPeaks',options.num_components);
+    'MinPeakDistance',min_pk_sep_idx);
+    %'NPeaks',options.num_components);
 pks_freq=fft_dat(1,pks_idx);
 %amplitude sort the peaks from highest to smallest amplitude
 [~,sort_order]=sort(pks_unsorted,'descend');
@@ -56,6 +56,11 @@ components.phase=angle(fft_dat(2,pks_idx))+pi/2;
 components.freq=components.freq(:);
 components.amp=components.amp(:);
 components.phase=components.phase(:);
+
+num_comp=min([options.num_components,numel(components.freq)]);
+components.freq=components.freq(1:num_comp);
+components.amp=components.amp(1:num_comp);
+components.phase=components.phase(1:num_comp);
 
 details=[];
 details.fft_dat=fft_dat;

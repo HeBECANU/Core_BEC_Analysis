@@ -1,6 +1,11 @@
 function out = struct_mask(s,m)
 % Assuming s is a structure with equal sizes in each field, mask the
-% fields according to m
+% fields according to mask m
+% Improvements
+    % More robust testing for multidimensional arrays
+    % Be more strict about row/column input (perhaps faster)
+        % And definitely safer if a square matrix is ever input
+        
 fieldnames = fields(s);
 nfields = numel(fieldnames);
 out = [];
@@ -11,3 +16,8 @@ for ii=1:nfields
 end
 
 end
+
+
+
+% Tests to run:
+%     Variable table sizes
