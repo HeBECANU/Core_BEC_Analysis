@@ -19,7 +19,9 @@ function cli_header(varargin)
         if isfloat(varargin{1}) %Passing header level
             lvl = varargin{1};
             msg = varargin{2};
-            vals = varargin{3:end};
+            if nargin>2
+                vals = varargin{3:end};
+            end
         else % No header level passed, but other values present
             lvl = 0;
             msg = varargin{1};
