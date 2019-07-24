@@ -1,6 +1,7 @@
 function str_out=num_with_comma(num_in,format,add_sep_after_decimal,remove_trailing_zero)
 % a decent implimentation if a little more complicated is also here
 % https://au.mathworks.com/matlabcentral/fileexchange/52832-num2sepstr
+% this implementation provides ability to handle the seperator after the decimal place
 
 if nargin<2 || isempty(format)
     % stolen from % https://au.mathworks.com/matlabcentral/fileexchange/52832-num2sepstr

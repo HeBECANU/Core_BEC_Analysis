@@ -1,6 +1,5 @@
 
-
-
+%most of the test functonality comes from https://au.mathworks.com/matlabcentral/fileexchange/52832-num2sepstr
 
 function tests = test_num_with_comma
     %test_num_with_comma
