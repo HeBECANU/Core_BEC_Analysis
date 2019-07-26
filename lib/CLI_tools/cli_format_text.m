@@ -21,29 +21,25 @@ function cli_format_text(in_string,type,level,varargin)
 % usage examples
 % syntax and goals
 
-
+% user config params
 cli_width=80;
 space_padding=2;
-sep_types={'-','+','=','_','*'};
+sep_types={'-','+','=','_','*','<>','><','()',')(','{}','}{','[]','][','/\','\/'};
 hierarchical_spacing=4;
 hierarchical_sep='-';
 
 if isstring(in_string)
     in_string=char(in_string);
 end
-
 if ~ischar(in_string)
     error('first agument must be a string or char vector')
 end
 
-
-format_types={'c','center','centre','h','hierarchical'};
-
+format_types={'c','center','cen','centre','h','hierarchical'};
 
 if sum(strcmp(format_types,type))==0
     error('format must be supported type %s',sprintf('%s ,',format_types{:}))
 end
-
 
 if nargin==2 || isempty(level)
     level=1;
@@ -54,15 +50,31 @@ if mod(level,1)~=0
 end
 
 
-if sum(strcmp(type,{'c','center','centre'}))
-   
-    if level>numel(sep_types)
-        error('level not valid')
+if sum(strcmp(type,{'c','center','centre','cen'}))
+    if ischar(level)
+        if numel(level)>2
+            warning('does not support multiple chars will take first two')
+            level=level(1:2);
+        end
+        if numel(level)==1
+            if isequal(level,'%') %because % is a special char
+                level='%%';
+            end
+            % most choices default to the same on left and right
+            sep_choice=[level,level];
+        else
+            sep_choice=level;
+        end
+    elseif isnumeric(level)
+        if level>numel(sep_types)
+            error('level not valid')
+        end
+        sep_choice=sep_types{level};
+        sep_choice=[sep_choice,sep_choice];
     end
-    sep_choice=sep_types{level};
     
-    %do not pad the string with spaces if it is empty, for making will
-    %widht headers
+    %do not pad the string with spaces if it is empty, for making full
+    %width headers
     if ~isempty(in_string) || ~strcmp(in_string,'')
         padded_str=cat(2,repmat(' ',1,space_padding),in_string,repmat(' ',1,space_padding));
     else
@@ -80,9 +92,9 @@ if sum(strcmp(type,{'c','center','centre'}))
         add_one_extra_to_left=1;
     end
     each_side_padd=floor(remaining_width/2);
-    cent_str=cat(2,repmat(sep_choice,1,each_side_padd+add_one_extra_to_left),...
+    cent_str=cat(2,repmat(sep_choice(1),1,each_side_padd+add_one_extra_to_left),...
         padded_str,...
-        repmat(sep_choice,1,each_side_padd));
+        repmat(sep_choice(2),1,each_side_padd));
     out_str=cent_str;
     
 elseif sum(strcmp(type,{'h','hierarchical'}))

@@ -1,4 +1,4 @@
-function out_string=string_value_with_unc(value,unc,type,remove_common_factors)
+function out_string=string_value_with_unc(value,unc,type,comma_sep,remove_common_factors)
 %string_value_with_unc - prints value with uncert. and the right number of sig figs
 %
 % Syntax:  output_string=import_data(value,unc,type)
@@ -37,12 +37,17 @@ function out_string=string_value_with_unc(value,unc,type,remove_common_factors)
 %------------- BEGIN CODE --------------
 
 
+
 if nargin<3
     type='s';
 end
 
 if ~isnumeric(value) || ~isnumeric(unc)
     error('value and uncert. must be numeric')
+end
+
+if nargin<4 || isempty(comma_sep)
+    comma_sep=1;
 end
 % find the first decimal place
 unc_first_decimal_place=floor(log10(unc));
@@ -61,15 +66,25 @@ rounded_val=(10^decimal_place_unc)*round(value*(10^(-decimal_place_unc)));
 % standard plus-minus format
 if sum(strcmp(type,{'s','standard','pm'}))>0
 
-    unc_str=sprintf(cat(2,'%.',sprintf('%u',max([0,-decimal_place_unc])),'f'),rounded_unc);
-    val_str=sprintf(cat(2,'%.',sprintf('%u',max([0,-decimal_place_unc])),'f'),rounded_val);
+    
+    if comma_sep
+        unc_str=num_with_comma(rounded_unc,sprintf('%%.%uf',max([0,-decimal_place_unc])),1,0);
+        val_str=num_with_comma(rounded_val,sprintf('%%.%uf',max([0,-decimal_place_unc])),1,0);
+    else
+        unc_str=sprintf('%.*f',max([0,-decimal_place_unc]),rounded_unc);
+        val_str=sprintf(sprintf('%%.%uf',max([0,-decimal_place_unc])),rounded_val);
+    end
     out_string=cat(2,val_str,'±',unc_str);
 
     
 %metrology brackets notation    
 elseif  sum(strcmp(type,{'b','brackets'}))>0
     unc_str=sprintf('%.0f',rounded_unc*(10^(max([0,-decimal_place_unc]))));
-    val_str=sprintf(cat(2,'%.',sprintf('%u',max([0,-decimal_place_unc])),'f'),rounded_val);
+    if comma_sep
+        val_str=num_with_comma(rounded_val,sprintf('%%.%uf',max([0,-decimal_place_unc])),1,0);
+    else
+        val_str=sprintf(sprintf('%%.%uf',max([0,-decimal_place_unc])),rounded_val);
+    end
     out_string=cat(2,val_str,'(',unc_str,')');
 else
     error('did not pass valid format string')
