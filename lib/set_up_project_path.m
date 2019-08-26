@@ -66,9 +66,17 @@ end
 path(pathdef) %clean up the path back to the default state to remove all the .git that were added
 addpath(path_to_project_root)
 addpath(path_to_genpath)
-addpath(genpath_exclude(fullfile(path_to_project_root,'lib'),'\.')) %dont add hidden folders
-addpath(genpath_exclude(fullfile(path_to_project_root,'dev'),'\.'))
-addpath(genpath_exclude(fullfile(path_to_project_root,'bin'),'\.'))
+
+for ii=1:numel(folders_to_add)
+    path_to_adding_folder=fullfile(path_to_project_root,folders_to_add{ii});
+    if exist(path_to_adding_folder,'dir')==7
+        addpath(genpath_exclude(path_to_adding_folder,'\.'))%dont add hidden folders
+    else 
+        warning('%s: folder ""to add does not exist ',mfilename,folders_to_add{ii})
+    end
+end
+
+
 
 
 
