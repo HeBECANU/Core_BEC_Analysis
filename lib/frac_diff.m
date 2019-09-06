@@ -1,9 +1,16 @@
 function out=frac_diff(x,y,method)
 %calculate the fractional difference
+
 % TODO
 % document
 % test
 % more methods eg take min or max as denominator
+
+% input
+% x,y    - numerical array, any dimensionality
+% method - how the denominator should be determined can be 'mean','max','min'
+% output - fractional difference with the same dimensionality as the input
+
 if nargin<3
    method='mean';
 end

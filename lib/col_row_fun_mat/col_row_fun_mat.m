@@ -16,7 +16,6 @@ function out=col_row_fun_mat(funhandle,mat_in,dirn)
 %
 % Example1: 
 %         test_mat=rand(5,10);
-%         testfun=@(t) 100*sin(2*pi*t*100+pi)+1*sin(2*pi*t*133+pi);
 %         col_row_fun_result=col_row_fun_mat(@sum,test_mat,2);
 %         inbuilt_result=sum(test_mat,2);
 %         isequal(inbuilt_result,col_row_fun_result)
