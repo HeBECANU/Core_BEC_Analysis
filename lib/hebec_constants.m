@@ -23,7 +23,7 @@ const.grav=6.67430*10^-11;  %Newtonian constant of gravitation %https://physics.
 
 %Helium
 % const.ahe_scat=15*10^-9;
-const.ahe_scat=7.512000000000000e-09;
+const.ahe_scat=7.512000000000000e-09; %m^2 Moal et al https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.96.023203
 const.b_freq=2.802*1e6*1e4; %hz/T
 const.mhe = 1.66*10^-27*4.002;%(*helium mass*)
 const.interaction_energy = 4*pi*const.hb^2*const.ahe_scat/const.mhe; % interaction strength []
