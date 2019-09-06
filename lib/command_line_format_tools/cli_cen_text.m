@@ -1,7 +1,8 @@
-function sltext(args)
+function cli_cen_text(args)
     % A function that makes nice headers in the console
     % Works OK with numeric substitution, but needs a length checking
     % function.
+    
     if ischar(args)
         msg = args;
         vals = [];

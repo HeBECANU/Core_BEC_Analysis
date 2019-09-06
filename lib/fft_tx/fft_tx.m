@@ -20,7 +20,7 @@ function[out]=fft_tx(t,x,varargin)
 %       win_param       - cell array, extra inputs after the length argument to the windowing function
 %                           - gauss ,win_param={3}, reciprocal of the standard deviation
 %                           - all others (besides none) 'symmetric'(recomended) or 'periodic'
-
+%       f_lim            - [1x2] frequency limits of the output
 % Outputs:
 %    freq_amp - 2*L matrix
 %               - freq_amp(1,:) are the frequency bins
@@ -97,12 +97,14 @@ addParameter(p,'win_param',{},@(x) true);
 addParameter(p,'padding','',@(x) isfloat(x) && x>=1);
 addParameter(p,'issorted',0,is_c_logical);
 addParameter(p,'verbose',1,@(x) round(x)==x && x>=0);
+addParameter(p,'f_lim',[-inf,inf],@(x) isequal(size(x),[1,2]));
 parse(p,varargin{:});
 pad=p.Results.padding;
 window_fun=p.Results.window;
 window_param=p.Results.win_param;
 xsorted=p.Results.issorted;
 verbose=p.Results.verbose;
+freq_limits_out=p.Results.f_lim;
 
 %% sort the data if needed
 if ~xsorted
@@ -177,16 +179,21 @@ if  mod(len,2) %odd case
     niq=ceil(len/2);
     amp = amp(1:niq);
     amp(2:end) = 2*amp(2:end); %multiply all non DC values by 2 because of half cut
-    f = fs/len*((0:niq-1));
+    freq = fs/len*((0:niq-1));
 else
     niq=len/2+1;
     amp = amp(1:niq);
     amp(2:end) = 2*amp(2:end); %multiply all non DC values by 2 because of half cut
-    f = fs*(0:(len/2))/len;  
+    freq = fs*(0:(len/2))/len;  
 end
 
+if ~isequal(freq_limits_out,[-inf,inf])
+    freq_mask=freq>=freq_limits_out(1) & freq<=freq_limits_out(2);
+    freq=freq(freq_mask);
+    amp=amp(freq_mask);
+end
 
-out=[f;amp];
+out=[freq;amp];
 
 
 end

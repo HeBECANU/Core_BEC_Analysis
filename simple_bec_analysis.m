@@ -19,10 +19,20 @@ import_opts.file_name='d';
 %%%%------------------------done user var-------------------------------%
 
 %% Setting Up The Enviorment
-%add all subfolders to the path
+% find this .m file's path, this must be in the project root dir
 this_folder = fileparts(which(mfilename));
 % Add that folder plus all subfolders to the path.
-addpath(genpath(this_folder));
+addpath(genpath(this_folder));%add all subfolders to the path to find genpath_exclude which should be in your project somewhere
+path_to_genpath=fileparts(which('genpath_exclude')); %save the dir that genpath_exclude is in
+path(pathdef) %clean up the path back to the default state to remove all the .git that were added
+addpath(this_folder)
+addpath(path_to_genpath)
+addpath(genpath_exclude(fullfile(this_folder,'lib'),'\.')) %add only a few directories,dont add hidden folders
+addpath(genpath_exclude(fullfile(this_folder,'dev'),'\.'))
+addpath(genpath_exclude(fullfile(this_folder,'bin'),'\.'))
+
+
+hebec_constants %call the constants function that makes some globals
 
 %call the constants function that makes some globals
 hebec_constants 
