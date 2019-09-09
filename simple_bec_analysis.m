@@ -19,17 +19,23 @@ import_opts.file_name='d';
 %%%%------------------------done user var-------------------------------%
 
 %% Setting Up The Enviorment
-% find this .m file's path, this must be in the project root dir
-this_folder = fileparts(which(mfilename));
-% Add that folder plus all subfolders to the path.
-addpath(genpath(this_folder));%add all subfolders to the path to find genpath_exclude which should be in your project somewhere
-path_to_genpath=fileparts(which('genpath_exclude')); %save the dir that genpath_exclude is in
-path(pathdef) %clean up the path back to the default state to remove all the .git that were added
-addpath(this_folder)
-addpath(path_to_genpath)
-addpath(genpath_exclude(fullfile(this_folder,'lib'),'\.')) %add only a few directories,dont add hidden folders
-addpath(genpath_exclude(fullfile(this_folder,'dev'),'\.'))
-addpath(genpath_exclude(fullfile(this_folder,'bin'),'\.'))
+
+addpath('./lib/') %add the path to set_up_project_path, this will change if Core_BEC_Analysis is included as a submodule
+                  % in this case it should be './lib/Core_BEC_Analysis/lib/'
+set_up_project_path
+
+
+% % find this .m file's path, this must be in the project root dir
+% this_folder = fileparts(which(mfilename));
+% % Add that folder plus all subfolders to the path.
+% addpath(genpath(this_folder));%add all subfolders to the path to find genpath_exclude which should be in your project somewhere
+% path_to_genpath=fileparts(which('genpath_exclude')); %save the dir that genpath_exclude is in
+% path(pathdef) %clean up the path back to the default state to remove all the .git that were added
+% addpath(this_folder)
+% addpath(path_to_genpath)
+% addpath(genpath_exclude(fullfile(this_folder,'lib'),'\.')) %add only a few directories,dont add hidden folders
+% addpath(genpath_exclude(fullfile(this_folder,'dev'),'\.'))
+% addpath(genpath_exclude(fullfile(this_folder,'bin'),'\.'))
 
 
 hebec_constants %call the constants function that makes some globals
@@ -53,29 +59,23 @@ data=import_mcp_tdc_data(import_opts);
 % the one we care the most about is counts_txy
 % we can look at the first file's distribution of detections in time
 
-stfig(1); %quiet figure that wont steal focus, 
-%          also has the option to show what function called it which is useful when you have lots of functions making figs
+stfig(1); % quiet figure that wont steal focus, 
+          % also has the option to show what function called it which is useful when you have lots of functions making figs
 clf
-%lets make a basic histogram of the time arrivals of atoms
-histogram(data.counts_txy{1}(:,1),linspace(0,1,1e3),'k')
+% lets make a basic histogram of the time arrivals of atoms
+histogram(data.counts_txy{1}(:,1),linspace(0,1,1e3))
 xlabel('time(s)')
 ylabel('counts')
 
 %% Combining multiple shots
 % now lets plot the same thing but for the first 10 shots combined
-txy_multiple_shots=vertcat(data.counts_txy{1:10});
+txy_multiple_shots=vertcat(data.counts_txy{1:3});
 % lets do a better histogram, if you take a histogram with bins that are smaller than normal and then smooth(convolve
 % with a guassian) you get something called a kernel density estimation which reduced the problems histograms have with
 % hiding features (eg a big dip in counts that is smaller than the bin width)
 % i have made a function that does this
 % set up the options for the smooth histograming function
-opt_in.xdat=txy_multiple_shots;
-opt_in.max=2.0;
-opt_in.min=0;
-opt_in.bins=1e5;
-opt_in.sigma=1e-4; %timescale that you wish to observe
-opt_in.bin_factor=100; %how much smaller than this timescale that the bins should be 10-100 is good
-out_struct=smooth_hist(opt_in);
+out_struct=smooth_hist(txy_multiple_shots(:,1),'lims',[0,2],'sigma',1e-4,'bin_factor',10);
 stfig('count rate TOF & spectrum','add_stack',1); %this time we will give the figure a name and prepend the function that called it
 clf
 subplot(2,1,1)
@@ -93,11 +93,9 @@ fft_out=fft_tx(out_struct.bin.centers,out_struct.count_rate.smooth,'window','che
 
 subplot(2,1,2)
 cla
-semilogy(details.fft_dat(1,:),abs(details.fft_dat(2,:)))
-hold on
 semilogy(fft_out(1,:),abs(fft_out(2,:)))
 xlim([0,1000])
-ylim([1e2,1e6])
+%ylim([1e2,1e6])
 
 %% Finding the main components in the spectrum
 % this function will find the dominant freqency componets in a timeseries
@@ -105,6 +103,7 @@ dom_opt=[];
 dom_opt.num_components=10;
 [components,details]=dominant_freq_components(out_struct.bin.centers,out_struct.count_rate.smooth,dom_opt);
 
+%semilogy(details.fft_dat(1,:),abs(details.fft_dat(2,:)))
 
 % That should give you a decent start
 % for more advanced applications you will want to loop over each shot
