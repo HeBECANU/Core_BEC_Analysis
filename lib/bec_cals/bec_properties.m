@@ -36,7 +36,7 @@ end
 
 %scat_len
 if nargin<4 || isnan(a_scat_len) || isempty(a_scat_len)
-    a_scat_len=const.ahe_scat;
+    a_scat_len=7.512000000000000e-09;
 end
 
 
