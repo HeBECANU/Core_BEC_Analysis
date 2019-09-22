@@ -1,4 +1,4 @@
-function out_string=string_value_with_unc(value,unc,type,comma_sep,remove_common_factors)
+function out_string=string_value_with_unc(value,unc,varargin)
 %string_value_with_unc - prints value with uncert. and the right number of sig figs
 %
 % Syntax:  output_string=import_data(value,unc,type)
@@ -37,18 +37,42 @@ function out_string=string_value_with_unc(value,unc,type,comma_sep,remove_common
 %------------- BEGIN CODE --------------
 
 
+%% parse the optional inputs
+% type,comma_sep,remove_common_factors
 
-if nargin<3
-    type='s';
+is_c_logical=@(in) isequal(in,true) || isequal(in,false); %can x be cast as a logical
+validtypes={'s','standard','pm','b','brackets'};
+type_ok_fun=@(x) sum(contains(validtypes,x))==1;
+p = inputParser;
+addParameter(p,'type','standard',type_ok_fun);
+addParameter(p,'separator',true,@(x) is_c_logical(x) || (ischar(x) && numel(x)==1) );
+addParameter(p,'remove_common_factors',0,is_c_logical);
+parse(p,varargin{:});
+
+type=p.Results.type;
+
+rem_com_fac=p.Results.remove_common_factors;
+
+if p.Results.separator==false || p.Results.separator==0
+    use_sep=0;
+else
+    use_sep=1;
+    if ischar(p.Results.separator)
+        if numel(p.Results.separator)==1
+            sep_char=p.Results.separator;
+        else
+            error('must be single char')
+        end
+    else
+        sep_char=' '; %default sep char
 end
+
 
 if ~isnumeric(value) || ~isnumeric(unc)
     error('value and uncert. must be numeric')
 end
 
-if nargin<4 || isempty(comma_sep)
-    comma_sep=1;
-end
+
 % find the first decimal place
 unc_first_decimal_place=floor(log10(unc));
 % i think this section can be done a little better
@@ -66,10 +90,19 @@ rounded_val=(10^decimal_place_unc)*round(value*(10^(-decimal_place_unc)));
 % standard plus-minus format
 if sum(strcmp(type,{'s','standard','pm'}))>0
 
+    if rem_com_fac
+        error('remove common factors feature is not yet implemented')
+    end
     
-    if comma_sep
-        unc_str=num_with_comma(rounded_unc,sprintf('%%.%uf',max([0,-decimal_place_unc])),1,0);
-        val_str=num_with_comma(rounded_val,sprintf('%%.%uf',max([0,-decimal_place_unc])),1,0);
+    if use_sep
+        unc_str=num_with_sep(rounded_unc,...
+                            'format',sprintf('%%.%uf',max([0,-decimal_place_unc])),...
+                            'separator',sep_char,...
+                            'add_sep_after_decimal',1);
+        val_str=num_with_sep(rounded_val,...
+                            'format',sprintf('%%.%uf',max([0,-decimal_place_unc])),...
+                            'separator',sep_char,...
+                            'add_sep_after_decimal',1);        
     else
         unc_str=sprintf('%.*f',max([0,-decimal_place_unc]),rounded_unc);
         val_str=sprintf(sprintf('%%.%uf',max([0,-decimal_place_unc])),rounded_val);
@@ -80,8 +113,11 @@ if sum(strcmp(type,{'s','standard','pm'}))>0
 %metrology brackets notation    
 elseif  sum(strcmp(type,{'b','brackets'}))>0
     unc_str=sprintf('%.0f',rounded_unc*(10^(max([0,-decimal_place_unc]))));
-    if comma_sep
-        val_str=num_with_comma(rounded_val,sprintf('%%.%uf',max([0,-decimal_place_unc])),1,0);
+    if use_sep
+        val_str=num_with_sep(rounded_val,...
+                            'format',sprintf('%%.%uf',max([0,-decimal_place_unc])),...
+                            'separator',sep_char,...
+                            'add_sep_after_decimal',1);
     else
         val_str=sprintf(sprintf('%%.%uf',max([0,-decimal_place_unc])),rounded_val);
     end
