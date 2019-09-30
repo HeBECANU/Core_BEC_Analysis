@@ -19,3 +19,6 @@
 [submodule "lib/fast_search_histogram"]
 	path = lib/fast_search_histogram
 	url = https://github.com/brycehenson/fast_search_histogram.git
+[submodule "bin/ciecam02"]
+	path = bin/ciecam02
+	url = https://github.com/DrosteEffect/CIECAM02.git
