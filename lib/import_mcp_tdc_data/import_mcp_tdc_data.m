@@ -190,7 +190,7 @@ for ii=1:size(import_opts.shot_num,2)
     end %file exists condition
     fprintf('\b\b\b\b%04i',ii)
 end
-import_opts_old=import_opts;
+
 fprintf('\b\b\b\b...Done\n')
     
 

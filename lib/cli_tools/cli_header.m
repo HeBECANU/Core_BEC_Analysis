@@ -36,14 +36,10 @@ function msg_out = cli_header(varargin)
         msg_level = 0;%If no header level is passed, assumed to be top-level
         argument_index=2;
     else
-
-        if isfloat(varargin{1}) %Passing header level
-            lvl = varargin{1};
-            msg = varargin{2};
-            if nargin>2
-                vals = varargin{3:end};
-            end
-
+        if isnumeric(args{1}) %Passing header level
+            msg_level = args{1};
+            msg = args{2};
+            argument_index=3;
         else % No header level passed, but other values present
             msg_level = 0;
             msg = args{1};
@@ -52,8 +48,9 @@ function msg_out = cli_header(varargin)
     end
     
     msg_out = sprintf(msg,args{argument_index:end});
-    blank = '------------------------------------------------------------';
+%     blank = '------------------------------------------------------------';
+    blank = '                                                            ';
     marker = blank(1:2*msg_level+1);
-    fprintf([marker,'   ',msg_out,'\n'])
+    fprintf([marker,' - ',msg_out,'\n'])
 
 end
