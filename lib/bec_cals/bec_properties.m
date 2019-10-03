@@ -5,6 +5,7 @@ function details=bec_properties(omega,atom_number,mass,a_scat_len)
 %   atom number - scalar
 % output
 % 
+% todo: Vectorize omega x atom_num
 
 warning('do not trust this function, it has not been tested well enough')
 %if the constants strucure already exists do not run
@@ -87,6 +88,8 @@ n_max_peak_density=mu_chem_pot/u_eff_interaction;
 tf_volume=(4/3)*pi*prod(r_tf_radi);
 n_mean_density=atom_number/tf_volume;
 
+tan_constant = (n_max_peak_density)*((64*pi^2)/7)*a_scat_len^2;
+
 
 details.tc.non_interacting=tc_non_interacting;
 details.tc.finite_number=tc_finite_number;
@@ -100,7 +103,7 @@ details.tf_volume=tf_volume;
 details.density_peak=n_max_peak_density;
 details.density_mean=n_mean_density;
 details.u_eff_interaction=u_eff_interaction;
-
+details.tan_contact= tan_constant;
 
 
 end
