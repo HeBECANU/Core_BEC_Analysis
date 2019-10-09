@@ -26,6 +26,8 @@ function cli_header(varargin)
 % remove multi arguments in favor of cli_header(string,level, opp args (inc type))
 
     args = varargin;
+    argument_index=1;
+    msg_level = 0;%If no header level is passed, assumed to be top-level
     if iscell(varargin{1})
         fprintf("cli_header accepts varargin, cell args will be removed next version.\n")
         args = varargin{1};
@@ -44,7 +46,9 @@ function cli_header(varargin)
             if nargin>2
                 vals = varargin{3:end};
             end
+
             argument_index = 1;
+
         else % No header level passed, but other values present
             msg_level = 0;
             msg = args{1};

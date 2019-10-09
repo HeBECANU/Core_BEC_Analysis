@@ -50,6 +50,7 @@ while look_for_genpath
         found_genpath=true;
         path_to_genpath=possible_genpath_places{search_index};
     end
+    search_index=search_index+1;
 end
 
 %if it has not been found in these locations try the brute option
@@ -63,7 +64,7 @@ if ~found_genpath
     path_to_genpath=fileparts(which('genpath_exclude'));
 end
 
-path(pathdef) %clean up the path back to the default state to remove all the .git that were added
+path(pathdef) %clean up the path back to the default state to remove all the folders .git that were added
 addpath(path_to_project_root)
 addpath(path_to_genpath)
 
@@ -72,11 +73,9 @@ for ii=1:numel(folders_to_add)
     if exist(path_to_adding_folder,'dir')==7
         addpath(genpath_exclude(path_to_adding_folder,'\.'))%dont add hidden folders
     else 
-        warning('%s: folder ""to add does not exist ',mfilename,folders_to_add{ii})
+        warning('%s: folder you have requested to add ("%s") does not exist ',mfilename,folders_to_add{ii})
     end
 end
-
-
 
 
 
