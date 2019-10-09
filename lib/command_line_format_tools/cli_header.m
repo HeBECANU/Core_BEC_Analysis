@@ -53,8 +53,9 @@ function cli_header(varargin)
     end
     
     msg_out = sprintf(msg,args{argument_index:end});
-    blank = '------------------------------------------------------------';
+%     blank = '------------------------------------------------------------';
+    blank = '                                                            ';
     marker = blank(1:2*msg_level+1);
-    fprintf([marker,'   ',msg_out,'\n'])
+    fprintf([marker,' - ',msg_out,'\n'])
 
 end
