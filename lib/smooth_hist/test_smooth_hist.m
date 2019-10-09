@@ -32,3 +32,13 @@ output=smooth_hist(xdata,'lims',bin_lims,'sigma',bin_width)
 
 stfig('new way of making a histogram')
 plot( output.bin.centers,output.count_rate.smooth)
+
+%% handle single input
+smooth_hist(xdata,'sigma',bin_width)
+stfig('new way of making a histogram')
+plot( output.bin.centers,output.count_rate.smooth)
+
+%% handle no inputs
+smooth_hist(xdata)
+stfig('new way of making a histogram')
+plot( output.bin.centers,output.count_rate.smooth)
