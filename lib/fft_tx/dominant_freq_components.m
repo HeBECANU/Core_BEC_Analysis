@@ -5,6 +5,7 @@ function [components,details]=dominant_freq_components(tdat,xdat,options)
 
 % TODO
 % detrend x data 
+% standard function format
 
 tdat=tdat(:);
 xdat=xdat(:);
@@ -39,7 +40,7 @@ fft_dat=fft_dat(:,fft_idx_lims(1):fft_idx_lims(2));
 
 
 % find peaks that are min_peak_factor*xstd and seperated by at least a few times the time resolution
-min_pk_sep=options.components_diff_freq/diff(tdat([1,end])); %peak sep in hz
+min_pk_sep=options.components_diff_freq; %peak sep in hz
 min_pk_sep_idx=round(min_pk_sep/diff(fft_dat(1,1:2))); %peak sep in fft bins
 [pks_unsorted,pks_idx] = findpeaks(abs(fft_dat(2,:)),...
     'MinPeakHeight',std_xdat*options.components_min_amp,...
