@@ -14,13 +14,13 @@ function[out]=fft_tx(t,x,varargin)
 %   t          - vector, sample times (will deal with unmatched vector dimension)
 %   x          - vector, the signal   (will deal with unmatched vector dimension)
 %   Optional Name Value Pairs:
-%       'padding'        - float, value>=1, factor to padd the data by to increase the frequeny sampling (but not resolvability)
-%       'window'         - string, windowing function to apply to the data before processing.
-%                       ['none','hamming','gauss','blackman','hanning']
+%       'padding'       - float, value>=1, factor to padd the data by to increase the frequeny sampling (but not resolvability)
+%       'window'        - string, windowing function to apply to the data before processing.
+%                         ['none','hamming','gauss','blackman','hanning']
 %       win_param       - cell array, extra inputs after the length argument to the windowing function
 %                           - gauss ,win_param={3}, reciprocal of the standard deviation
 %                           - all others (besides none) 'symmetric'(recomended) or 'periodic'
-%       f_lim            - [1x2] frequency limits of the output
+%       f_lim           - [1x2] frequency limits of the output
 % Outputs:
 %    freq_amp - 2*L matrix
 %               - freq_amp(1,:) are the frequency bins

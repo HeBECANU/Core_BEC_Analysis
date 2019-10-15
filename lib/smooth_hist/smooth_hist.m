@@ -24,7 +24,7 @@ function out_struct=smooth_hist(xdata,varargin)
 % MAT-files required: none
 %
 % Known BUGS/ Possible Improvements
-%  - use matlabs optional arguments
+%  - handle no input case
 % 
 %
 % Author: Bryce Henson
@@ -62,18 +62,11 @@ if (isnan(parsed_input.sigma) || parsed_input.sigma==0) && ~isnan(parsed_input.b
     error('cant specify bin width using bin_factor when sigma is zero')
 end
 
-
-
-
-if isnan(parsed_input.lims)
+if  isempty(parsed_input.lims) || sum(isnan(parsed_input.lims)) == 0
     bin_limits=[nanmin(xdata),nanmax(xdata)];
 else
     bin_limits=parsed_input.lims;
 end
-
-
-
-
 
 if ~isnan(parsed_input.bin_factor)
     bin_width=parsed_input.sigma/parsed_input.bin_factor;

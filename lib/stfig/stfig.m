@@ -56,6 +56,9 @@ sep_str=': ';
 %------------- END USER VAR --------------
 %------------- BEGIN CODE ----------------
 
+set(groot,'defaulttextinterpreter','latex');  
+set(groot, 'defaultAxesTickLabelInterpreter','latex');  
+set(groot, 'defaultLegendInterpreter','latex');
 %parse user inputs
 p = inputParser;
 is_c_logical=@(in) isequal(in,true) || isequal(in,false); %can x be cast as a logical
