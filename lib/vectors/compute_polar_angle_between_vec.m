@@ -22,6 +22,12 @@ function angle_out=compute_polar_angle_between_vec(in_vec,point_ref_vec,angle_re
 % transformation=vecnorm([w_perp(u);u×w_perp(u);u])
 % then this transformation is applied to the input 
 % the resulting vectors are then converted to spherical cordinates
+% this approach seems easier to get wrong so we take the geometric approach
+
+% TODO
+% - try normalizing input vector length for better numerical performance
+
+
 
 %handle matching input sizes
 if size(point_ref_vec)~=size(angle_ref_vec)
@@ -47,13 +53,36 @@ if ~isequal(size(point_ref_vec),size(angle_ref_vec),size(in_vec))
     error('inputs not matched after code should have matched them')
 end
 
-comp_angle_ref_perp_point_ref=angle_ref_vec-dot(angle_ref_vec,point_ref_vec,2).*point_ref_vec;
-comp_in_vec_perp_point_ref=in_vec-dot(in_vec,point_ref_vec,2).*point_ref_vec;
+% precomputation normalizing (not strictly needed)
+in_vec=in_vec./repmat(vecnorm(in_vec,2,2),[1,3]);
+angle_ref_vec=angle_ref_vec./repmat(vecnorm(angle_ref_vec,2,2),[1,3]);
+point_ref_vec=point_ref_vec./repmat(vecnorm(point_ref_vec,2,2),[1,3]);
+
+
+% find the component of the angle reference vector that is perp. to the pointing reference vector (jector rejection)
+% this is through http://math.oregonstate.edu/home/programs/undergrad/CalculusQuestStudyGuides/vcalc/dotprod/dotprod.html
+comp_angle_ref_perp_point_ref=angle_ref_vec-vector_projection(angle_ref_vec,point_ref_vec);
+
+%find the component of the input vector that is perp. to the pointing reference vector
+comp_in_vec_perp_point_ref=in_vec-vector_projection(in_vec,point_ref_vec);
+
+
+% now compute the angle between these
 angle_mag=angle_between_vec(comp_angle_ref_perp_point_ref,comp_in_vec_perp_point_ref);
 angle_sign=sign(dot(point_ref_vec,cross(comp_in_vec_perp_point_ref,comp_angle_ref_perp_point_ref),2));
 angle_sign(angle_sign==0)=1;
 angle_out=angle_mag.*angle_sign;
 angle_out=wrapTo2Pi(angle_out);
+
+%check that the point_ref_vec is not aligned with angle_ref_vec
+ref_vec_angles=angle_between_vec(angle_ref_vec,point_ref_vec);
+angle_out(abs(ref_vec_angles)< 5*eps(2*pi))=nan;
+
+% check that the input vector has a length
+in_len=vecnorm(in_vec,2,2);
+angle_out(in_len==0)=nan;
+
+
 
 end
 
