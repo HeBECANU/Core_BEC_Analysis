@@ -30,33 +30,24 @@ function cli_header(varargin)
     msg_level = 0;%If no header level is passed, assumed to be top-level
     if iscell(varargin{1})
         fprintf("cli_header accepts varargin, cell args will be removed next version.\n")
-        args = varargin{1};
     end
-    v=1;
-    if numel(args) == 1 %text only
-        msg = args{1};
-
+    if nargin == 1 %text only
+        msg = varargin{1};
         msg_level = 0;%If no header level is passed, assumed to be top-level
         argument_index=2;
-
-    else
-        if isfloat(varargin{1}) %Passing header level
+    else %passed level, or args, or both
+        if isnumeric(varargin{1}) % Header level passed as argument
             msg_level = varargin{1};
             msg = varargin{2};
-            if nargin>2
-                vals = varargin{3:end};
-            end
-
-            argument_index = 1;
-
+            argument_index = 3;
         else % No header level passed, but other values present
             msg_level = 0;
-            msg = args{1};
+            msg = varargin{1};
             argument_index = 2;
         end
     end
     
-    msg_out = sprintf(msg,args{argument_index:end});
+    msg_out = sprintf(msg,varargin{argument_index:end});
 %     blank = '------------------------------------------------------------';
     blank = '                                                            ';
     marker = blank(1:2*msg_level+1);
