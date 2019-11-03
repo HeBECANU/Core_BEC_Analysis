@@ -42,7 +42,7 @@ function out_string=string_value_with_unc(value,unc,varargin)
 
 is_c_logical=@(in) isequal(in,true) || isequal(in,false); %can x be cast as a logical
 validtypes={'s','standard','pm','b','brackets'};
-type_ok_fun=@(x) sum(contains(validtypes,x))==1;
+type_ok_fun=@(x) sum(strcmp(validtypes,x))==1;
 p = inputParser;
 addParameter(p,'type','standard',type_ok_fun);
 addParameter(p,'separator',true,@(x) is_c_logical(x) || (ischar(x) && numel(x)==1) );
@@ -65,6 +65,7 @@ else
         end
     else
         sep_char=' '; %default sep char
+    end
 end
 
 
