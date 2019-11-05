@@ -1,4 +1,4 @@
-function [bec_centres,bec_widths,bec_counts,centre_OK] = find_dist_cen(data, opts_cent)
+function [bec_centres,bec_widths,bec_counts,centre_OK] = find_dist_cen(data, opts)
 % Mandatory data inputs:
 %     data.counts_txy
 %     data.shot_num
@@ -25,9 +25,9 @@ centre_OK = zeros(num_shots, 1);
 % [~, ploc] = max(temp_profile);
 % t_peak = t_cents(ploc);
 
-lims = opts_cent.crop;
-if length(opts_cent.threshold) < 3
-   opts_cent.threshold = opts_cent.threshold(1)*[1,1,1]; 
+lims = opts.cent.crop;
+if length(opts.cent.threshold) < 3
+   opts.cent.threshold = opts.cent.threshold(1)*[1,1,1]; 
 end
 % Set the t limits by conversion to k
 % lims(1, :) = t_peak + [-1, 1] * (opts.c.hbar * opts.spherify.k_max / opts.c.m_He) / (0.5 * opts.c.g0 * 0.4187);
@@ -38,7 +38,7 @@ for this_idx = 1:num_shots % Loop over all QD shots
     trim_txy = masktxy_square(this_txy, lims);
     bec_counts(this_idx) = size(trim_txy,1);
     % find centres with the hist threshold method
-    if opts_cent.visual && this_idx == 1
+    if opts.cent.visual && this_idx == 1
         clf;
     end
     % fancy centering
@@ -67,14 +67,14 @@ for this_idx = 1:num_shots % Loop over all QD shots
         end
     end
 end
-if opts_cent.visual
+if opts.cent.visual
    for splt = 1:3
       subplot(3,1,splt)
       ylabel('Counts')
    end
 end
 
-if opts_cent.visual
+if opts.cent.visual
    f=stfig('BEC centering');
 %     f=sfigure(2);
 %    clf
@@ -90,8 +90,8 @@ if opts_cent.visual
    ylabel('widths')
    if opts.savefigs
     cli_header(1,'Saving images...');
-    saveas(f,fullfile(opts_cent.data_out,'centering.fig'));
-    saveas(f,fullfile(opts_cent.data_out,'centering.svg'));
+    saveas(f,fullfile(opts.cent.data_out,'centering.fig'));
+    saveas(f,fullfile(opts.cent.data_out,'centering.svg'));
     cli_header(2,'Done.');
    end
 end
