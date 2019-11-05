@@ -9,6 +9,7 @@ function out = struct_mask(s,m)
 fieldnames = fields(s);
 nfields = numel(fieldnames);
 out = [];
+num_entries = length(m);
 for ii=1:nfields
    this_field = fieldnames{ii};
    this_data = s.(this_field);
@@ -19,6 +20,7 @@ for ii=1:nfields
        out.(this_field) =this_data(m,:);
    else
        out.(this_field) =this_data(m);
+
    end
 end
 

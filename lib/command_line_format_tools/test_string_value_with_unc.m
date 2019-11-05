@@ -1,6 +1,8 @@
 
 
 
+string_value_with_unc(50,1)
+
 out_string=string_value_with_unc(50,1,'s');
 if ~strcmp(out_string,'50.0±1.0')
     error('test failed')
