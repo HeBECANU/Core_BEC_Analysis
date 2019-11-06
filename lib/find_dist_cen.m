@@ -44,11 +44,11 @@ for this_idx = 1:num_shots % Loop over all QD shots
     % fancy centering
     for axis = 1:3
         this_axis = trim_txy(:, axis);
-        bin_edges = lims(axis, 1):opts.cent.bin_size(axis):lims(axis, 2);
+        bin_edges = lims(axis, 1):opts_cent.bin_size(axis):lims(axis, 2);
         flux = hist_adaptive_method(this_axis, bin_edges', 0);
         bin_centres = 0.5 * (bin_edges(2:end) + bin_edges(1:end-1));
         flux = flux(2:end-1);
-        mask = flux > opts.cent.threshold(axis);
+        mask = flux > opts_cent.threshold(axis);
         locs = find(mask);
         margins = [min(locs(2:end-1)), max(locs(2:end-1))];
         if isempty(margins)
@@ -59,7 +59,7 @@ for this_idx = 1:num_shots % Loop over all QD shots
             bec_widths(this_idx, axis) = diff(t_margins);
             centre_OK(this_idx) = 1;
         end
-        if opts.visual > 1
+        if opts_cent.visual > 1
             subplot(3, 1, axis);
             plot(bin_centres, flux, 'k')
             hold on
