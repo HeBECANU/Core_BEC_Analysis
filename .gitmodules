@@ -22,3 +22,6 @@
 [submodule "bin/ciecam02"]
 	path = bin/ciecam02
 	url = https://github.com/brycehenson/CIECAM02.git
+[submodule "bin/MBeautifier"]
+	path = bin/MBeautifier
+	url = https://github.com/davidvarga/MBeautifier.git
