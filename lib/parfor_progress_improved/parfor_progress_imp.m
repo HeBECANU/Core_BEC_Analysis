@@ -33,6 +33,19 @@ function percent = parfor_progress_imp(N)
 
 % By Jeremy Scheff - jdscheff@gmail.com - http://www.jeremyscheff.com/
 
+% modified to use a binary file using the comment by philip
+% https://au.mathworks.com/matlabcentral/fileexchange/32101-progress-monitor-progress-bar-that-works-with-parfor
+%"Nice contribution. However, as Timo already found out, while fitting a huge amount of data 
+%I noticed that the progress monitor gets extremely slow for very long loops. In the beginning
+%it is not so bad but with every loop iteration the call to 'fscanf' gets slower and slower.
+%I fixed this by reading & writing to a simple binary file (i am writing the expected loop length 
+%to the first 4 bytes and the current progress to the next 4 bytes - if you think that uint32 is 
+%not enough, feel free to use uint64). In addition, the filename is now stored in the folder 
+%determined by matlab's 'tempname'-function (less filesystem clutter if the delete fails & e.g. tempdir 
+%on an ssd is much faster than working dir somewhere on the network)."
+
+% this makes this improved version about 30 times faster than stock
+
 narginchk(0,1)
 
 if nargin < 1
@@ -43,41 +56,46 @@ percent = 0;
 w = 50; % Width of progress bar
 
 if N > 0
-    f = fopen('parfor_progress.txt', 'w');
+    f = fopen(fullfile(tempdir,'parfor_progress.bin'), 'w');
     if f<0
         error('Do you have write permissions for %s?', pwd);
     end
-    fprintf(f, '%d\n', N); % Save N at the top of progress.txt
+    fwrite(f,N,'uint32');
+    fwrite(f,0,'uint32');
     fclose(f);
-    
+
     if nargout == 0
-        disp(['  0%[>', repmat(' ', 1, w), ']']);
+        disp([' 0%[>', repmat(' ', 1, w), ']']);
     end
 elseif N == 0
-    delete('parfor_progress.txt');
+    delete(fullfile(tempdir,'parfor_progress.bin'));
     percent = 100;
-    
+
     if nargout == 0
         disp([repmat(char(8), 1, (w+9)), char(10), '100%[', repmat('=', 1, w+1), ']']);
     end
 else
-    if ~exist('parfor_progress.txt', 'file')
-        error('parfor_progress.txt not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.txt.');
+    fname = fullfile(tempdir,'parfor_progress.bin');
+    if ~exist(fname, 'file')
+        error('parfor_progress.bin not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.bin.');
     end
-    
-    f = fopen('parfor_progress.txt', 'a');
-    fprintf(f, '1\n');
+
+    f = fopen(fname, 'r+');
+    A = fread(f,2,'uint32');
+    todo = A(1);
+    progress = A(2) + 1;
+    fseek(f, 4, 'bof');
+    fwrite(f,progress,'uint32');
     fclose(f);
-    
-    f = fopen('parfor_progress.txt', 'r');
-    progress = fscanf(f, '%d');
-    fclose(f);
-    percent = (length(progress)-1)/progress(1)*100;
-    
+
+    percent = progress/todo * 100;
+
     if nargout == 0
         perc = sprintf('%3.0f%%', percent); % 4 characters wide, percentage
         disp([repmat(char(8), 1, (w+9)), char(10), perc, '[', repmat('=', 1, round(percent*w/100)), '>', repmat(' ', 1, w - round(percent*w/100)), ']']);
     end
+end
+
 end
 
 
