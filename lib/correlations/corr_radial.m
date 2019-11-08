@@ -17,9 +17,9 @@ function out=corr_radial(corr_opts,counts)
 %than a threshold
 
 %improvements
-% implement pre delta windowing for time sorted data using binary search
+% [x] implement pre delta windowing for time sorted data using binary search
 % input checking
-% kill counts, to speed things up when there is a lot of data remove some fraction
+% [x] kill counts, to speed things up when there is a lot of data remove some fraction
 
 if ~isfield(corr_opts,'attenuate_counts')
     corr_opts.attenuate_counts=1;
@@ -70,6 +70,9 @@ if ~isfield(corr_opts,'low_mem') || isnan(corr_opts.low_mem)
     if ~corr_opts.low_mem,fprintf('auto detection:using the high memory option\n'), end
 end
 
+% convert edges to col vec
+corr_opts.redges=col_vec(corr_opts.redges);
+
 %set the prewindow to be the max radial edge
 prewindow=[-1,1]*max(corr_opts.redges);
 
@@ -83,10 +86,10 @@ delta_multiplier=[1,-1];
 delta_multiplier=delta_multiplier(1+corr_opts.cl_or_bb); %gives 1 when cl and -1 when bb
        
 [rad_bins,corr_opts.redges]=histcounts([],corr_opts.redges);
-out.rad_centers=(corr_opts.redges(2:end)+corr_opts.redges(1:end-1))/2;
-rad_bins=zeros(shots,size(rad_bins,2));
+out.rad_centers=(corr_opts.redges(2:end)+corr_opts.redges(1:end-1))/2; %this is slightly wrong it should be r^3 weighted
 
 if corr_opts.low_mem %calculate with the low memory mode
+    rad_bins=col_vec(rad_bins);
     for shotnum=1:shots
         shot_txy=counts{shotnum};
         num_counts_shot=num_counts(shotnum);
@@ -102,7 +105,7 @@ if corr_opts.low_mem %calculate with the low memory mode
         pairs_count(shotnum)=num_counts_shot^2 -num_counts_shot;
         for ii=1:num_counts_shot-1
             %if each shot is sorted in time then this will only produce counts that are one direction in time
-            if corr_opts.do_pre_mask  %pre mask optimzation using sortd masking
+            if corr_opts.do_pre_mask  %pre mask optimzation using sortd mado_pre_masksking
                 temp_1d_diff=shot_txy(ii+1:num_counts_shot,corr_opts.sorted_dir)...
                     -delta_multiplier*shot_txy(ii,corr_opts.sorted_dir);
                 mask_idx=fast_sorted_mask(...
@@ -115,8 +118,11 @@ if corr_opts.low_mem %calculate with the low memory mode
             end
 
             %Radial correlations
-            rad_increment=histcounts(sqrt(sum(delta.^2,2)),corr_opts.redges);
-            rad_bins(shotnum,:)=rad_bins(shotnum,:)+rad_increment*2; 
+            rad_delta=sqrt(sum(delta.^2,2));
+            % using fast histogram gives speedup of 
+            rad_increment=hist_adaptive_method(rad_delta,corr_opts.redges);
+            %rad_increment=histcounts(rad_delta,corr_opts.redges)';
+            rad_bins=rad_bins+rad_increment*2; 
         end
         if mod(shotnum,update_interval)==0
             parfor_progress_imp;
@@ -124,6 +130,7 @@ if corr_opts.low_mem %calculate with the low memory mode
     end%loop over shots
     
 else%calculate with the high memory mode
+    rad_bins=zeros(shots,size(rad_bins,2));
     parfor shotnum=1:shots
         shot_txy=counts{shotnum};
         num_counts_shot=num_counts(shotnum);
@@ -160,7 +167,8 @@ else%calculate with the high memory mode
         end   
         %Radial correlations
         rad_delta=sqrt(sum(delta.^2,2));
-        rad_increment=histcounts(rad_delta,corr_opts.redges);
+        rad_increment=hist_adaptive_method(rad_delta,corr_opts.redges);
+        %rad_increment=histcounts(rad_delta,corr_opts.redges);
         rad_bins(shotnum,:)=rad_increment*2 ;
         %debug
 %         sfigure(2)
@@ -174,6 +182,9 @@ else%calculate with the high memory mode
             parfor_progress_imp;
         end
     end%loop over shots
+    
+    % sum up the output of parfor
+    rad_bins=col_vec(sum(rad_bins,1));
 end %done calculating with either high or low mem
     
 parfor_progress_imp(0);
@@ -182,7 +193,7 @@ parfor_progress_imp(0);
 out.pairs=sum(pairs_count);
 
 rad_volume=(4/3)*pi*(corr_opts.redges(2:end).^3-corr_opts.redges(1:end-1).^3);
-out.rad_corr_density=sum(rad_bins,1)./(rad_volume.*out.pairs);
+out.rad_corr_density=rad_bins./(rad_volume.*out.pairs);
 if ~(isnan(corr_opts.rad_smoothing) || corr_opts.rad_smoothing==0)
     out.rad_corr_density=gaussfilt(out.rad_centers,out.rad_corr_density,corr_opts.rad_smoothing);
 end
