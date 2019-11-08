@@ -56,6 +56,9 @@ end
 
 if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb') 
     
+    direction_label={'x','y','z'};
+    direction_label=direction_label{corr_opts.one_d_dimension};
+    
     if isequal(corr_opts.type,'1d_cart_cl') 
         corr_opts.cl_or_bb=false;
     elseif isequal(corr_opts.type,'1d_cart_bb') 
@@ -64,14 +67,14 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
     shotscorr=corr_1d_cart(corr_opts,counts);
     %shotscorr_high=corr_1d_cart_high_mem(corr_opts,counts); 
     if corr_opts.plots
-        sfigure(1);
+        stfig('corr. output','add_stack',1);
         clf
         set(gcf,'color','w');
         subplot(1,3,1)
         plot(shotscorr.x_centers,shotscorr.one_d_corr_density,'.k-','MarkerSize',10)
         title('In Shot X Dist (windowed)')
-        ylabel('G^2 coincedence density')
-        xlabel('X Seperation')
+        ylabel(sprintf('$G^{(2)}(\\Delta %s)$ coincedence density',direction_label))
+        xlabel(sprintf('$\\Delta %s$ Seperation',direction_label))
         pause(1e-6);
     end
     norm_sort_dir=corr_opts.sorted_dir;
@@ -84,14 +87,15 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
         subplot(1,3,2)
         plot(normcorr.x_centers,normcorr.one_d_corr_density,'.k-','MarkerSize',10)
         title('Between Shot X Dist (windowed)')
-        ylabel('G^2 coincedence density')
-        xlabel('X Seperation')
+        ylabel(sprintf('$G^{(2)}(\\Delta %s)$ coincedence density',direction_label))
+        xlabel(sprintf('$\\Delta %s$ Seperation',direction_label))
         subplot(1,3,3)
         xg2=shotscorr.one_d_corr_density./normcorr.one_d_corr_density;
         plot(shotscorr.x_centers,xg2,'.k-','MarkerSize',10)
         title('Norm. Corr.')
-        ylabel('g^{(2)} (X)')
-        xlabel('X Seperation')
+        ylabel(sprintf('$G^{(2)}(\\Delta %s)$ coincedence density',direction_label))
+        ylabel(sprintf('$g^{(2)}(\\Delta %s)$',direction_label))
+        xlabel(sprintf('$\\Delta %s$ Seperation',direction_label))
         pause(1e-6);
     end
     fprintf('g2 peak amplitude         %4.2f \n',max(xg2))
@@ -112,14 +116,14 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
     shotscorr=corr_radial(corr_opts,counts);
 
     if corr_opts.plots
-        sfigure(1);
+        stfig('corr. output','add_stack',1);
         clf
         set(gcf,'color','w');
         subplot(1,3,1)
         plot(shotscorr.rad_centers,shotscorr.rad_corr_density,'.k-','MarkerSize',10)
         title('In Shot X Dist (windowed)')
-        ylabel('G^2 coincedence density')
-        xlabel('X Seperation')
+        ylabel('$G^{(2)}(\Delta r)$ coincedence density')
+        xlabel('$\delta r$ Seperation')
         pause(1e-6);
     end
     norm_sort_dir=corr_opts.sorted_dir;
@@ -134,14 +138,14 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
         subplot(1,3,2)
         plot(normcorr.rad_centers,normcorr.rad_corr_density,'.k-','MarkerSize',10)
         title('Between Shot X Dist (windowed)')
-        ylabel('G^2 coincedence density')
-        xlabel('X Seperation')
+        ylabel('$G^{(2)}(\Delta r)$ coincedence density')
+        xlabel('$\delta r$ Seperation')
         subplot(1,3,3)
         xg2=shotscorr.rad_corr_density./normcorr.rad_corr_density;
         plot(shotscorr.rad_centers,xg2,'.k-','MarkerSize',10)
         title('Norm. Corr.')
-        ylabel('g^{(2)} (X)')
-        xlabel('X Seperation')
+        ylabel('$g^{(2)} (\Delta r)$')
+        xlabel('$\delta r$ Seperation')
         pause(1e-6);
     end
     fprintf('g2 peak amplitude         %4.2f \n',max(xg2))
