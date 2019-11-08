@@ -1,4 +1,4 @@
-function counts_chunked=chunk_data(data,norm_samp_factor,sort_dir)
+function counts_chunked=chunk_data(counts,norm_samp_factor,sort_dir)
     %data chunking function for normalization
     %see calc_any_g2_type for usage
     
@@ -9,9 +9,11 @@ function counts_chunked=chunk_data(data,norm_samp_factor,sort_dir)
     %to do
     %   -documentation
     
-    total_counts=sum(data.num_counts);
-    norm_chunk_size=round(mean(data.num_counts)*sqrt(norm_samp_factor));
-    all_counts=vertcat(data.counts_txy{:});
+    num_counts=cellfun(@(x)size(x,1),counts);
+    
+    total_counts=sum(num_counts);
+    norm_chunk_size=round(mean(num_counts)*sqrt(norm_samp_factor));
+    all_counts=vertcat(counts{:});
     all_counts=all_counts(randperm(total_counts),:);
     iimax=ceil(total_counts/norm_chunk_size);
     counts_chunked=cell(1,iimax);

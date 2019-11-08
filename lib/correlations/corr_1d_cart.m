@@ -1,4 +1,4 @@
-function out=corr_1d_cart(corr_opts,counts_txy)
+function out=corr_1d_cart(corr_opts,counts)
 % corr_1d_cart - %a low/high memory implementation of the one D correlation
 % Notes:
 % This g2 correlator is very fast and can be thought as taking a tube along the full 3d cartesian g2 but without having
@@ -86,7 +86,7 @@ if ~isfield(corr_opts,'progress_updates')
     corr_opts.progress_updates=50;
 end
 
-num_counts=cellfun(@(x)size(x,1),counts_txy);
+num_counts=cellfun(@(x)size(x,1),counts);
 if ~isfield(corr_opts,'low_mem') || isnan(corr_opts.low_mem)
     mem_temp=memory;
     max_arr_size=floor(mem_temp.MaxPossibleArrayBytes/(8*2)); %divide by 8 for double array size and 2 as a saftey factor
@@ -112,7 +112,7 @@ corr_opts.one_d_window(corr_opts.one_d_dimension,:)=[min(corr_opts.one_d_edges),
 updates=corr_opts.progress_updates; %number of updates in the progress bar to give the user, can slow thigs down if too high
 
 
-shots =size(counts_txy,2);
+shots =size(counts,2);
 update_interval=ceil(shots/updates);
 parfor_progress_imp(ceil(shots/update_interval));
 
@@ -135,7 +135,7 @@ if corr_opts.low_mem %calculate with the low memory mode
     % the low memory mode is serial and is a bit easier on mem requirements
     one_d_bins=col_vec(one_d_bins);
     for shotnum=1:shots
-        shot_txy=counts_txy{shotnum};
+        shot_txy=counts{shotnum};
         num_counts_shot=num_counts(shotnum);
         if corr_opts.attenuate_counts~=1 %randomly keep corr_opts.attenuate_counts fraction of the data
             mask=rand(num_counts_shot,1)<corr_opts.attenuate_counts;
@@ -176,8 +176,8 @@ if corr_opts.low_mem %calculate with the low memory mode
             %to be strictly accurate we must calaulate things symetricaly
             % using fast histograming (gives speedup for sparse histogram)
             % gives >4x speedup on corr unit testing
-            one_d_bins=one_d_bins+hist_adaptive_method(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges);
-            one_d_bins=one_d_bins+hist_adaptive_method(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges);
+            one_d_bins=one_d_bins+hist_adaptive_method(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges,1);
+            one_d_bins=one_d_bins+hist_adaptive_method(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges,1);
             % old brute histogram approach
             %one_d_bins=one_d_bins+histcounts(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
             %one_d_bins=one_d_bins+histcounts(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
@@ -191,7 +191,7 @@ if corr_opts.low_mem %calculate with the low memory mode
 else%calculate with the high memory mode
     one_d_bins=zeros(shots,size(one_d_bins,2));
     parfor shotnum=1:shots
-        shot_txy=counts_txy{shotnum};
+        shot_txy=counts{shotnum};
         num_counts_shot=num_counts(shotnum);
         if corr_opts.attenuate_counts~=1 %randomly keep corr_opts.attenuate_counts fraction of the data
             mask=rand(num_counts_shot,1)<corr_opts.attenuate_counts;
@@ -236,8 +236,8 @@ else%calculate with the high memory mode
                 & -delta(:,mask_dim)<corr_opts.one_d_window(mask_dim,2);
         end
         %to be strictly accurate we must calaulate things symetricaly
-        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
-        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
+        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges,1)';
+        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges,1)';
         if mod(shotnum,update_interval)==0
             parfor_progress_imp;
         end

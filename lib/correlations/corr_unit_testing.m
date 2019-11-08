@@ -49,7 +49,7 @@ corr_opts.low_mem=nan;
 corr_opts.plots=true;
 corr_opts.norm_samp_factor=2;
 corr_opts.attenuate_counts=1;
-corr_opts.do_pre_mask=true;
+corr_opts.do_pre_mask=false;
 corr_opts.sorted_dir=1;
 corr_opts.sort_norm=true;
 corr_opts.low_mem=true
@@ -64,7 +64,7 @@ corr_opts.one_d_smoothing=0.001;
 
 % old code 27.137 s
 tic
-out=calc_any_g2_type(corr_opts,fake_data);
+out=calc_any_g2_type(corr_opts,fake_data.counts_txy);
 toc
 
 
@@ -88,7 +88,7 @@ corr_opts.one_d_smoothing=nan;
 
 % old code 27.137 s
 tic
-out=calc_any_g2_type(corr_opts,fake_data);
+out=calc_any_g2_type(corr_opts,fake_data.counts_txy);
 toc
 
 

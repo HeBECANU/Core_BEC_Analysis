@@ -1,4 +1,4 @@
-function out=calc_any_g2_type(corr_opts,data)
+function out=calc_any_g2_type(corr_opts,counts)
 %caucluates normalized g2 functions for a lot of different cases
 %uses a lot of correlators from https://github.com/spicydonkey/correlation-funs (with some modifications)
 %input
@@ -29,20 +29,21 @@ function out=calc_any_g2_type(corr_opts,data)
 %   - most usefull at the shot level (more practical to implement & more informative)
 % - different smoothing for G2(in-shot) G2(between-shot)
 
-
+%find the num of counts in each shot
+num_counts=cellfun(@(x)size(x,1),counts);
 
 % set the number of updates in a smart way
 % should input check everything used here
 if ~isfield(corr_opts,'progress_updates') || isnan(corr_opts.progress_updates)
     update_time=2;
     pairs_per_sec=5e7*(1+corr_opts.do_pre_mask*10);
-    dyn_updates=round(update_time*size(data.counts_txy,2)*...
-                               mean((corr_opts.attenuate_counts*data.num_counts).^2)/(pairs_per_sec));
+    dyn_updates=round(update_time*size(counts,2)*...
+                               mean((corr_opts.attenuate_counts*num_counts).^2)/(pairs_per_sec));
     corr_opts.progress_updates=min(100,max(5,dyn_updates));
 end
 
 if isfield(corr_opts,'norm_samp_factor')
-    if corr_opts.norm_samp_factor<0.01 || corr_opts.norm_samp_factor>200
+    if corr_opts.norm_samp_factor<0.01 || corr_opts.norm_samp_factor>2000
         error('corr_opts.norm_samp_factor exceeds limits');
     end
 else
@@ -60,8 +61,8 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
     elseif isequal(corr_opts.type,'1d_cart_bb') 
           corr_opts.cl_or_bb=true;
     end
-    shotscorr=corr_1d_cart(corr_opts,data.counts_txy);
-    %shotscorr_high=corr_1d_cart_high_mem(corr_opts,data.counts_txy); 
+    shotscorr=corr_1d_cart(corr_opts,counts);
+    %shotscorr_high=corr_1d_cart_high_mem(corr_opts,counts); 
     if corr_opts.plots
         sfigure(1);
         clf
@@ -75,7 +76,7 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
     end
     norm_sort_dir=corr_opts.sorted_dir;
     if ~corr_opts.sort_norm,norm_sort_dir=nan; end
-    counts_chunked=chunk_data(data,corr_opts.norm_samp_factor,norm_sort_dir);
+    counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
     corr_opts.do_pre_mask=corr_opts.sort_norm; %can only do premask if data is sorted
     fprintf('calculating inter-shot correlations \n')
     normcorr=corr_1d_cart(corr_opts,counts_chunked);
@@ -108,7 +109,7 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
     elseif isequal(corr_opts.type,'radial_bb') 
           corr_opts.cl_or_bb=true;
     end
-    shotscorr=corr_radial(corr_opts,data.counts_txy);
+    shotscorr=corr_radial(corr_opts,counts);
 
     if corr_opts.plots
         sfigure(1);
@@ -124,7 +125,7 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
     norm_sort_dir=corr_opts.sorted_dir;
     if ~corr_opts.sort_norm,norm_sort_dir=nan; end
     
-    counts_chunked=chunk_data(data,corr_opts.norm_samp_factor,norm_sort_dir);
+    counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
     corr_opts.do_pre_mask=corr_opts.sort_norm; %can only do premask if data is sorted
     
     fprintf('calculating inter-shot correlations \n')
