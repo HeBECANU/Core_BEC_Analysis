@@ -56,8 +56,8 @@ fprintf('estimated mode occupancy      %2.3e  \n',mode_occ)
 fprintf('estimated corr amp            %.3f  \n',1+1/mode_occ)
 fprintf('total counts over all shots   %2.3e \n',total_counts)
 fprintf('mean per shot                 %2.3e \n',total_counts/number_shots)
-fprintf('rough pairs per shot          %2.3e \n',CountUpperTriangle(total_counts/number_shots))
-fprintf('rough total pairs             %2.3e \n',CountUpperTriangle(total_counts/number_shots)*number_shots)
+fprintf('rough pairs per shot          %2.3e \n',count_upper_triangle(total_counts/number_shots))
+fprintf('rough total pairs             %2.3e \n',count_upper_triangle(total_counts/number_shots)*number_shots)
 
 fake_data.counts_txy=counts_txy;
 fake_data.num_counts=num_counts;

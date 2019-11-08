@@ -3,10 +3,10 @@
 % should the in shot pairs be counted in the number of possible normalization pairs
 
 %% Setting Up The Enviorment
-%add all subfolders to the path
-this_folder = fileparts(which(mfilename));
-% Add that folder plus all subfolders to the path.
-addpath(genpath(this_folder));
+
+addpath('../.') %add the path to set_up_project_path, this will change if Core_BEC_Analysis is included as a submodule
+                  % in this case it should be './lib/Core_BEC_Analysis/lib/'
+set_up_project_path('../../')
 
 
 %% fake dataset
@@ -36,14 +36,14 @@ plot(rad_centers,rad_bins./rad_volume)
 
 %% Test the new any_g2_type function
 %fake_data=fake_cl_corr(100,1);
-fake_data=fake_cl_corr_medium_hot(100,0.1)
+fake_data=fake_cl_corr_medium_hot(100,0.2)
 %%
 corr_opts=[];
 corr_opts.type='1d_cart_cl';
 corr_opts.one_d_dimension=1;
 corr_opts.one_d_window=[[-1,1];[-1,1];[-1,1]]*5e-2;
 one_d_range=0.05;
-corr_opts.one_d_edges=linspace(-one_d_range,one_d_range,300);
+corr_opts.one_d_edges=col_vec(linspace(-one_d_range,one_d_range,300));
 
 corr_opts.low_mem=nan;
 corr_opts.plots=true;
@@ -52,6 +52,7 @@ corr_opts.attenuate_counts=1;
 corr_opts.do_pre_mask=true;
 corr_opts.sorted_dir=1;
 corr_opts.sort_norm=true;
+corr_opts.low_mem=true
 
 
 corr_opts.one_d_smoothing=0.001;

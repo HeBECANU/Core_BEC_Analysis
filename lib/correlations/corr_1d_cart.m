@@ -49,6 +49,7 @@ function out=corr_1d_cart(corr_opts,counts_txy)
 % See also: corr_unit_testing, calc_any_g2_type, import_mcp_tdc_data
 %
 % Known BUGS/ Possible Improvements
+%   - lowmem option seems to be much faster at the moment (with less cpu usage)
 %   - see if better to prevent prevent diff vector initalization when using high meme with prewindowing to save memory
 %   - auto memory option does not work on linux, should defalult to low_mem
 %   - input checking
@@ -128,9 +129,11 @@ if corr_opts.do_pre_mask, mask_dimensions_logic(corr_opts.sorted_dir)=false; end
 mask_dimensions=mask_dimensions(mask_dimensions_logic);
 
 [one_d_bins,corr_opts.one_d_edges]=histcounts([],corr_opts.one_d_edges);
-one_d_bins=zeros(shots,size(one_d_bins,2));
+
     
 if corr_opts.low_mem %calculate with the low memory mode
+    % the low memory mode is serial and is a bit easier on mem requirements
+    one_d_bins=col_vec(one_d_bins);
     for shotnum=1:shots
         shot_txy=counts_txy{shotnum};
         num_counts_shot=num_counts(shotnum);
@@ -146,7 +149,10 @@ if corr_opts.low_mem %calculate with the low memory mode
         pairs_count(shotnum)=num_counts_shot^2 -num_counts_shot;
         for ii=1:num_counts_shot-1
             %if each shot is sorted in time then this will only produce counts that are one direction in time
+            % to deal with this we need to add both the delta and the -ve of the delta to the difference hist
             if corr_opts.do_pre_mask  %pre mask optimzation using sortd masking
+                % gives a small speedup ~%20 depending on the numbe of counts outsize the correlation range of interest
+                % it works by using a sorted dimension to pre-window using binary search
                 temp_1d_diff=shot_txy(ii+1:num_counts_shot,corr_opts.sorted_dir)...
                     -delta_multiplier*shot_txy(ii,corr_opts.sorted_dir);
                 mask_idx=fast_sorted_mask(...
@@ -168,8 +174,13 @@ if corr_opts.low_mem %calculate with the low memory mode
             end
 
             %to be strictly accurate we must calaulate things symetricaly
-            one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+histcounts(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges);
-            one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+histcounts(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges);
+            % using fast histograming (gives speedup for sparse histogram)
+            % gives >4x speedup on corr unit testing
+            one_d_bins=one_d_bins+hist_adaptive_method(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges);
+            one_d_bins=one_d_bins+hist_adaptive_method(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges);
+            % old brute histogram approach
+            %one_d_bins=one_d_bins+histcounts(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
+            %one_d_bins=one_d_bins+histcounts(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
         end
         if mod(shotnum,update_interval)==0
             parfor_progress_imp;
@@ -177,9 +188,9 @@ if corr_opts.low_mem %calculate with the low memory mode
     end%loop over shots
     
     
-    
 else%calculate with the high memory mode
-    for shotnum=1:shots
+    one_d_bins=zeros(shots,size(one_d_bins,2));
+    parfor shotnum=1:shots
         shot_txy=counts_txy{shotnum};
         num_counts_shot=num_counts(shotnum);
         if corr_opts.attenuate_counts~=1 %randomly keep corr_opts.attenuate_counts fraction of the data
@@ -225,26 +236,25 @@ else%calculate with the high memory mode
                 & -delta(:,mask_dim)<corr_opts.one_d_window(mask_dim,2);
         end
         %to be strictly accurate we must calaulate things symetricaly
-        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+histcounts(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges);
-        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+histcounts(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges);
+        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
+        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
         if mod(shotnum,update_interval)==0
             parfor_progress_imp;
         end
     end%loop over shots
+    
+    parfor_progress_imp(0);
+    % sum up the results from all the parfors
+    one_d_bins=col_vec(sum(one_d_bins,1));
 end %done calculating with either high or low mem
     
-    
-   
-parfor_progress_imp(0);
-
 out.x_centers=(corr_opts.one_d_edges(2:end)+corr_opts.one_d_edges(1:end-1))/2;
 out.pairs=sum(pairs_count);
-
 sub_index=[1,2,3];
 sub_index(corr_opts.one_d_dimension)=[];
 one_d_volume=corr_opts.one_d_window(sub_index,1)-corr_opts.one_d_window(sub_index,2);
 one_d_volume=prod(one_d_volume)*(corr_opts.one_d_edges(2:end)-corr_opts.one_d_edges(1:end-1));
-out.one_d_corr_density_raw=sum(one_d_bins,1)./(one_d_volume.*out.pairs);
+out.one_d_corr_density_raw=one_d_bins./(one_d_volume.*out.pairs);
 %smooth the correlation function for better normalization
 if ~(isnan(corr_opts.one_d_smoothing) || corr_opts.one_d_smoothing==0)
     out.one_d_corr_density=gaussfilt(out.x_centers,out.one_d_corr_density_raw,corr_opts.one_d_smoothing);
