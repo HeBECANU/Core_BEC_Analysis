@@ -77,7 +77,7 @@ rmin=1e-4;
 corr_opts.redges=sqrt(linspace(rmin^2,rmax^2,600));
 %corr_opts.redges=linspace(rmin,rmax,500);
 corr_opts.rad_smoothing=0;
-
+corr_opts.do_pre_mask=false;
 corr_opts.attenuate_counts=1;
 corr_opts.one_d_smoothing=nan;
 %improved code  
