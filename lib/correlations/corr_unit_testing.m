@@ -39,8 +39,8 @@ plot(rad_centers,rad_bins./rad_volume)
 fake_data=fake_cl_corr_medium_hot(100,0.1)
 %%
 corr_opts=[];
-corr_opts.type='1d_cart_cl';
-corr_opts.one_d_dimension=2;
+corr_opts.type='3d_cart_cl';
+corr_opts.one_d_dimension=3;
 corr_opts.one_d_window=[[-1,1];[-1,1];[-1,1]]*5e-2;
 one_d_range=0.3;
 corr_opts.one_d_edges=col_vec(linspace(-one_d_range,one_d_range,300));

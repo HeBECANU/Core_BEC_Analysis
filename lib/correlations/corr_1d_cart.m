@@ -114,7 +114,11 @@ updates=corr_opts.progress_updates; %number of updates in the progress bar to gi
 
 shots =size(counts,2);
 update_interval=ceil(shots/updates);
-parfor_progress_imp(ceil(shots/update_interval));
+N = ceil(shots/update_interval);
+% dvs = divisors(shots);
+% [~,idx]=min(abs(dvs-N));
+% N=dvs(idx);
+parfor_progress_imp(N);
 
 pairs_count=zeros(1,shots);
 delta_multiplier=[1,-1];
