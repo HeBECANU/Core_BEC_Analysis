@@ -36,23 +36,23 @@ plot(rad_centers,rad_bins./rad_volume)
 
 %% Test the new any_g2_type function
 %fake_data=fake_cl_corr(100,1);
-fake_data=fake_cl_corr_medium_hot(100,0.2)
+fake_data=fake_cl_corr_medium_hot(100,0.1)
 %%
 corr_opts=[];
-corr_opts.type='1d_cart_cl';
-corr_opts.one_d_dimension=1;
+corr_opts.type='3d_cart_cl';
+corr_opts.one_d_dimension=3;
 corr_opts.one_d_window=[[-1,1];[-1,1];[-1,1]]*5e-2;
-one_d_range=0.05;
+one_d_range=0.3;
 corr_opts.one_d_edges=col_vec(linspace(-one_d_range,one_d_range,300));
 
 corr_opts.low_mem=nan;
 corr_opts.plots=true;
 corr_opts.norm_samp_factor=2;
 corr_opts.attenuate_counts=1;
-corr_opts.do_pre_mask=true;
+corr_opts.do_pre_mask=false;
 corr_opts.sorted_dir=1;
 corr_opts.sort_norm=true;
-corr_opts.low_mem=true
+corr_opts.low_mem=true;
 
 
 corr_opts.one_d_smoothing=0.001;
@@ -64,7 +64,7 @@ corr_opts.one_d_smoothing=0.001;
 
 % old code 27.137 s
 tic
-out=calc_any_g2_type(corr_opts,fake_data);
+out=calc_any_g2_type(corr_opts,fake_data.counts_txy);
 toc
 
 
@@ -72,14 +72,18 @@ toc
 
 corr_opts.type='radial_cl';
 corr_opts.one_d_window=[[-1,1];[-1,1];[-1,1]]*5e-2; %only used for prewindow
-rmax=0.05;
-rmin=1e-4;
+rmax=0.3;
+rmin=1e-5;
 corr_opts.redges=sqrt(linspace(rmin^2,rmax^2,600));
 %corr_opts.redges=linspace(rmin,rmax,500);
 corr_opts.rad_smoothing=0;
-
+corr_opts.do_pre_mask=false;
 corr_opts.attenuate_counts=1;
 corr_opts.one_d_smoothing=nan;
+corr_opts.do_pre_mask=true;
+corr_opts.sorted_dir=1;
+corr_opts.sort_norm=true;
+corr_opts.low_mem=true;
 %improved code  
 %28.4 s with premask & sort chunks 
 %30.12  with premask & no sort chunks 
@@ -88,7 +92,7 @@ corr_opts.one_d_smoothing=nan;
 
 % old code 27.137 s
 tic
-out=calc_any_g2_type(corr_opts,fake_data);
+out=calc_any_g2_type(corr_opts,fake_data.counts_txy);
 toc
 
 
