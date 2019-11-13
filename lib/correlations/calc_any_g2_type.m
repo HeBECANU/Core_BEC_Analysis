@@ -42,7 +42,7 @@ if ~isfield(corr_opts,'progress_updates') || isnan(corr_opts.progress_updates)
 end
 
 if isfield(corr_opts,'norm_samp_factor')
-    if corr_opts.norm_samp_factor<0.01 || corr_opts.norm_samp_factor>2000
+    if corr_opts.norm_samp_factor<0.01 || corr_opts.norm_samp_factor>2e7
         error('corr_opts.norm_samp_factor exceeds limits');
     end
 else
