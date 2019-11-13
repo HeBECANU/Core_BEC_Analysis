@@ -1,4 +1,4 @@
-function [bec_centres,bec_widths,bec_counts,centre_OK] = find_dist_cen(data, opts)
+function [bec_centres,bec_widths,bec_counts,centre_OK] = find_dist_cen(data, opts_cent)
 % Mandatory data inputs:
 %     data.counts_txy
 %     data.shot_num
@@ -25,9 +25,9 @@ centre_OK = zeros(num_shots, 1);
 % [~, ploc] = max(temp_profile);
 % t_peak = t_cents(ploc);
 
-lims = opts.cent.crop;
-if length(opts.cent.threshold) < 3
-   opts.cent.threshold = opts.cent.threshold(1)*[1,1,1]; 
+lims = opts_cent.crop;
+if length(opts_cent.threshold) < 3
+   opts_cent.threshold = opts_cent.threshold(1)*[1,1,1]; 
 end
 % Set the t limits by conversion to k
 % lims(1, :) = t_peak + [-1, 1] * (opts.c.hbar * opts.spherify.k_max / opts.c.m_He) / (0.5 * opts.c.g0 * 0.4187);
@@ -37,18 +37,17 @@ for this_idx = 1:num_shots % Loop over all QD shots
     this_txy = data.counts_txy{this_idx};
     trim_txy = masktxy_square(this_txy, lims);
     bec_counts(this_idx) = size(trim_txy,1);
-    % find centres with the hist threshold method
-    if opts.cent.visual && this_idx == 1
+    if opts_cent.visual && this_idx == 1
         clf;
     end
     % fancy centering
     for axis = 1:3
         this_axis = trim_txy(:, axis);
-        bin_edges = lims(axis, 1):opts.cent.bin_size(axis):lims(axis, 2);
+        bin_edges = lims(axis, 1):opts_cent.bin_size(axis):lims(axis, 2);
         flux = hist_adaptive_method(this_axis, bin_edges', 0);
         bin_centres = 0.5 * (bin_edges(2:end) + bin_edges(1:end-1));
         flux = flux(2:end-1);
-        mask = flux > opts.cent.threshold(axis);
+        mask = flux > opts_cent.threshold(axis);
         locs = find(mask);
         margins = [min(locs(2:end-1)), max(locs(2:end-1))];
         if isempty(margins)
@@ -59,7 +58,7 @@ for this_idx = 1:num_shots % Loop over all QD shots
             bec_widths(this_idx, axis) = diff(t_margins);
             centre_OK(this_idx) = 1;
         end
-        if opts.visual > 1
+        if opts_cent.visual > 1
             subplot(3, 1, axis);
             plot(bin_centres, flux, 'k')
             hold on
@@ -67,14 +66,14 @@ for this_idx = 1:num_shots % Loop over all QD shots
         end
     end
 end
-if opts.cent.visual
+if opts_cent.visual
    for splt = 1:3
       subplot(3,1,splt)
       ylabel('Counts')
    end
 end
 
-if opts.cent.visual
+if opts_cent.visual
    f=stfig('BEC centering');
 %     f=sfigure(2);
 %    clf
@@ -90,8 +89,8 @@ if opts.cent.visual
    ylabel('widths')
    if opts.savefigs
     cli_header(1,'Saving images...');
-    saveas(f,fullfile(opts.cent.data_out,'centering.fig'));
-    saveas(f,fullfile(opts.cent.data_out,'centering.svg'));
+    saveas(f,fullfile(opts_cent.data_out,'centering.fig'));
+    saveas(f,fullfile(opts_cent.data_out,'centering.svg'));
     cli_header(2,'Done.');
    end
 end
