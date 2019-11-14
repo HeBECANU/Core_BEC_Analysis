@@ -95,5 +95,5 @@ if opts_cent.visual
    end
 end
 
-cli_header(2, 'Done!');
+%cli_header(2, 'Done!');
 end
