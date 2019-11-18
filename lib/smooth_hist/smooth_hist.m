@@ -96,7 +96,7 @@ xdata=col_vec(xdata);
 %function that resturns a gaussian smoothed histogram
 edges=linspace(min(bin_limits),max(bin_limits),x_bin_num+1)';
 centers=(edges(2:end)+edges(1:end-1))./2;
-hist_counts_raw=hist_adaptive_method(xdata,edges,parsed_input.sorted);
+hist_counts_raw=hist_adaptive_method(xdata,edges,parsed_input.sorted,1);
 
 out_struct.counts.below=hist_counts_raw(1);
 out_struct.counts.above=hist_counts_raw(end);
