@@ -1,4 +1,4 @@
-function [out_counts_txy,out_num_counts] = ring_removal(data,t_lim)
+function data = ring_removal(data,t_lim)
 %small function to remove ringing from reconstructed data
 out_counts_txy = cell(size(data.counts_txy));
 out_num_counts = zeros(size(data.num_counts));
@@ -15,4 +15,6 @@ for ii = 1:length(data.counts_txy)
     masked_counts = sum(~t_dif_mask);
     out_num_counts(ii) = num_counts-masked_counts;
 end
+data.counts_txy = out_counts_txy;
+data.num_counts = out_num_counts;
 end
