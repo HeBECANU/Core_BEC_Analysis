@@ -4,6 +4,15 @@ function GZ = g_bose(Z)
 % Converges for Z in [0,1) - runtime diverges as Z->1
 
 % USER CONSTS FOR ALGORITHM CONVERGENCE
+% TODO
+% - optional args
+% - tolerance or number of terms
+% - aproximate expressions
+% - consider if better to use something off file exchange
+%   - https://au.mathworks.com/matlabcentral/fileexchange/23060-polylogarithm-de-jonquiere-s-function
+%   - approx expansions https://github.com/wme7/Polylog
+%   - https://au.mathworks.com/matlabcentral/fileexchange/37229-enhanced-computation-of-polylogarithm-aka-de-jonquieres-function
+% - fix error where sumation does not terminate if any of the z vector input has not converged
 tol_err=1e-20;   % incremental error from evaluating series sum
 
 zmask = Z >= 0.9999;

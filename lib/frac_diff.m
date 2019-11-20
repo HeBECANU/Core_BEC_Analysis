@@ -29,6 +29,8 @@ elseif strcmp(method,'max')
      out=(x-y)./(max(x,y));
 elseif strcmp(method,'min')
     out=(x-y)./(min(x,y));
-end
+else
+    error('invalid method input')
+end 
 
 end

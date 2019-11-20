@@ -44,10 +44,14 @@ addOptional(p,'bin_width',nan,@isnumeric);
 addOptional(p,'bin_num',nan,@isnumeric);
 addOptional(p,'bin_factor',nan,@isnumeric);
 addOptional(p,'max_bins',2e6,@isnumeric);
+addOptional(p,'doplot',false,is_c_logical);
 parse(p,varargin{:});
 parsed_input= p.Results;
 
-sigma=parsed_input.sigma;
+if nargout==0
+    parsed_input.doplot=true;
+end
+
 
 if sum(~isnan([parsed_input.bin_factor,parsed_input.bin_width,parsed_input.bin_num]))>1
     error('must pass only one of ''bin_factor'' or ''bin_width'' or ''bin_num''  ')
@@ -68,6 +72,12 @@ else
     bin_limits=parsed_input.lims;
 end
 
+if isnan(parsed_input.sigma) && sum(~isnan([parsed_input.bin_width,parsed_input.bin_num,parsed_input.bin_factor]))==0
+    %using default bin factor
+    parsed_input.sigma=range(bin_limits)*5e-3;
+    parsed_input.bin_factor=5;
+end
+
 if ~isnan(parsed_input.bin_factor)
     bin_width=parsed_input.sigma/parsed_input.bin_factor;
     x_bin_num=floor(range(bin_limits)/bin_width);
@@ -84,6 +94,8 @@ if x_bin_num>parsed_input.max_bins
     x_bin_num=parsed_input.max_bins;
 end
 
+sigma=parsed_input.sigma;
+
 bin_width=range(bin_limits)/x_bin_num;
 if bin_width>sigma*5
      warning('bin width was much larger than sigma will not smooth',mfilename)
@@ -96,7 +108,7 @@ xdata=col_vec(xdata);
 %function that resturns a gaussian smoothed histogram
 edges=linspace(min(bin_limits),max(bin_limits),x_bin_num+1)';
 centers=(edges(2:end)+edges(1:end-1))./2;
-hist_counts_raw=hist_adaptive_method(xdata,edges,parsed_input.sorted);
+hist_counts_raw=hist_adaptive_method(xdata,edges,parsed_input.sorted,1);
 
 out_struct.counts.below=hist_counts_raw(1);
 out_struct.counts.above=hist_counts_raw(end);
@@ -113,6 +125,12 @@ out_struct.count_rate.raw=out_struct.counts.raw./diff(edges);
 
 out_struct.bin.edge=edges;
 out_struct.bin.centers=centers;
+
+if parsed_input.doplot
+    stfig('smooth histogram')
+    plot(out_struct.bin.centers,out_struct.count_rate.smooth,'k')
+end
+
 
 end
 

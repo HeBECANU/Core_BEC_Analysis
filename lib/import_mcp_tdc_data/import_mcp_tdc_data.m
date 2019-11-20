@@ -203,7 +203,7 @@ for ii=1:size(import_opts.shot_num,2)
              end
              %ineffecient to read back what whas just written
              txydata=txy_importer([import_opts.dir,import_opts.file_name],num2str(import_opts.shot_num(ii)));
-             txydata=masktxy(txydata,import_opts.txylim); %mask for counts in the window txylim     
+             txydata=masktxy_square(txydata,import_opts.txylim); %mask for counts in the window txylim     
              %rotate the counts into the trap axis
              alpha=-import_opts.dld_xy_rot;
              mcp_tdc_data.counts_txy{ii}=txydata*[1 0 0;0 cos(alpha) -sin(alpha); 0 sin(alpha) cos(alpha)];
