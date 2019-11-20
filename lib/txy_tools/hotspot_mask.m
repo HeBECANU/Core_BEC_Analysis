@@ -1,11 +1,12 @@
 function data=hotspot_mask(data,anal_opts)
-% this code deletes the hot spots from our detector
-% it makes a flat-feild image look like swiss cheese
+% this code deletes the hot spots from our detector using manualy defined region deletion
+% this makes a flat-feild image look like swiss cheese
 % code sniped from forbidden_heating_method
 % TODO
 % - automate the mask devlopment process
 %   - 
-% 
+%
+
 if nargin<2 || isempty(anal_args)
     % default hot spot deletion
     % good as of 2019-11-20
