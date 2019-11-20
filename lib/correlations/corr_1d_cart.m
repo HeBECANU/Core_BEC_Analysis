@@ -118,7 +118,12 @@ N = ceil(shots/update_interval);
 % dvs = divisors(shots);
 % [~,idx]=min(abs(dvs-N));
 % N=dvs(idx);
-parfor_progress_imp(N);
+if ~isfield(corr_opts,'print_update')
+    corr_opts.print_update = true;
+end
+if corr_opts.print_update
+    parfor_progress_imp(N);
+end
 
 pairs_count=zeros(1,shots);
 delta_multiplier=[1,-1];
@@ -186,7 +191,7 @@ if corr_opts.low_mem %calculate with the low memory mode
             %one_d_bins=one_d_bins+histcounts(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
             %one_d_bins=one_d_bins+histcounts(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
         end
-        if mod(shotnum,update_interval)==0
+        if mod(shotnum,update_interval)==0 && corr_opts.print_update
             parfor_progress_imp;
         end
     end%loop over shots
@@ -242,12 +247,13 @@ else%calculate with the high memory mode
         %to be strictly accurate we must calaulate things symetricaly
         one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges,1)';
         one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges,1)';
-        if mod(shotnum,update_interval)==0
+        if mod(shotnum,update_interval)==0 && corr_opts.print_update
             parfor_progress_imp;
         end
     end%loop over shots
-    
-    parfor_progress_imp(0);
+    if corr_opts.print_update
+        parfor_progress_imp(0);
+    end
     % sum up the results from all the parfors
     one_d_bins=col_vec(sum(one_d_bins,1));
 end %done calculating with either high or low mem
