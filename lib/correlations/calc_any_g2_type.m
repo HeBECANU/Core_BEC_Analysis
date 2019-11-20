@@ -42,7 +42,7 @@ if ~isfield(corr_opts,'progress_updates') || isnan(corr_opts.progress_updates)
 end
 
 if isfield(corr_opts,'norm_samp_factor')
-    if corr_opts.norm_samp_factor<0.01 || corr_opts.norm_samp_factor>2000
+    if corr_opts.norm_samp_factor<0.01 || corr_opts.norm_samp_factor>2e7
         error('corr_opts.norm_samp_factor exceeds limits');
     end
 else
@@ -51,6 +51,10 @@ end
 
 if ~isfield(corr_opts,'sort_norm')
     corr_opts.sort_norm=false;
+end
+
+if ~isfield(corr_opts,'fig')
+    corr_opts.fig='corr. output';
 end
 
 if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb') 
@@ -171,7 +175,7 @@ elseif isequal(corr_opts.type,'3d_cart_cl')  || isequal(corr_opts.type,'3d_cart_
         %shotscorr_high=corr_1d_cart_high_mem(corr_opts,counts);
         if corr_opts.plots
             if dimension == 1
-                stfig('corr. output','add_stack',1);
+                stfig(corr_opts.fig,'add_stack',1);
                 clf
                 set(gcf,'color','w');
             end

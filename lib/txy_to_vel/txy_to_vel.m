@@ -40,7 +40,7 @@ vzxy_out=txy_in*nan;
 
 fall_time=txy_in(:,1)-out_time;
 
-vel_z=-fall_distance./fall_time+(1/2)*gravity*fall_time;
+vel_z=-fall_distance./fall_time-(1/2)*gravity*fall_time;
 
 % then we want to convert the x,y data into velocity using the fall time
 % bacause the TOF changes a little for each count we can correct for this

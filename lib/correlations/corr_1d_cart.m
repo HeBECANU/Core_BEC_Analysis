@@ -194,7 +194,7 @@ if corr_opts.low_mem %calculate with the low memory mode
     
 else%calculate with the high memory mode
     one_d_bins=zeros(shots,size(one_d_bins,2));
-    parfor shotnum=1:shots
+    for shotnum=1:shots
         shot_txy=counts{shotnum};
         num_counts_shot=num_counts(shotnum);
         if corr_opts.attenuate_counts~=1 %randomly keep corr_opts.attenuate_counts fraction of the data

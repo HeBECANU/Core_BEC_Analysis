@@ -35,6 +35,9 @@ end
 for this_idx = 1:num_shots % Loop over all QD shots
     %         trim_counts(this_idx) = length(trim_txy);
     this_txy = data.counts_txy{this_idx};
+    if size(this_txy,2) ~= 3
+        dumy = 0;
+    end
     trim_txy = masktxy_square(this_txy, lims);
     bec_counts(this_idx) = size(trim_txy,1);
     % find centres with the hist threshold method
