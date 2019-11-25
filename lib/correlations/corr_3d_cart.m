@@ -1,4 +1,4 @@
-function out=corr_1d_cart(corr_opts,counts)
+function out=corr_3d_cart(corr_opts,counts)
 % corr_1d_cart - %a low/high memory implementation of the one D correlation
 % Notes:
 % This g2 correlator is very fast and can be thought as taking a tube along the full 3d cartesian g2 but without having
@@ -106,15 +106,14 @@ if ~isfield(corr_opts,'low_mem') || isnan(corr_opts.low_mem)
     end
     %use the corr_opts.norm_samp_factor so that both corr/uncorr parts are calculated with the same function
     corr_opts.low_mem=((max(num_counts,[],'all')*corr_opts.norm_samp_factor*premask_factor)^2)>max_arr_size;
-    if corr_opts.print_update
+
     if corr_opts.low_mem,fprintf('auto detection:using the low memory option\n'), end
     if ~corr_opts.low_mem,fprintf('auto detection:using the high memory option\n'), end
-    end
 end
 
 %for the dimension of interest we set the window to be the region specified in corr_opts.one_d_edges
 %this simplifies the code and can speed up the historgraming
-corr_opts.one_d_window(corr_opts.one_d_dimension,:)=[min(corr_opts.one_d_edges),max(corr_opts.one_d_edges)];
+% corr_opts.one_d_window(corr_opts.one_d_dimension,:)=[min(corr_opts.one_d_edges),max(corr_opts.one_d_edges)];
 
 updates=corr_opts.progress_updates; %number of updates in the progress bar to give the user, can slow thigs down if too high
 
@@ -140,16 +139,16 @@ delta_multiplier=delta_multiplier(1+corr_opts.cl_or_bb); %gives 1 when cl and -1
 %should not mask in corr_opts.one_d_dimension & corr_opts.sorted_dir (if corr_opts.do_pre_mask )
 mask_dimensions=[1,2,3];
 mask_dimensions_logic=[true,true,true]; %logic to avoid clashes when corr_opts.one_d_dimension==corr_opts.sorted_dir
-mask_dimensions_logic(corr_opts.one_d_dimension)=false;
-if corr_opts.do_pre_mask && ~corr_opts.between_sets, mask_dimensions_logic(corr_opts.sorted_dir)=false; end
+if corr_opts.do_pre_mask, mask_dimensions_logic(corr_opts.sorted_dir)=false; end
 mask_dimensions=mask_dimensions(mask_dimensions_logic);
 
-[one_d_bins,corr_opts.one_d_edges]=histcounts([],corr_opts.one_d_edges);
+[three_d_bins,corr_opts.one_d_edges]=histcn([],corr_opts.three_d_edges(:,1),corr_opts.three_d_edges(:,2),...
+    corr_opts.three_d_edges(:,3));
 
     
 if corr_opts.low_mem %calculate with the low memory mode
     % the low memory mode is serial and is a bit easier on mem requirements
-    one_d_bins=col_vec(one_d_bins);
+    three_d_bins=col_vec(three_d_bins);
     for shotnum=1:shots
         if corr_opts.between_sets
             shot_txy_1=counts{1,shotnum};
@@ -162,8 +161,8 @@ if corr_opts.low_mem %calculate with the low memory mode
         end
         if corr_opts.attenuate_counts~=1 %randomly keep corr_opts.attenuate_counts fraction of the data
             if corr_opts.between_sets
-                mask1=rand(num_counts_shot_1,1)<corr_opts.attenuate_counts;
-                mask2=rand(num_counts_shot_2,1)<corr_opts.attenuate_counts;
+                mask1=rand(num_counts_shot,1)<corr_opts.attenuate_counts;
+                mask2=rand(num_counts_shot,1)<corr_opts.attenuate_counts;
                 shot_txy_1=shot_txy_1(mask1,:);
                 shot_txy_2=shot_txy_2(mask2,:);
                 num_counts_shot_1=size(shot_txy_1,1);
@@ -195,8 +194,8 @@ if corr_opts.low_mem %calculate with the low memory mode
                     -delta_multiplier*shot_txy(ii,corr_opts.sorted_dir);
                 mask_idx=fast_sorted_mask(...
                     temp_1d_diff,...
-                    corr_opts.one_d_window(corr_opts.sorted_dir,1),...
-                    corr_opts.one_d_window(corr_opts.sorted_dir,2));
+                    corr_opts.three_d_window(corr_opts.sorted_dir,1),...
+                    corr_opts.three_d_window(corr_opts.sorted_dir,2));
                 delta=shot_txy(ii,:)-delta_multiplier*shot_txy(ii+mask_idx(1):ii+mask_idx(2),:);
             else
                 if corr_opts.between_sets
@@ -209,17 +208,19 @@ if corr_opts.low_mem %calculate with the low memory mode
             one_d_mask_neg=one_d_mask_pos;
             %run the mask in all the queued dimensions
             for mask_dim=mask_dimensions
-                one_d_mask_pos=one_d_mask_pos & delta(:,mask_dim)>corr_opts.one_d_window(mask_dim,1) ...
-                    & delta(:,mask_dim)<corr_opts.one_d_window(mask_dim,2);
-                one_d_mask_neg=one_d_mask_neg & -delta(:,mask_dim)>corr_opts.one_d_window(mask_dim,1) ...
-                    & -delta(:,mask_dim)<corr_opts.one_d_window(mask_dim,2);
+                one_d_mask_pos=one_d_mask_pos & delta(:,mask_dim)>corr_opts.three_d_window(mask_dim,1) ...
+                    & delta(:,mask_dim)<corr_opts.three_d_window(mask_dim,2);
+                one_d_mask_neg=one_d_mask_neg & -delta(:,mask_dim)>corr_opts.three_d_window(mask_dim,1) ...
+                    & -delta(:,mask_dim)<corr_opts.three_d_window(mask_dim,2);
             end
 
             %to be strictly accurate we must calaulate things symetricaly
             % using fast histograming (gives speedup for sparse histogram)
             % gives >4x speedup on corr unit testing
-            one_d_bins=one_d_bins+hist_adaptive_method(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges);
-            one_d_bins=one_d_bins+hist_adaptive_method(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges);
+            three_d_bins=three_d_bins+histcn(delta(one_d_mask_pos,:),corr_opts.three_d_edges(:,1),corr_opts.three_d_edges(:,2),...
+    corr_opts.three_d_edges(:,3));
+            three_d_bins=three_d_bins+histcn(-delta(one_d_mask_neg,:),corr_opts.three_d_edges(:,1),corr_opts.three_d_edges(:,2),...
+    corr_opts.three_d_edges(:,3));
             % old brute histogram approach
             %one_d_bins=one_d_bins+histcounts(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
             %one_d_bins=one_d_bins+histcounts(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges)';
@@ -231,7 +232,7 @@ if corr_opts.low_mem %calculate with the low memory mode
     
     
 else%calculate with the high memory mode
-    one_d_bins=zeros(shots,size(one_d_bins,2));
+    three_d_bins=zeros(shots,size(three_d_bins,2));
     for shotnum=1:shots
         shot_txy=counts{shotnum};
         num_counts_shot=num_counts(shotnum);
@@ -256,8 +257,8 @@ else%calculate with the high memory mode
                         -delta_multiplier*shot_txy(ii,corr_opts.sorted_dir);
                     mask_idx=fast_sorted_mask(...
                         temp_1d_diff,...
-                        corr_opts.one_d_window(corr_opts.sorted_dir,1),...
-                        corr_opts.one_d_window(corr_opts.sorted_dir,2));
+                        corr_opts.three_d_window(corr_opts.sorted_dir,1),...
+                        corr_opts.three_d_window(corr_opts.sorted_dir,2));
                     delta_inc=shot_txy(ii,:)-delta_multiplier*shot_txy(ii+mask_idx(1):ii+mask_idx(2),:);
                 else
                     delta_inc=shot_txy(ii,:)-delta_multiplier*shot_txy(ii+1:num_counts_shot,:);
@@ -272,14 +273,14 @@ else%calculate with the high memory mode
         one_d_mask_neg=one_d_mask_pos;
         %run the mask in all the queued dimensions
         for mask_dim=mask_dimensions
-            one_d_mask_pos=one_d_mask_pos & delta(:,mask_dim)>corr_opts.one_d_window(mask_dim,1) ...
-                & delta(:,mask_dim)<corr_opts.one_d_window(mask_dim,2);
-            one_d_mask_neg=one_d_mask_neg & -delta(:,mask_dim)>corr_opts.one_d_window(mask_dim,1) ...
-                & -delta(:,mask_dim)<corr_opts.one_d_window(mask_dim,2);
+            one_d_mask_pos=one_d_mask_pos & delta(:,mask_dim)>corr_opts.three_d_window(mask_dim,1) ...
+                & delta(:,mask_dim)<corr_opts.three_d_window(mask_dim,2);
+            one_d_mask_neg=one_d_mask_neg & -delta(:,mask_dim)>corr_opts.three_d_window(mask_dim,1) ...
+                & -delta(:,mask_dim)<corr_opts.three_d_window(mask_dim,2);
         end
         %to be strictly accurate we must calaulate things symetricaly
-        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(delta(one_d_mask_pos,corr_opts.one_d_dimension),corr_opts.one_d_edges,1)';
-        one_d_bins(shotnum,:)=one_d_bins(shotnum,:)+hist_adaptive_method(-delta(one_d_mask_neg,corr_opts.one_d_dimension),corr_opts.one_d_edges,1)';
+        three_d_bins(shotnum,:)=three_d_bins(shotnum,:)+histcn(delta(one_d_mask_pos,:),corr_opts.three_d_edges,1)';
+        three_d_bins(shotnum,:)=three_d_bins(shotnum,:)+histcn(-delta(one_d_mask_neg,:),corr_opts.three_d_edges,1)';
         if mod(shotnum,update_interval)==0 && corr_opts.print_update
             parfor_progress_imp;
         end
@@ -288,16 +289,15 @@ else%calculate with the high memory mode
         parfor_progress_imp(0);
     end
     % sum up the results from all the parfors
-    one_d_bins=col_vec(sum(one_d_bins,1));
+    three_d_bins=col_vec(sum(three_d_bins,1));
 end %done calculating with either high or low mem
     
-out.x_centers=(corr_opts.one_d_edges(2:end)+corr_opts.one_d_edges(1:end-1))/2;
+out.centers=(corr_opts.one_d_edges(2:end)+corr_opts.one_d_edges(1:end-1))/2;
 out.pairs=sum(pairs_count);
 sub_index=[1,2,3];
-sub_index(corr_opts.one_d_dimension)=[];
-one_d_volume=corr_opts.one_d_window(sub_index,1)-corr_opts.one_d_window(sub_index,2);
-one_d_volume=prod(one_d_volume)*(corr_opts.one_d_edges(2:end)-corr_opts.one_d_edges(1:end-1));
-out.one_d_corr_density_raw=one_d_bins./(one_d_volume.*out.pairs);
+volume=corr_opts.three_d_window(sub_index,1)-corr_opts.three_d_window(sub_index,2);
+volume=prod(volume)*(corr_opts.one_d_edges(2:end)-corr_opts.one_d_edges(1:end-1));
+out.one_d_corr_density_raw=three_d_bins./(volume.*out.pairs);
 %smooth the correlation function for better normalization
 if ~(isnan(corr_opts.one_d_smoothing) || corr_opts.one_d_smoothing==0)
     out.one_d_corr_density=gaussfilt(out.x_centers,out.one_d_corr_density_raw,corr_opts.one_d_smoothing);
