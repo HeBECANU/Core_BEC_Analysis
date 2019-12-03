@@ -91,7 +91,7 @@ if opts_cent.visual
    title('BEC width')
    xlabel('Shot number')
    ylabel('widths')
-   if opts.savefigs
+   if opts_cent.savefigs
     cli_header(1,'Saving images...');
     saveas(f,fullfile(opts_cent.data_out,'centering.fig'));
     saveas(f,fullfile(opts_cent.data_out,'centering.svg'));
