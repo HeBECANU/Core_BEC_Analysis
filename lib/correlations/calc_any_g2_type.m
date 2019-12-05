@@ -420,7 +420,7 @@ elseif isequal(corr_opts.type,'3d_cart_cl')  || isequal(corr_opts.type,'3d_cart_
             out{dimension}.fit = fit;
             if corr_opts.plots
                 hold on
-                xx = linspace(0,max(shotscorr.rad_centers),3e3)';
+                xx = linspace(0,max(shotscorr.x_centers),3e3)';
                 [ypred,ypredci] = predict(fit,xx,'Simultaneous',true);
                 plot(xx,ypred,'b-', xx,ypredci,'r-');
             end
