@@ -66,7 +66,7 @@ if (isnan(parsed_input.sigma) || parsed_input.sigma==0) && ~isnan(parsed_input.b
     error('cant specify bin width using bin_factor when sigma is zero')
 end
 
-if  isempty(parsed_input.lims) || sum(isnan(parsed_input.lims)) == 0
+if  isempty(parsed_input.lims) || sum(isnan(parsed_input.lims)) ~= 0
     bin_limits=[nanmin(xdata),nanmax(xdata)];
 else
     bin_limits=parsed_input.lims;
@@ -87,6 +87,10 @@ elseif ~isnan(parsed_input.bin_width)
     bin_limits=[min(bin_limits),min(bin_limits)+x_bin_num*bin_width];
 elseif ~isnan(parsed_input.bin_num)
     x_bin_num=parsed_input.bin_num;
+end
+
+if x_bin_num==0
+   error("auto binning has returned no bins, try seting the limits with the 'lim'")
 end
 
 if x_bin_num>parsed_input.max_bins
