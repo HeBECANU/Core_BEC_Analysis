@@ -1,8 +1,40 @@
 function rand_out=rand_interval(limits,out_size)
-% create a vector of randome numbers that is between limits
-% if limits is [1x2] vector then the same limits are applied to each element
-% if limtis as one more dimension than size, and that dimension is of size 2 then
-% the limit is set on each output
+% rand_interval - create a vector of random numbers that is between limits
+
+% Syntax:   rand_out=rand_interval(limits,out_size)
+%
+% Inputs:
+%	limits      - matrix, if limits is a [1x2] (or [2x1]) vector then the same limits are applied to each element
+%                 if limits has one more dimension than out_size, and that dimension is of size 2 then
+%                 the limit is set on each output, this can make creation of the limits matrix somewhat
+%                 more compicated (than it could be) for the case when rand_out is a vector but it allows generalization
+%   out_size	- size of the output matrix, only needed if limits is a [1x2] (or [2x1]) vector (setting the 
+%                 same domain on each element) as otherwise it is given by the size of the limits matrix
+% Outputs:
+%    rand_out	- output matrix with each element having the domain set by the limits matrix
+
+%
+% Example: 
+% out_interval=[1,2];
+% rand_interval(out_interval,[1,10])
+%
+% out_size=[2,2];
+% out_interval=reshape([[1,2];[2,3];[3,4];[4,5]],cat(2,out_size,2));
+% test_out=rand_interval(out_interval)
+
+% Other m-files required: col_vec
+% Also See: test_rand_interval
+% Subfunctions: none
+% MAT-files required: none
+%
+% Known BUGS/ Possible Improvements
+%   - none
+%
+% Author: Bryce Henson
+% email: Bryce.Henson@live.com
+% Last revision:2020-01-22
+
+%------------- BEGIN CODE --------------
 
 if nargin<2
     if ndims(limits)<2
@@ -47,11 +79,6 @@ else
     end
     rand_out = limit_min + (limit_max-limit_min).*rand(out_size);
 end
-
-
-
-
-
 
 
 end
