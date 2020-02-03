@@ -1,13 +1,21 @@
 # Core_BEC_Analysis
-**Bryce M. Henson, [Jacob A. Ross](https://github.com/GroundhogState)**  
-A reasonably comprehensive library analysis of data generated in the He* BEC group.  
+**Bryce M. Henson, [Jacob A. Ross](https://github.com/GroundhogState),[Kieran F. Thomas](https://github.com/KF-Thomas),[David Shin](https://github.com/spicydonkey)**  
+A reasonably comprehensive toolset for analysis of data generated in the He* BEC group.  
 **Status:** This Code is **ready for use in other projects**. Unit Testing is implemented for **most** functions. Integration/system testing is **not** implemented.
 
-## Install
+## Install 
+
+As a submodule (most common usage)
+```
+git submodule add -b dev  https://github.com/brycehenson/Core_BEC_Analysis.git lib/Core_BEC_Analysis
+```
+
+Solo (not recomended)
 ``` 
 git clone --recursive https://github.com/brycehenson/Core_BEC_Analysis.git
 ```
-then to update 
+
+to update and initalize all the sub-sub-modules
 ```
 git submodule update --init --recursive --remote --merge
 ```
