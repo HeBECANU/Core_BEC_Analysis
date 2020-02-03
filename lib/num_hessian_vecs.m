@@ -1,4 +1,4 @@
-function H=num_hessian(fun,x_list,delta)
+function H=num_hessian_vecs(fun,x_list,delta)
 
 
 %here I find the numerical hessian of the the passed scalar function potential
