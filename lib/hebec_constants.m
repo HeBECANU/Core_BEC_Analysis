@@ -38,3 +38,6 @@ const.g0 =9.7960207-78e-8;
 %customary
 const.a0 = 0.529*10^-10;%(*bohr radius*)
 
+%experiment
+const.fall_distance = 0.8587; 
+
