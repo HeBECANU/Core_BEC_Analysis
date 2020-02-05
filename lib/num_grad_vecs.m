@@ -11,8 +11,6 @@ function deriv=num_grad_vecs(fun,x_mat,delta,vectorized_logical)
 % sometimes this can be usefull to prevent false minima
 %delta=delta*(0.5+rand(1));
 
-
-
 if nargin<4 || isnan(vectorized_logical) || isempty(vectorized_logical)
     vectorized_logical=0;
 end
