@@ -98,24 +98,35 @@ sigma=parsed_input.sigma;
 
 bin_width=range(bin_limits)/x_bin_num;
 if bin_width>sigma*5
-     warning('bin width was much larger than sigma will not smooth',mfilename)
+     warning('%s: bin width was much larger than sigma will not smooth',mfilename)
      sigma=0;
 end
 
+if ndims(xdata)<3
+    xdata=col_vec(xdata);
 
-xdata=col_vec(xdata);
+    %function that resturns a gaussian smoothed histogram
+    edges=linspace(min(bin_limits),max(bin_limits),x_bin_num+1)';
+    centers=(edges(2:end)+edges(1:end-1))./2;
 
-%function that resturns a gaussian smoothed histogram
-edges=linspace(min(bin_limits),max(bin_limits),x_bin_num+1)';
-centers=(edges(2:end)+edges(1:end-1))./2;
-hist_counts_raw=hist_adaptive_method(xdata,edges,parsed_input.sorted,1);
+    hist_counts_raw=hist_adaptive_method(xdata,edges,parsed_input.sorted,1);
+    out_struct.counts.below=hist_counts_raw(1);
+    out_struct.counts.above=hist_counts_raw(end);
+    out_struct.counts.raw=hist_counts_raw(2:end-1);
+else
+    for ii = 1:ndims(xdata)
+        nedges=linspace(min(bin_limits),max(bin_limits),x_bin_num+1)';
+        edges{ii}=nedges;
+        centers{ii}=(nedges(2:end)+nedges(1:end-1))./2;
+    end
 
-out_struct.counts.below=hist_counts_raw(1);
-out_struct.counts.above=hist_counts_raw(end);
-out_struct.counts.raw=hist_counts_raw(2:end-1);
+    hist_counts_raw=histcn(xdata,edges);
+    out_struct.counts.raw=hist_counts_raw;
+end
+
 
 if sigma~=0 || ~isnan(sigma)
-    out_struct.counts.smooth=gaussfilt(centers,out_struct.counts.raw,sigma);
+    out_struct.counts.smooth=gaussfiltn(centers,out_struct.counts.raw,sigma);
 else
     out_struct.counts.smooth=out_struct.counts.raw;
 end

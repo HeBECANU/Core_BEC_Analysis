@@ -193,6 +193,10 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
             xx = linspace(min(shotscorr.x_centers),max(shotscorr.x_centers),3e3)';
             [ypred,ypredci] = predict(fit,xx,'Simultaneous',true);
             plot(xx,ypred,'b-', xx,ypredci,'r-');
+            b = fit.Coefficients.Estimate; %fitted parameters
+            b_unc = fit.Coefficients.SE; %uncertainty in parameters
+            text(0.003,2.0,sprintf('fitted g2(0) amplitude:%s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0)));
+            text(0.003,1.8,sprintf('fitted g2 width:%s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0)));
         end
     end
     [g2peak,indx] = max(xg2);
@@ -205,6 +209,10 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
         fprintf('g2 peak amplitude         %s\n',string_value_with_unc(g2peak,g2peak_unc,'type','b','separator',0))
     else
         fprintf('g2 peak amplitude         %4.2f \n',g2peak)
+    end
+    if corr_opts.fit
+        fprintf('fitted g2(0) amplitude         %s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0))
+        fprintf('fitted g2 width         %s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0))
     end
     out.norm_g2.g2peak=g2peak;
     
@@ -303,6 +311,10 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
             xx = linspace(0,max(shotscorr.rad_centers),3e3)';
             [ypred,ypredci] = predict(fit,xx,'Simultaneous',true);
             plot(xx,ypred,'b-', xx,ypredci,'r-');
+            b = fit.Coefficients.Estimate; %fitted parameters
+            b_unc = fit.Coefficients.SE; %uncertainty in parameters
+            text(0.003,2.0,sprintf('fitted g2(0) amplitude:%s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0)));
+            text(0.003,1.8,sprintf('fitted g2 width:%s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0)));
         end
     end
     if corr_opts.calc_err
@@ -314,6 +326,10 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
         fprintf('g2 peak amplitude         %s\n',string_value_with_unc(g2peak,g2peak_unc,'type','b','separator',0))
     else
         fprintf('g2 peak amplitude         %4.2f \n',g2peak)
+    end
+    if corr_opts.fit
+        fprintf('fitted g2(0) amplitude         %s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0))
+        fprintf('fitted g2 width         %s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0))
     end
     out.norm_g2.g2peak=g2peak;
     
