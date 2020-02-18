@@ -4,7 +4,7 @@
 *.mat
 # dropbox
 *.dropbox
-# winows files
+# windows files
 *.ini
 # windows thumb
 *.db

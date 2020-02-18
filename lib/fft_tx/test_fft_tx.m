@@ -2,6 +2,21 @@
 %to do
 %-  tests for unevenly sampled data
 
+addpath('./lib/') %add the path to set_up_project_path, this will change if Core_BEC_Analysis is included as a submodule
+                  % in this case it should be './lib/Core_BEC_Analysis/lib/'
+set_up_project_path(pwd)
+
+%% Basic usage
+% a very simple use case
+time_vec=linspace(0,1e3,1e6);
+amp_strong=10;
+testfun=@(t) amp_strong*sin(2*pi*t*100+pi)+1*sin(2*pi*t*133+pi);
+val=testfun(time_vec);
+out=fft_tx(time_vec,val,'padding',10,'window','gauss','win_param',{5});
+stfig('fft output')
+plot(out(1,:),abs(out(2,:)),'k')
+
+
 %% EVENLY SAMPLED
 %test that freq amplitude values are correct in the evenly sampled case
 %---start user var---
@@ -86,18 +101,6 @@ fprintf('TEST: peak freq within tolerance: %s\n',logic_str{1+(abs(max_freq-freq_
 fprintf('TEST: peak amp  within tolerance: %s\n',logic_str{1+(abs(max_amp/amp_strong-1)<amp_tol)})
 
 
-
-%% Very simple usage
-% a very simple use case
-time_vec=linspace(0,1e3,1e6);
-testfun=@(t) 100*sin(2*pi*t*100+pi)+1*sin(2*pi*t*133+pi);
-val=testfun(time_vec);
-out=fft_tx(time_vec,val,'padding',10,'window','gauss','win_param',{5});
-figure(5)
-plot(out(1,:),abs(out(2,:)))
-
-
-
 %% test dominant_freq_components
 %test that freq amplitude values are correct in the evenly sampled case
 %---start user var---
@@ -120,23 +123,11 @@ components=dominant_freq_components(time_vec,x_vec,[])
 amp_tol=1e-2; %fractional
 freq_tol=1./diff(time_vec([1,end]));%one freq bin %absolute
 phase_tol=pi/8;
-is_amp_ok=max(components.amp-[amp_strong,amp_weak])<max([amp_strong,amp_weak])*amp_tol;
-is_freq_ok=max(components.freq-[freq_strong,freq_weak])<freq_tol;
-is_phase_ok=max(components.phase-[phase_strong,phase_weak])<phase_tol;
+is_amp_ok=max(components.amp-col_vec([amp_strong,amp_weak]))<max([amp_strong,amp_weak])*amp_tol;
+is_freq_ok=max(components.freq-col_vec([freq_strong,freq_weak]))<freq_tol;
+is_phase_ok=max(components.phase-col_vec([phase_strong,phase_weak]))<phase_tol;
 
 fprintf('TEST: peak freq  within tolerance: %s\n',logic_str{1+is_amp_ok})
 fprintf('TEST: peak amp   within tolerance: %s\n',logic_str{1+is_freq_ok})
 fprintf('TEST: peak phase within tolerance: %s\n',logic_str{1+is_phase_ok})
-%%
-%set(gca, 'YScale', 'log') %log scale
-[max_amp,nearest_idx]=max(abs(out(2,:)));
-max_freq=out(1,nearest_idx);
-logic_str = {'FAIL', 'pass'};
-
-
-fprintf('INFO: peak freq error      : %g\n',max_freq-freq_strong)
-fprintf('INFO: peak amp  frac error : %g\n',max_amp/amp_strong-1)
-fprintf('TEST: peak freq within tolerance: %s\n',logic_str{1+(abs(max_freq-freq_strong)<freq_tol)})
-fprintf('TEST: peak amp  within tolerance: %s\n',logic_str{1+(abs(max_amp/amp_strong-1)<amp_tol)})
-%%
 
