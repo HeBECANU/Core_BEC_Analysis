@@ -9,10 +9,19 @@ function out = struct_mask(s,m)
 fieldnames = fields(s);
 nfields = numel(fieldnames);
 out = [];
+num_entries = length(m);
 for ii=1:nfields
    this_field = fieldnames{ii};
-   this_data = getfield(s,this_field);
-   out = setfield(out,this_field,this_data(m));
+   this_data = s.(this_field);
+   if size(this_data,1) == 1
+       this_data = this_data';
+   end
+   if size(this_data,2) > 1
+       out.(this_field) =this_data(m,:);
+   else
+       out.(this_field) =this_data(m);
+
+   end
 end
 
 end

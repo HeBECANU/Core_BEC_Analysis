@@ -13,20 +13,31 @@ import_opts=rmfield(import_opts,'force_load_save');
 if ~isfield(import_opts,'force_forc')
     import_opts.force_forc=false;
 end
+if import_opts.force_forc %if force_forc then have to skip the cache
+    import_opts.force_reimport=true;
+end
 
 if ~isfield(import_opts,'force_reimport')
     import_opts.force_reimport=false;
 end
 
+if ~isfield(import_opts,'force_cache_load')
+    import_opts.force_cache_load=false;
+end
+cache_opts.force_cache_load=import_opts.force_cache_load;
+import_opts=rmfield(import_opts,'force_cache_load');
+
 % if ~isfield(import_opts,'no_save')
 %     %to be completed, requires modification to function_cache
 % end
+
 
 if import_opts.force_forc %if force_forc then have to skip the cache
     import_opts.force_reimport=true;
 end
 cache_opts.force_recalc=import_opts.force_reimport;
 import_opts=rmfield(import_opts,'force_reimport');
+
 
 if isfield(import_opts,'out_dir')
     warning('out_dir option has been changed to cache_save_dir to be more verbose,please update your code')
@@ -121,6 +132,7 @@ if ~isfield(import_opts, 'force_forc') ,import_opts.force_forc=false; end
 if ~isfield(import_opts, 'file_name') ,import_opts.file_name='d'; end
 if ~isfield(import_opts, 'dld_xy_rot') ,import_opts.dld_xy_rot=0.61; end
 if ~isfield(import_opts, 'txylim') ,import_opts.txylim=[[0,10];[-30e-3, 30e-3];[-30e-3, 30e-3]]; end
+if ~isfield(import_opts, 'from_archive'),import_opts.from_archive = false; end
 %if the shot numbers are not specified import everythin in the directory
 if ~isfield(import_opts,'shot_num') 
     import_opts.shot_num=find_data_files(import_opts);
@@ -157,24 +169,48 @@ for ii=1:size(import_opts.shot_num,2)
     elseif ~is_dld_done_writing(import_opts.dir,[import_opts.file_name,num2str(import_opts.shot_num(ii)),'.txt'],import_opts.mod_wait)
         fprintf(2,'\n data file not done writing will not process %04i \n %04i\n',import_opts.shot_num(ii),ii)
     else
-         mcp_tdc_data.time_create_write(ii,:)=data_tcreate([import_opts.dir,import_opts.file_name],num2str(import_opts.shot_num(ii)));
-         %if the txy_forc does not exist, if import_opts.force_forc, or the forc file was earlier than the dld file (re) make it
-         if ~convert_dld_to_txy && ...
-                 ~(exist([import_opts.dir,import_opts.file_name,'_txy_forc',num2str(import_opts.shot_num(ii)),'.txt'],'file')==2)
-             convert_dld_to_txy=true;
-         elseif ~convert_dld_to_txy
-            %check that the _txy_forc file was created after the raw dld file
-            time_forc=data_tcreate([import_opts.dir,import_opts.file_name,'_txy_forc'],num2str(import_opts.shot_num(ii)));
-            if time_forc(2) < mcp_tdc_data.time_create_write(ii,2)
-            	convert_dld_to_txy=true;
-                
+        dld_ok = false;
+         if ~import_opts.from_archive 
+            % If you trust the directory, you can bypass the following function.
+            % This can cut runtime in half, but is only safe if data isn't
+            % currently being taken.
+            if ~is_dld_done_writing(import_opts.dir,[import_opts.file_name,num2str(import_opts.shot_num(ii)),'.txt'],import_opts.mod_wait)
+                fprintf(2,'\n data file not done writing will not process %04i \n %04i\n',import_opts.shot_num(ii),ii)
+            else
+                dld_ok = true;
             end
          else
+             dld_ok = true;
+         end
+         if dld_ok
+             mcp_tdc_data.time_create_write(ii,:)=data_tcreate([import_opts.dir,import_opts.file_name],num2str(import_opts.shot_num(ii)));
+             %if the txy_forc does not exist, if import_opts.force_forc, or the forc file was earlier than the dld file (re) make it
+             if ~convert_dld_to_txy && ...
+                     ~(exist([import_opts.dir,import_opts.file_name,'_txy_forc',num2str(import_opts.shot_num(ii)),'.txt'],'file')==2)
+                 convert_dld_to_txy=true;
+             elseif ~convert_dld_to_txy
+                %check that the _txy_forc file was created after the raw dld file
+                time_forc=data_tcreate([import_opts.dir,import_opts.file_name,'_txy_forc'],num2str(import_opts.shot_num(ii)));
+                if time_forc(2) < mcp_tdc_data.time_create_write(ii,2)
+                    convert_dld_to_txy=true;
+
+                end
+             else
+             end
+
+             if convert_dld_to_txy
+                 dld_raw_to_txy([import_opts.dir,import_opts.file_name],import_opts.shot_num(ii),import_opts.shot_num(ii));
+             end
+             %ineffecient to read back what whas just written
+             txydata=txy_importer([import_opts.dir,import_opts.file_name],num2str(import_opts.shot_num(ii)));
+             txydata=masktxy_square(txydata,import_opts.txylim); %mask for counts in the window txylim     
+             %rotate the counts into the trap axis
+             alpha=-import_opts.dld_xy_rot;
+             mcp_tdc_data.counts_txy{ii}=txydata*[1 0 0;0 cos(alpha) -sin(alpha); 0 sin(alpha) cos(alpha)];
+             mcp_tdc_data.num_counts(ii)=size(txydata,1);
+             mcp_tdc_data.shot_num(ii)=import_opts.shot_num(ii);
          end
 
-         if convert_dld_to_txy
-             dld_raw_to_txy([import_opts.dir,import_opts.file_name],import_opts.shot_num(ii),import_opts.shot_num(ii));
-         end
          %ineffecient to read back what whas just written
          txydata=txy_importer([import_opts.dir,import_opts.file_name],num2str(import_opts.shot_num(ii)));
          %rotate the counts into the trap axis
@@ -187,10 +223,11 @@ for ii=1:size(import_opts.shot_num,2)
          mcp_tdc_data.counts_txy{ii}=txydata;
          mcp_tdc_data.num_counts(ii)=size(txydata,1);
          mcp_tdc_data.shot_num(ii)=import_opts.shot_num(ii);
+
     end %file exists condition
     fprintf('\b\b\b\b%04i',ii)
 end
-import_opts_old=import_opts;
+
 fprintf('\b\b\b\b...Done\n')
     
 
