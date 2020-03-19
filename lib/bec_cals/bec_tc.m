@@ -1,8 +1,8 @@
 function [tc_out,details]=bec_tc(omega,atom_number,mass)
 % input
 %   omega-[scalar or 1x3] in hz
+warning('this function will be merged into bec_properties, please move your code use')
 
-warning('do not trust this function, it has not been tested')
 %if the constants strucure already exists do not run
 global const
 if isempty(const)

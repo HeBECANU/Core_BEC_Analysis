@@ -35,6 +35,10 @@ if isfield(corr_opts,'timer') && corr_opts.timer
     tic
 end
 
+if ~isfield(corr_opts,'fit')
+    corr_opts.fit=false;
+end
+
 if ~isfield(corr_opts,'calc_err')
     corr_opts.calc_err = false;
 end
@@ -70,6 +74,30 @@ end
 if ~isfield(corr_opts,'fig')
     corr_opts.fig='corr. output';
 end
+
+if ~isfield(corr_opts,'param_num')
+    corr_opt.param_num = 2;
+end
+
+if corr_opt.param_num == 4 %full freedom gaussian fit
+    fun1d =  @(b,x) b(1).*exp(-((x-b(2)).^2)./(2*b(3).^2))+b(4);
+    inital_guess=[2.5,0,0.01,1];
+elseif corr_opt.param_num == 3 %gaussian fit with fixed offset
+    fun1d =  @(b,x) b(1).*exp(-((x-b(2)).^2)./(2*b(3).^2))+1;
+    inital_guess=[2.5,0,0.01];
+elseif corr_opt.param_num == 2 %centered gaussian fit with fixed offset
+    fun1d =  @(b,x) b(1).*exp(-((x).^2)./(2*b(2).^2))+1;
+    inital_guess=[2.5,0.01];
+else
+    warning('Invalid number of fit parameters, using 2 instead')
+    fun1d =  @(b,x) b(1).*exp(-((x).^2)./(2*b(2).^2))+1;
+    inital_guess=[2.5,0.01];
+end
+fo = statset('TolFun',10^-6,...
+    'TolX',1e-4,...
+    'MaxIter',1e4,...
+    'UseParallel',1);
+
 
 if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb') 
     direction_label=direction_label{corr_opts.one_d_dimension};
@@ -145,6 +173,32 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
     out.between_shot_corr.one_d_corr_density=normcorr.one_d_corr_density;
     out.norm_g2.x_centers=shotscorr.x_centers;
     out.norm_g2.g2_amp=xg2;
+    if corr_opts.fit
+        if ~corr_opts.calc_err
+            fit=fitnlm(shotscorr.x_centers,xg2,...
+                fun1d,...
+                inital_guess,...
+                'Options',fo);
+        else
+            w = 1./xg2_err.^2;
+            fit=fitnlm(shotscorr.x_centers,xg2,...
+                fun1d,...
+                inital_guess,...
+                'Weight',w,...
+                'Options',fo);
+        end
+        out.fit = fit;
+        if corr_opts.plots
+            hold on
+            xx = linspace(min(shotscorr.x_centers),max(shotscorr.x_centers),3e3)';
+            [ypred,ypredci] = predict(fit,xx,'Simultaneous',true);
+            plot(xx,ypred,'b-', xx,ypredci,'r-');
+            b = fit.Coefficients.Estimate; %fitted parameters
+            b_unc = fit.Coefficients.SE; %uncertainty in parameters
+            text(0.003,2.0,sprintf('fitted g2(0) amplitude:%s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0)));
+            text(0.003,1.8,sprintf('fitted g2 width:%s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0)));
+        end
+    end
     [g2peak,indx] = max(xg2);
     if corr_opts.calc_err
         out.in_shot_corr.corr_unc = shotscorr_err;
@@ -155,6 +209,10 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
         fprintf('g2 peak amplitude         %s\n',string_value_with_unc(g2peak,g2peak_unc,'type','b','separator',0))
     else
         fprintf('g2 peak amplitude         %4.2f \n',g2peak)
+    end
+    if corr_opts.fit
+        fprintf('fitted g2(0) amplitude         %s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0))
+        fprintf('fitted g2 width         %s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0))
     end
     out.norm_g2.g2peak=g2peak;
     
@@ -189,7 +247,7 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
     norm_sort_dir=corr_opts.sorted_dir;
     if ~corr_opts.sort_norm,norm_sort_dir=nan; end
     if size(counts,1)>1
-        chunk_num = round(size(counts,2)/10);
+        chunk_num = round(size(counts,2)/100);
         counts_chunked(1,:)=chunk_data(counts(1,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
         counts_chunked(2,:)=chunk_data(counts(2,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
 %         counts_chunked=counts_chunked(:,1:end-1);
@@ -232,8 +290,33 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
     out.between_shot_corr.one_d_corr_density=normcorr.rad_corr_density;
     out.norm_g2.rad_centers=shotscorr.rad_centers;
     out.norm_g2.g2_amp=xg2;
-    out.norm_g2.g2_amp=xg2;
     [g2peak,indx] = max(xg2);
+    if corr_opts.fit
+        if ~corr_opts.calc_err
+            fit=fitnlm(shotscorr.rad_centers,xg2,...
+                fun1d,...
+                inital_guess,...
+                'Options',fo);
+        else
+            w = 1./xg2_err.^2;
+            fit=fitnlm(shotscorr.rad_centers,xg2,...
+                fun1d,...
+                inital_guess,...
+                'Weight',w,...
+                'Options',fo);
+        end
+        out.fit = fit;
+        if corr_opts.plots
+            hold on
+            xx = linspace(0,max(shotscorr.rad_centers),3e3)';
+            [ypred,ypredci] = predict(fit,xx,'Simultaneous',true);
+            plot(xx,ypred,'b-', xx,ypredci,'r-');
+            b = fit.Coefficients.Estimate; %fitted parameters
+            b_unc = fit.Coefficients.SE; %uncertainty in parameters
+            text(0.003,2.0,sprintf('fitted g2(0) amplitude:%s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0)));
+            text(0.003,1.8,sprintf('fitted g2 width:%s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0)));
+        end
+    end
     if corr_opts.calc_err
         out.in_shot_corr.corr_unc = shotscorr_err;
         out.between_shot_corr.corr_unc = normcorr_err;
@@ -243,6 +326,10 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
         fprintf('g2 peak amplitude         %s\n',string_value_with_unc(g2peak,g2peak_unc,'type','b','separator',0))
     else
         fprintf('g2 peak amplitude         %4.2f \n',g2peak)
+    end
+    if corr_opts.fit
+        fprintf('fitted g2(0) amplitude         %s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0))
+        fprintf('fitted g2 width         %s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0))
     end
     out.norm_g2.g2peak=g2peak;
     
@@ -332,6 +419,28 @@ elseif isequal(corr_opts.type,'3d_cart_cl')  || isequal(corr_opts.type,'3d_cart_
         out{dimension}.norm_g2.x_centers=shotscorr.x_centers;
         out{dimension}.norm_g2.g2_amp=xg2;
         [g2peak,indx] = max(xg2);
+        if corr_opts.fit
+            if ~corr_opts.calc_err
+                fit=fitnlm(shotscorr.x_centers,xg2,...
+                    fun1d,...
+                    inital_guess,...
+                    'Options',fo);
+            else
+                w = 1./xg2_err.^2;
+                fit=fitnlm(shotscorr.x_centers,xg2,...
+                    fun1d,...
+                    inital_guess,...
+                    'Weight',w,...
+                    'Options',fo);
+            end
+            out{dimension}.fit = fit;
+            if corr_opts.plots
+                hold on
+                xx = linspace(0,max(shotscorr.x_centers),3e3)';
+                [ypred,ypredci] = predict(fit,xx,'Simultaneous',true);
+                plot(xx,ypred,'b-', xx,ypredci,'r-');
+            end
+        end
         if corr_opts.calc_err
             out{dimension}.in_shot_corr.corr_unc = shotscorr_err;
             out{dimension}.between_shot_corr.corr_unc = normcorr_err;
