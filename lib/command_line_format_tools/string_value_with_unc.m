@@ -45,10 +45,10 @@ is_c_logical=@(in) isequal(in,true) || isequal(in,false); %can x be cast as a lo
 validtypes={'s','standard','pm','b','brackets'};
 type_ok_fun=@(x) sum(strcmp(validtypes,x))==1;
 p = inputParser;
-addParameter(p,'type','standard',type_ok_fun);
-addParameter(p,'separator',false,@(x) is_c_logical(x) || (ischar(x) && numel(x)==1) );
-addParameter(p,'remove_common_factors',0,is_c_logical);
-addParameter(p,'power_type','sci',@(x) sum(strcmp({'sci','eng'},x))==1);
+addOptional(p,'type','standard',type_ok_fun);
+addOptional(p,'separator',false,@(x) is_c_logical(x) || (ischar(x) && numel(x)==1) );
+addOptional(p,'remove_common_factors',0,is_c_logical);
+addOptional(p,'power_type','sci',@(x) sum(strcmp({'sci','eng'},x))==1);
 parse(p,varargin{:});
 
 error_type=p.Results.type;
