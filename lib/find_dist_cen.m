@@ -37,7 +37,7 @@ fo = statset('TolFun',10^-6,...
     'MaxIter',1e4,...
     'UseParallel',1);
 
-for this_idx = 1:num_shots % Loop over all QD shots
+for this_idx = 1:num_shots % Loop over all shots
     this_txy = data.masked.counts_txy{this_idx};
     if size(this_txy,2) ~= 3 || isempty(this_txy)
         centre_OK(this_idx) = 0;
@@ -53,7 +53,6 @@ for this_idx = 1:num_shots % Loop over all QD shots
         continue
     end
     bec_counts(this_idx) = size(trim_txy,1);
-    % find centres with the hist threshold method
     if opts_cent.visual && this_idx == 1
         clf;
     end
@@ -72,10 +71,13 @@ for this_idx = 1:num_shots % Loop over all QD shots
         flux = count_hist.count_rate.smooth;
         bin_centres = count_hist.bin.centers;
         mask = flux > opts_cent.threshold(axis);
-        if all(~mask)
+        if all(mask) || sum(~mask)/length(mask)<0.1
             centre_OK(this_idx) = 0;
             bec_centres(this_idx, axis) = nan;
             bec_widths(this_idx, axis) = nan;
+            continue
+        elseif all(~mask) && strcmp(this_method,'margin')
+            this_method = 'average';
         else
             centre_OK(this_idx) = 1;
             switch this_method
@@ -83,11 +85,7 @@ for this_idx = 1:num_shots % Loop over all QD shots
                     locs = find(mask);
                     margins = [min(locs(2:end-1)), max(locs(2:end-1))];
                     t_margins = bin_centres(margins);
-                    try
                     bec_centres(this_idx, axis) = mean(t_margins);
-                    catch
-                        dum=0;
-                    end
                     bec_widths(this_idx, axis) = diff(t_margins);
                 case 'average'
                     bec_centres(this_idx,axis) = nansum(flux(~mask).*bin_centres(~mask))./nansum(flux(~mask));

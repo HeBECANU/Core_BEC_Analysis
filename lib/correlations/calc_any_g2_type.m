@@ -130,7 +130,7 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
     norm_sort_dir=corr_opts.sorted_dir;
     if ~corr_opts.sort_norm,norm_sort_dir=nan; end
     if size(counts,1)>1
-        chunk_num = round(size(counts,2));
+        chunk_num = max([cellfun(@(x)size(x,1),counts(1,:)),cellfun(@(x)size(x,1),counts(2,:))]);
         counts_chunked(1,:)=chunk_data(counts(1,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
         counts_chunked(2,:)=chunk_data(counts(2,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
 %         counts_chunked=counts_chunked(:,1:end-1);
@@ -247,7 +247,9 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
     norm_sort_dir=corr_opts.sorted_dir;
     if ~corr_opts.sort_norm,norm_sort_dir=nan; end
     if size(counts,1)>1
-        chunk_num = round(size(counts,2)/100);
+        %set the number of chunks to be at least as many as the heighest
+        %count number out of all halos
+        chunk_num = max([cellfun(@(x)size(x,1),counts(1,:)),cellfun(@(x)size(x,1),counts(2,:))]);
         counts_chunked(1,:)=chunk_data(counts(1,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
         counts_chunked(2,:)=chunk_data(counts(2,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
 %         counts_chunked=counts_chunked(:,1:end-1);
@@ -374,7 +376,7 @@ elseif isequal(corr_opts.type,'3d_cart_cl')  || isequal(corr_opts.type,'3d_cart_
         norm_sort_dir=corr_opts.sorted_dir;
         if ~corr_opts.sort_norm,norm_sort_dir=nan; end
         if size(counts,1)>1
-            chunk_num = round(size(counts,2));
+            chunk_num = max([cellfun(@(x)size(x,1),counts(1,:)),cellfun(@(x)size(x,1),counts(2,:))]);
             counts_chunked(1,:)=chunk_data(counts(1,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
             counts_chunked(2,:)=chunk_data(counts(2,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
             %         counts_chunked=counts_chunked(:,1:end-1);
