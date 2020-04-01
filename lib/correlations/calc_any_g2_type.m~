@@ -188,15 +188,14 @@ if isequal(corr_opts.type,'1d_cart_cl')  || isequal(corr_opts.type,'1d_cart_bb')
                 'Options',fo);
         end
         out.fit = fit;
-        b = fit.Coefficients.Estimate; %fitted parameters
-        b_unc = fit.Coefficients.SE; %uncertainty in parameters
-        out.norm_g2.fitted_g2peak = b(1)+1;
-        out.norm_g2.fitted_g2peak_unc = b_unc(1);
+        out
         if corr_opts.plots
             hold on
             xx = linspace(min(shotscorr.x_centers),max(shotscorr.x_centers),3e3)';
             [ypred,ypredci] = predict(fit,xx,'Simultaneous',true);
             plot(xx,ypred,'b-', xx,ypredci,'r-');
+            b = fit.Coefficients.Estimate; %fitted parameters
+            b_unc = fit.Coefficients.SE; %uncertainty in parameters
             text(0.003,2.0,sprintf('fitted g2(0) amplitude:%s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0)));
             text(0.003,1.8,sprintf('fitted g2 width:%s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0)));
         end
@@ -310,15 +309,13 @@ elseif isequal(corr_opts.type,'radial_cl')  || isequal(corr_opts.type,'radial_bb
                 'Options',fo);
         end
         out.fit = fit;
-        b = fit.Coefficients.Estimate; %fitted parameters
-        b_unc = fit.Coefficients.SE; %uncertainty in parameters
-        out.norm_g2.fitted_g2peak = b(1)+1;
-        out.norm_g2.fitted_g2peak_unc = b_unc(1);
         if corr_opts.plots
             hold on
             xx = linspace(0,max(shotscorr.rad_centers),3e3)';
             [ypred,ypredci] = predict(fit,xx,'Simultaneous',true);
             plot(xx,ypred,'b-', xx,ypredci,'r-');
+            b = fit.Coefficients.Estimate; %fitted parameters
+            b_unc = fit.Coefficients.SE; %uncertainty in parameters
             text(0.003,2.0,sprintf('fitted g2(0) amplitude:%s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0)));
             text(0.003,1.8,sprintf('fitted g2 width:%s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0)));
         end
