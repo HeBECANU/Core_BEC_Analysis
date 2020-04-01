@@ -25,3 +25,6 @@
 [submodule "bin/MBeautifier"]
 	path = bin/MBeautifier
 	url = https://github.com/davidvarga/MBeautifier.git
+[submodule "lib/SLOGS_structured_logging_standard"]
+	path = lib/SLOGS_structured_logging_standard
+	url = https://github.com/brycehenson/SLOGS_structured_logging_standard.git
