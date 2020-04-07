@@ -35,6 +35,7 @@ end
 
 num_shots=numel(out_data.counts_txy);
 empty_shots=cellfun(@isempty,out_data.counts_txy);
+empty_shot_indx = [];
 out_data.masked.counts_txy={};
 out_data.masked.num_counts=out_data.num_counts*nan;
 fprintf('hotspot masking shots %04u:%04u',num_shots,0)
@@ -46,11 +47,11 @@ for ii=1:num_shots
         out_data.masked.num_counts(ii)=numel(txy_shot);
         out_data.masked.counts_txy{ii}=txy_shot;
     else
-        warning('empty shot')
+        empty_shot_indx = [empty_shot_indx ii]; %warning('empty shot')
     end
     if mod(ii,10)==0,fprintf('\b\b\b\b%04u',ii),end 
 end
-
+fprintf('\nWarning: empty shot(s) %g \n',empty_shot_indx)
 if ~isfield(data,'mcp_tdc')
     data = out_data;
 else
