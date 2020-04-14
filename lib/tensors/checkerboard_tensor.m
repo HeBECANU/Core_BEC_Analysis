@@ -1,4 +1,16 @@
 function tensor_out=checkerboard_tensor(size_in)
+% makes an alternating pattern of logicals
+% Inputs
+% size_in - size of the output tensor (arb. dim. array)
+% Output
+% tensor_out - tensor of locicals with alternating true false
+% Bryce Henson 2020-04-14
+% TODO
+% - test cases
+% - phase shift
+% - arb period
+
+
 size_in=row_vec(size_in);
 
 tensor_out=zeros(size_in);
