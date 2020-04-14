@@ -36,7 +36,7 @@ figure(1)
 subplot(1,2,2)
 imagesc(im_in)
 cm=inferno;
-cm_out=nonlinear_colormap(cm,'power',[2],1)
+cm_out=nonlinear_colormap(cm,'power',[0.5],1)
 figure(1)
 subplot(1,2,2)
 colormap(gca,cm_out)
