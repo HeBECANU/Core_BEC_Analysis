@@ -6,6 +6,11 @@ function data=hotspot_mask(data,anal_opts)
 % - automate the mask devlopment process
 %   - 
 % 
+if ~isfield(data,'mcp_tdc')
+    out_data = data;
+else
+    out_data = data.mcp_tdc;
+end
 if nargin<2 || isempty(anal_args)
     % default hot spot deletion
     % good as of 2019-11-20
@@ -28,23 +33,29 @@ if nargin<2 || isempty(anal_args)
 end
 
 
-num_shots=numel(data.mcp_tdc.counts_txy);
-empty_shots=cellfun(@isempty,data.mcp_tdc.counts_txy);
-data.mcp_tdc.masked.counts_txy={};
-data.mcp_tdc.masked.num_counts=data.mcp_tdc.num_counts*nan;
+num_shots=numel(out_data.counts_txy);
+empty_shots=cellfun(@isempty,out_data.counts_txy);
+empty_shot_indx = [];
+out_data.masked.counts_txy={};
+out_data.masked.num_counts=out_data.num_counts*nan;
 fprintf('hotspot masking shots %04u:%04u',num_shots,0)
 for ii=1:num_shots
-    txy_shot=data.mcp_tdc.counts_txy{ii};
+    txy_shot=out_data.counts_txy{ii};
     if ~isempty(txy_shot)
         txy_shot=masktxy_square(txy_shot,anal_opts.hotspot_mask.square_mask);
         txy_shot=masktxy_2d_circle(txy_shot,anal_opts.hotspot_mask.circ_mask);
-        data.mcp_tdc.masked.num_counts(ii)=numel(txy_shot);
-        data.mcp_tdc.masked.counts_txy{ii}=txy_shot;
+        out_data.masked.num_counts(ii)=numel(txy_shot);
+        out_data.masked.counts_txy{ii}=txy_shot;
     else
-        warning('empty shot')
+        empty_shot_indx = [empty_shot_indx ii]; %warning('empty shot')
     end
     if mod(ii,10)==0,fprintf('\b\b\b\b%04u',ii),end 
 end
-    
+fprintf('\nWarning: empty shot(s) %g \n',empty_shot_indx)
+if ~isfield(data,'mcp_tdc')
+    data = out_data;
+else
+    data.mcp_tdc = out_data;
+end
     
 end

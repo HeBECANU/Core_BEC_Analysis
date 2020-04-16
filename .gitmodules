@@ -25,3 +25,9 @@
 [submodule "bin/MBeautifier"]
 	path = bin/MBeautifier
 	url = https://github.com/davidvarga/MBeautifier.git
+[submodule "lib/SLOGS_structured_logging_standard"]
+	path = lib/SLOGS_structured_logging_standard
+	url = https://github.com/brycehenson/SLOGS_structured_logging_standard.git
+[submodule "lib/matlab_struct_tensor_conversions"]
+	path = lib/matlab_struct_tensor_conversions
+	url = https://github.com/brycehenson/matlab_struct_tensor_conversions.git
