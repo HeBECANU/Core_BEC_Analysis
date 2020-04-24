@@ -2,13 +2,15 @@ function y=gaussian_function_1d(x,varargin)
 % mandatory inputs
 %       x
 % optional inputs 
-%       sigma, mu,offset
+%       sigma, mu,amp,offset
 % string pair args 
 %       'norm' - can be 
 %               'amp' - unit amplitude
 %               'int' - unit integeral
 %               'sum' - unit sum of elements
 % 
+
+
 % Bryce Henson 2020-04-22
 
 

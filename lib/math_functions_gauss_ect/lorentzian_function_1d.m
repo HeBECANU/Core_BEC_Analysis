@@ -2,13 +2,15 @@ function y=lorentzian_function_1d(x,varargin)
 % mandatory inputs
 %       x
 % optional inputs 
-%       gamma (half width at half maximum), mu (x center),offset
+%       gamma (half width at half maximum), mu (x center),amp,offset
 % string pair args 
 %       'norm' - can be 
 %               'amp' - unit amplitude
 %               'int' - unit integeral
 %               'sum' - unit sum of elements
 % 
+% lor_fun=@(b,x) b(3)*(b(1).^2)./((x-b(2)).^2 + b(1).^2)+b(4);
+% cof_names={'gamma','mu','amp','offset'};
 % Bryce Henson 2020-04-22
 
 p=inputParser;
@@ -45,7 +47,7 @@ switch norm_type
          y=y/(gamma*pi);
 end
 
-y=y+offset;
+y=y*amp+offset;
 
 end
 

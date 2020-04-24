@@ -53,47 +53,64 @@ check_input_size(x,mu)
 check_input_size(x,amp)
 check_input_size(x,offset)
 
+sigma=abs(sigma);
+gamma=abs(gamma);
+omega_g=sigma*sqrt(2);
 
-    omega_g=sigma*sqrt(2);
+% if abs(sigma/gamma)<1e-3 && abs(sigma/gamma)>1e-6
+%     method_type='fadd';
+%     warning('sigma is too small using fadd method')
+% end
 
-switch method_type
-    case 'approx'
-        % this aprox from for the voigt function
-        % http://www.ccsenet.org/journal/index.php/jmr/article/view/62103
-        % does not specity sigma and gamma seperately
-        % so we must transform to the dimensionless form
-        % see equation 6 of https://arxiv.org/pdf/0805.2274.pdf
-
-        % which uses a different form of a gaussian so we define the gaussian omega from the gaussian sigma
+if abs(sigma/gamma)<1e-6
+   warning('using lorentzian because sigma is so small') 
+   v=lorentzian_function_1d(x,gamma,mu,amp,0,'norm','amp');
     
-        x_prime=(x-mu)./omega_g;
-        y_prime=gamma/omega_g;
-        v=(1/(omega_g*sqrt(pi)))*voigtf(x_prime,y_prime,2);
-    case 'fadd'
-        % basic idea from https://au.mathworks.com/matlabcentral/fileexchange/55334-voigt-model-fit
-        % modified to use this fadeva calculator https://au.mathworks.com/matlabcentral/fileexchange/47801-the-voigt-complex-error-function-second-version
-        % to see how this works check out http://www.ccsenet.org/journal/index.php/jmr/article/view/62103
+elseif abs(gamma/sigma)<1e-6
+    warning('using gaussian because gamma so small')
+    v=gaussian_function_1d(x,sigma,mu,amp,0,'norm','amp');
+else
         
-        z = ((x-mu)+1i*gamma)/(omega_g);
-        v = (1/(omega_g*sqrt(pi))) * real(fadf(z)); % Get Voigt from Faddeeva fn.
-    case 'num'
-        error('not yet implemented')
+    switch method_type
+        case 'approx'
+            % this aprox from for the voigt function
+            % http://www.ccsenet.org/journal/index.php/jmr/article/view/62103
+            % does not specity sigma and gamma seperately
+            % so we must transform to the dimensionless form
+            % see equation 6 of https://arxiv.org/pdf/0805.2274.pdf
+
+            % which uses a different form of a gaussian so we define the gaussian omega from the gaussian sigma
+
+            x_prime=(x-mu)./omega_g;
+            y_prime=gamma/omega_g;
+            v=(1/(omega_g*sqrt(pi)))*voigtf(x_prime,y_prime,2);
+        case 'fadd'
+            % basic idea from https://au.mathworks.com/matlabcentral/fileexchange/55334-voigt-model-fit
+            % modified to use this fadeva calculator https://au.mathworks.com/matlabcentral/fileexchange/47801-the-voigt-complex-error-function-second-version
+            % to see how this works check out http://www.ccsenet.org/journal/index.php/jmr/article/view/62103
+
+            z = ((x-mu)+1i*gamma)/(omega_g);
+            v = (1/(omega_g*sqrt(pi))) * real(fadf(z)); % Get Voigt from Faddeeva fn.
+        case 'num'
+            error('not yet implemented')
+    end
+
 end
 
 v=col_vec(v);
 
 switch norm_type
     case 'amp'
-        % this is rather crude but should work just fine
-        % would nice to have some expression for the peak amplitude
-        v=v/max(v(:));
+        % find the amplitude by evaluating the 'fadd' method at zero
+        peak_val=voigt_function_1d(0,sigma,gamma,0,1,0,'norm','int','method','fadd');
+        v=v/peak_val;
     case 'sum'
         v=v/sum(v(:));
     case 'int'
          v=v;
 end
 
-c=v*amp +offset;
+v=v*amp +offset;
 
 
 
