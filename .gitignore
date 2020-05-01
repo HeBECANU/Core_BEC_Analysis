@@ -10,3 +10,5 @@
 *.db
 # Sandboxing
 /scratch
+# mac filesystem stuff
+.DS_Store

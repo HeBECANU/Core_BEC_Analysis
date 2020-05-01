@@ -1,7 +1,7 @@
 function details=bec_properties(omega,atom_number,mass,a_scat_len)
 % calculate key properties of bose-einstein condensates
 % input
-%   omega-[scalar or 1x3] in hz
+%   omega-[scalar or 1x3] in Hz (not in rad/s)
 %   atom number - scalar
 % output
 % 
@@ -45,7 +45,6 @@ end
 
 
 details=[];
-
 omega_bar=prod(omega)^(1/3);
 omega_mean=mean(omega);
 
@@ -90,7 +89,13 @@ n_mean_density=atom_number/tf_volume;
 
 tan_constant = (n_max_peak_density)*((64*pi^2)/7)*a_scat_len^2;
 
+% goodness of TF p.171,2nd ed. pethick_smith
+a_bar=sqrt(const.hb/(const.mhe*omega_bar)); % a bar is a the characteristic length
+tf_goodness=atom_number*a_scat_len/a_bar;
+% TF is good approx for bulk when this is much greater than 1
 
+% not sure which one is gravity axis so do all
+grav_sag=-const.g0./(omega.^2);
 details.tc.non_interacting=tc_non_interacting;
 details.tc.finite_number=tc_finite_number;
 details.tc.finite_interacting=tc_finite_interacting;
@@ -100,6 +105,9 @@ details.tf_radi=r_tf_radi;
 details.tf_radi_bar=r_bar;
 details.tf_radi_mean=r_mean;
 details.tf_volume=tf_volume;
+details.grav_sag=grav_sag;
+details.a_bar=a_bar;
+details.tf_goodness=tf_goodness;
 details.density_peak=n_max_peak_density;
 details.density_mean=n_mean_density;
 details.u_eff_interaction=u_eff_interaction;
