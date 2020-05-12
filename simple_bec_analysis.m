@@ -40,8 +40,6 @@ set_up_project_path
 
 hebec_constants %call the constants function that makes some globals
 
-%call the constants function that makes some globals
-hebec_constants 
 
 %% Importing Data
 %now we can find all the data files in that directory

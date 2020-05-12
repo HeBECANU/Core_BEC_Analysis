@@ -36,6 +36,14 @@ function gauss=custom_gaussian_function_2d(fun_size, sigma, center, theta, offse
 % Last revision:2019-03-07
 
 %------------- BEGIN CODE --------------
+if isempty(center)
+    center=[0,0];
+end
+if isempty(theta)
+    theta=0;
+end
+
+
 [xvals,yvals] = meshgrid((1:fun_size(1))-((fun_size(1)-1)/2)-1,...
     (1:fun_size(2))-((fun_size(2)-1)/2)-1);
 xc      = center(1);

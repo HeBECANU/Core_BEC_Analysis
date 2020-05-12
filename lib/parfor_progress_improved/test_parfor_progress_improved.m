@@ -4,16 +4,25 @@
 tic
 updates=100;
 itt = 100000;
-update_frac=itt/updates;
+update_frac=updates/itt;
 parfor_progress_imp(updates);
-parfor i=1:itt
-    pause(10*rand/itt); % Replace with real code
-    if rand<(1/update_frac)
+num_updates=0;
+pause(1)
+for i=1:itt
+    pause(0.1*rand/itt); % Replace with real code
+    if rand<(update_frac*1.3)
         parfor_progress_imp;
+        num_updates=num_updates+1;
+        pause(0.0002)
+        if num_updates>0.95*updates
+            pause(0.1)
+        end
     end
 end
 parfor_progress_imp(0);
 toc
+num_updates
+
 
 
 %%
@@ -62,8 +71,9 @@ parfor i=1:itt
     parfor_progress_imp;
 end
 parfor_progress_imp(0);
-toc
-
+time_imp=toc;
+time_per_update_imp=time_imp/itt;
+fprintf('time per update %.2e\n',time_per_update_imp)
 %%
 
 tic 
@@ -73,6 +83,8 @@ parfor i=1:itt
     parfor_progress;
 end
 parfor_progress_imp(0);
-toc
+time_old=toc;
+time_per_update_old=time_old/itt;
+fprintf('time per update %.2e\n',time_per_update_old)
 
 

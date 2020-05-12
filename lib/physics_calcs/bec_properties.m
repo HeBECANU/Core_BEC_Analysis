@@ -1,4 +1,4 @@
-function details=bec_properties(omega,atom_number,mass,a_scat_len)
+function details=bec_properties(trap_freq,atom_number,mass,a_scat_len)
 % calculate key properties of bose-einstein condensates
 % input
 %   omega-[scalar or 1x3] in Hz (not in rad/s)
@@ -17,18 +17,18 @@ end
 
 % input parsing
 % omega
-omega=col_vec(omega);
-if numel(omega)==1
-    omega=cat(1,omega,omega,omega);
-elseif numel(omega)~=3
+trap_freq=col_vec(trap_freq);
+if numel(trap_freq)==1
+    trap_freq=cat(1,trap_freq,trap_freq,trap_freq);
+elseif numel(trap_freq)~=3
     error('omega must be 1, or 3 elements')
 end
 
-if sum(omega<0)>0 && sum(imag(omega)>0)>0
+if sum(trap_freq<0)>0 && sum(imag(trap_freq)>0)>0
     error('omega must be positive real')
 end
 
-omega=2*pi*omega;
+omega=2*pi*trap_freq;
 
 %mass
 if nargin<3 || isnan(mass) || isempty(mass)
@@ -78,8 +78,8 @@ r_tf_radi=sqrt(2*mu_chem_pot./(mass.*omega.^2));
 r_bar=prod(r_tf_radi)^(1/3);
 r_mean=mean(r_tf_radi);
 
-%pethick eq6.33 
-u_eff_interaction=4*pi*const.hb^2*a_scat_len/mass;
+%pethick 5.54
+u_eff_interaction=4*pi*(const.hb^2)*a_scat_len/mass;
 
 n_max_peak_density=mu_chem_pot/u_eff_interaction;
 
@@ -112,6 +112,11 @@ details.density_peak=n_max_peak_density;
 details.density_mean=n_mean_density;
 details.u_eff_interaction=u_eff_interaction;
 details.tan_contact= tan_constant;
+details.inputs=[];
+details.inputs.omega=omega;
+details.inputs.atom_number=atom_number;
+details.inputs.mass=mass;
+details.inputs.a_scat_len=a_scat_len;
 
 
 end
