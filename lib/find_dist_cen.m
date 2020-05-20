@@ -37,6 +37,11 @@ fo = statset('TolFun',10^-6,...
     'MaxIter',1e4,...
     'UseParallel',1);
 
+if opts_cent.visual>1
+    stfig('BEC centering dist');
+    clf
+end
+
 for this_idx = 1:num_shots % Loop over all shots
     this_txy = data.masked.counts_txy{this_idx};
     if size(this_txy,2) ~= 3 || isempty(this_txy)
@@ -135,7 +140,14 @@ for this_idx = 1:num_shots % Loop over all shots
     end
 end
 
-if opts_cent.visual
+% cut outliers
+for ii = 1:3
+centre_outlier = isoutlier(bec_centres(:,ii));
+width_outlier = isoutlier(bec_widths(:,ii));
+centre_OK = centre_OK & ~centre_outlier & ~width_outlier;
+end
+
+if opts_cent.visual > 1
     for splt = 1:3
         subplot(3,1,splt)
         ylabel('Counts')
@@ -144,17 +156,19 @@ end
 
 if opts_cent.visual
     f=stfig('BEC centering');
+    centre_OK = logical(centre_OK);
+    indexes = 1:length(centre_OK);
     clf
     subplot(2,1,1)
-    plot(bec_centres-mean(bec_centres),'.')
+    plot(indexes(centre_OK),bec_centres(centre_OK,:)-nanmean(bec_centres(centre_OK,:)),'.')
     title('BEC centre deviation')
     xlabel('Shot number')
     ylabel('Centre offset (mm)')
     subplot(2,1,2)
-    plot(bec_widths)
+    plot(indexes(centre_OK),bec_widths(centre_OK,:))
     title('BEC width')
     xlabel('Shot number')
-    ylabel('widths')
+    ylabel('widths (mm)')
     if opts_cent.savefigs
         cli_header(1,'Saving images...');
         saveas(f,fullfile(opts_cent.data_out,'centering.fig'));
