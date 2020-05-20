@@ -45,13 +45,16 @@ addOptional(p,'bin_num',nan,@isnumeric);
 addOptional(p,'bin_factor',nan,@isnumeric);
 addOptional(p,'max_bins',2e6,@isnumeric);
 addOptional(p,'doplot',false,is_c_logical);
+addOptional(p,'scale_x_fun',[],@(x) isa(x,'function_handle')|| isempty(x) )
+addOptional(p,'scale_y_fun',[],@(x) isa(x,'function_handle')|| isempty(x))
 parse(p,varargin{:});
 parsed_input= p.Results;
+scale_x_fun=parsed_input.scale_x_fun;
+scale_y_fun=parsed_input.scale_y_fun;
 
 if nargout==0
     parsed_input.doplot=true;
 end
-
 
 if sum(~isnan([parsed_input.bin_factor,parsed_input.bin_width,parsed_input.bin_num]))>1
     error('must pass only one of ''bin_factor'' or ''bin_width'' or ''bin_num''  ')
@@ -128,6 +131,14 @@ else
     out_struct.counts.raw=hist_counts_raw;
 end
 
+if ~isempty(scale_x_fun)
+    edges=scale_x_fun(edges);
+    centers=scale_x_fun(centers);
+end  
+
+if ~isempty(scale_y_fun)
+    out_struct.counts.raw=scale_y_fun(centers,out_struct.counts.raw);
+end  
 
 if sigma~=0 || ~isnan(sigma)
     out_struct.counts.smooth=gaussfiltn(centers,out_struct.counts.raw,sigma);
