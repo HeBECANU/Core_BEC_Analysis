@@ -52,6 +52,11 @@ parsed_input= p.Results;
 scale_x_fun=parsed_input.scale_x_fun;
 scale_y_fun=parsed_input.scale_y_fun;
 
+if ~isempty(scale_x_fun)
+    xdata=scale_x_fun(xdata);
+end  
+
+
 if nargout==0
     parsed_input.doplot=true;
 end
@@ -131,11 +136,6 @@ else
     out_struct.counts.raw=hist_counts_raw;
 end
 
-if ~isempty(scale_x_fun)
-    edges=scale_x_fun(edges);
-    centers=scale_x_fun(centers);
-end  
-
 if ~isempty(scale_y_fun)
     out_struct.counts.raw=scale_y_fun(centers,out_struct.counts.raw);
 end  
@@ -151,6 +151,14 @@ out_struct.count_rate.raw=out_struct.counts.raw./diff(edges);
 
 out_struct.bin.edge=edges;
 out_struct.bin.centers=centers;
+
+
+% normalize
+if ndims(xdata)>2
+    warning('smooth_prob is not yet implmented properly for xdata hgiher dim than vector')
+else
+    out_struct.count_rate.smooth_prob=out_struct.count_rate.smooth/numel(xdata);
+end
 
 if parsed_input.doplot
     stfig('smooth histogram')

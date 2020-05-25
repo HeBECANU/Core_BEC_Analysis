@@ -54,10 +54,8 @@ elseif strcmp(type,'power')
     pow_pow=params(1);
     pow_scaling=params(2);
     pow_offset=params(3);
-    
     query_points=pow_offset+pow_scaling*(original_maping).^pow_pow;
-elseif strcmp(type,'linear')
-   
+%elseif strcmp(type,'linear')
 else     
     original_maping=original_maping;
 end

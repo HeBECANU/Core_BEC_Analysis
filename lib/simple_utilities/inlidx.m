@@ -4,6 +4,8 @@ function out=inlidx(matrix,index)
 % inlidx(a,[1,2])
 % inlidx(a,{':',2})
 
+if nargin>1
+
 if isvector(index) && ~iscell(index)
     index=num2cell(index);
 elseif  ~iscell(index)
@@ -16,5 +18,8 @@ end
 
 %inline index
 out=matrix(index{:});
+else
+    out=matrix;
+end
 
 end

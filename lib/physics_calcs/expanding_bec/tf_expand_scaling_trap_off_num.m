@@ -26,14 +26,14 @@ lambda_dlambda_soln = ode113(@(t,X) rescaling_deriv(t,X,omega_tzero),twindow,ini
 if lambda_dlambda_soln.x(end)~=tmax
     error('did not evaluate at this point')
 end
-lambda_end=lambda_dlambda_soln.y(end,1:3);
+lambda_end=lambda_dlambda_soln.y(1:3,end);
 
 soln_sequence=[];
 soln_sequence.time=lambda_dlambda_soln.x;
-soln_sequence.lambda=lambda_dlambda_soln.y(:,1:3);
-soln_sequence.d_lambda=lambda_dlambda_soln.y(end,4:6);
+soln_sequence.lambda=lambda_dlambda_soln.y(1:3,:);
+soln_sequence.d_lambda=lambda_dlambda_soln.y(4:6,end);
 
-% for handy use later we pass out a function which can be used to evaluate the function at any time
+% for use later we pass out a function which can be used to evaluate the function at any time
 if nargout>2
     lambda_fun=@(t) evaluating_fun(lambda_dlambda_soln,t);
 end
@@ -83,8 +83,8 @@ function lambda=evaluating_fun(lambda_dlambda_soln,t)
         % if adter sim we use a very simple linear interp
         % L=L_end+(t-tend)*dL/dt|_t=tend
         dt=t(mask_after_sim)-tmax;
-        lambda(mask_before_sim,:)=repmat(transpose(lambda_dlambda_soln.y(1:3,end)),sum(mask_before_sim),1)+...
-            repmat(dt,1,3).*repmat(transpose(lambda_dlambda_soln.y(4:6,end)),sum(mask_before_sim),1);
+        lambda(mask_after_sim,:)=repmat(transpose(lambda_dlambda_soln.y(1:3,end)),sum(mask_after_sim),1)+...
+            repmat(dt,1,3).*repmat(transpose(lambda_dlambda_soln.y(4:6,end)),sum(mask_after_sim),1);
     end
     
 
