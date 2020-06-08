@@ -20,6 +20,7 @@ addOptional(p,'mu',0.5);
 addOptional(p,'amp',1);
 addOptional(p,'offset',0);
 addParameter(p,'norm','amp',valid_norm_type);
+addParameter(p,'derivative',0,@(x) any(x==[0,1,2]))
 parse(p,varargin{:});
    
 gamma = p.Results.gamma; 
@@ -27,6 +28,7 @@ mu = p.Results.mu;
 amp = p.Results.amp; 
 offset = p.Results.offset; 
 norm_type=p.Results.norm;
+derivative_order=p.Results.derivative;
 
 % check that the sizes are either 
 check_input_size(x,gamma)
@@ -34,9 +36,16 @@ check_input_size(x,mu)
 check_input_size(x,amp)
 check_input_size(x,offset)
 
-
-y = (gamma.^2)./((x-mu).^2 + gamma.^2);
-    
+switch derivative_order
+    case 0
+        y = (gamma.^2)./((x-mu).^2 + gamma.^2);
+    case 1
+        y = -(2*(x-mu).*gamma.^2)./(  ((x-mu).^2 + gamma.^2).^2  );
+    case 2
+      xdiff=x-mu;  
+      y=gamma.^2 * (   8*(xdiff.^2)./( (xdiff.^2+gamma.^2).^3  )   - ...
+                       2./( (xdiff.^2+gamma.^2).^2  )  );
+end
 
 switch norm_type
     case 'amp'
@@ -46,7 +55,6 @@ switch norm_type
     case 'int'
          y=y/(gamma*pi);
 end
-
 y=y*amp+offset;
 
 end

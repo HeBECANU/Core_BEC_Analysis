@@ -4,18 +4,37 @@ function set_up_project_path(path_to_project_root,folders_to_add,cd_proj_root)
 
 % inputs
 % path_to_project_root  - path to the root folder of the project
+%                           if empty then the directory of the calling function is used
+%                           a common choice is the current path pwd
 % folders_to_add        - cell array of char vectors, eg {'dev','lib','bin'}
+%                           if empty then default folders {'dev','lib','bin','test'} are used
+%                           can use + as shorthand for the default folders {'dev','lib','bin','test'} so {'+','figs'} would add
+%                           {'dev','lib','bin','test','figs'}
 % cd_proj_root          - should the current directory be changed to the project root
+%                           default true 
 
-if nargin<1
+default_folders={'dev','lib','bin','test'};
+
+
+
+if nargin<1 || isempty(path_to_project_root)
     path_to_project_root='.';
 end
 
-if nargin<2
-    folders_to_add={'dev','lib','bin','test'};
+if nargin<2 || isempty(folders_to_add)
+    folders_to_add=default_folders;
+else
+   idx_plus=strcmp(folders_to_add,'+');
+   folders_to_add(idx_plus)=[];
+   % note: this does not preserve order but who cares
+   folders_to_add=cat(2,folders_to_add,default_folders);
 end
+%remove duplicates
+folders_to_add=unique(folders_to_add);
 
-if nargin<3
+
+
+if nargin<3 || isempty(cd_proj_root)
     cd_proj_root=true;
 end
 
