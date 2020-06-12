@@ -63,6 +63,12 @@ function out=corr_1d_cart(corr_opts,counts)
 % Last revision:2018-12-18
 
 %------------- BEGIN CODE --------------
+if size(counts,1)==2
+    corr_opts.between_sets = true;
+else
+    corr_opts.between_sets = false;
+end
+    
 
 if ~isfield(corr_opts,'attenuate_counts')
     corr_opts.attenuate_counts=1;
@@ -99,10 +105,11 @@ if ~isfield(corr_opts,'low_mem') || isnan(corr_opts.low_mem)
         premask_factor=1;
     end
     %use the corr_opts.norm_samp_factor so that both corr/uncorr parts are calculated with the same function
-    corr_opts.low_mem=((max(num_counts)*corr_opts.norm_samp_factor*premask_factor)^2)>max_arr_size;
-
+    corr_opts.low_mem=((max(num_counts,[],'all')*corr_opts.norm_samp_factor*premask_factor)^2)>max_arr_size;
+    if corr_opts.print_update
     if corr_opts.low_mem,fprintf('auto detection:using the low memory option\n'), end
     if ~corr_opts.low_mem,fprintf('auto detection:using the high memory option\n'), end
+    end
 end
 
 %for the dimension of interest we set the window to be the region specified in corr_opts.one_d_edges
@@ -134,7 +141,7 @@ delta_multiplier=delta_multiplier(1+corr_opts.cl_or_bb); %gives 1 when cl and -1
 mask_dimensions=[1,2,3];
 mask_dimensions_logic=[true,true,true]; %logic to avoid clashes when corr_opts.one_d_dimension==corr_opts.sorted_dir
 mask_dimensions_logic(corr_opts.one_d_dimension)=false;
-if corr_opts.do_pre_mask, mask_dimensions_logic(corr_opts.sorted_dir)=false; end
+if corr_opts.do_pre_mask && ~corr_opts.between_sets, mask_dimensions_logic(corr_opts.sorted_dir)=false; end
 mask_dimensions=mask_dimensions(mask_dimensions_logic);
 
 [one_d_bins,corr_opts.one_d_edges]=histcounts([],corr_opts.one_d_edges);
@@ -144,22 +151,44 @@ if corr_opts.low_mem %calculate with the low memory mode
     % the low memory mode is serial and is a bit easier on mem requirements
     one_d_bins=col_vec(one_d_bins);
     for shotnum=1:shots
-        shot_txy=counts{shotnum};
-        num_counts_shot=num_counts(shotnum);
-        if corr_opts.attenuate_counts~=1 %randomly keep corr_opts.attenuate_counts fraction of the data
-            mask=rand(num_counts_shot,1)<corr_opts.attenuate_counts;
-            shot_txy=shot_txy(mask,:);
-            num_counts_shot=size(shot_txy,1); %recalulate the number of counts
+        if corr_opts.between_sets
+            shot_txy_1=counts{1,shotnum};
+            shot_txy_2=counts{2,shotnum};
+            num_counts_shot_1=num_counts(1,shotnum);
+            num_counts_shot_2=num_counts(2,shotnum);
+        else
+            shot_txy=counts{shotnum};
+            num_counts_shot=num_counts(shotnum);
         end
+        if corr_opts.attenuate_counts~=1 %randomly keep corr_opts.attenuate_counts fraction of the data
+            if corr_opts.between_sets
+                mask1=rand(num_counts_shot_1,1)<corr_opts.attenuate_counts;
+                mask2=rand(num_counts_shot_2,1)<corr_opts.attenuate_counts;
+                shot_txy_1=shot_txy_1(mask1,:);
+                shot_txy_2=shot_txy_2(mask2,:);
+                num_counts_shot_1=size(shot_txy_1,1);
+                num_counts_shot_2=size(shot_txy_2,1);
+            else
+                mask=rand(num_counts_shot,1)<corr_opts.attenuate_counts;
+                shot_txy=shot_txy(mask,:);
+                num_counts_shot=size(shot_txy,1); %recalulate the number of counts
+            end
+        end
+        if corr_opts.between_sets
+            pairs_count(shotnum)=num_counts_shot_1*num_counts_shot_2;
+            num_counts_shot = num_counts_shot_1+1;
+        else
+            % full number of pairs in the shot
+            pairs_count(shotnum)=num_counts_shot^2 -num_counts_shot;
+        end
+        
         if num_counts_shot<2
             warning('%u counts input\n',num_counts_shot)
         end
-        % full number of pairs in the shot
-        pairs_count(shotnum)=num_counts_shot^2 -num_counts_shot;
         for ii=1:num_counts_shot-1
             %if each shot is sorted in time then this will only produce counts that are one direction in time
             % to deal with this we need to add both the delta and the -ve of the delta to the difference hist
-            if corr_opts.do_pre_mask  %pre mask optimzation using sortd masking
+            if corr_opts.do_pre_mask && ~corr_opts.between_sets  %pre mask optimzation using sortd masking
                 % gives a small speedup ~%20 depending on the numbe of counts outsize the correlation range of interest
                 % it works by using a sorted dimension to pre-window using binary search
                 temp_1d_diff=shot_txy(ii+1:num_counts_shot,corr_opts.sorted_dir)...
@@ -170,7 +199,11 @@ if corr_opts.low_mem %calculate with the low memory mode
                     corr_opts.one_d_window(corr_opts.sorted_dir,2));
                 delta=shot_txy(ii,:)-delta_multiplier*shot_txy(ii+mask_idx(1):ii+mask_idx(2),:);
             else
-                delta=shot_txy(ii,:)-delta_multiplier*shot_txy(ii+1:num_counts_shot,:);
+                if corr_opts.between_sets
+                    delta=shot_txy_1(ii,:)-delta_multiplier*shot_txy_2(:,:);
+                else
+                    delta=shot_txy(ii,:)-delta_multiplier*shot_txy(ii+1:num_counts_shot,:);
+                end
             end
             one_d_mask_pos=true(size(delta,1),1); %initalize the mask
             one_d_mask_neg=one_d_mask_pos;

@@ -25,3 +25,12 @@
 [submodule "bin/MBeautifier"]
 	path = bin/MBeautifier
 	url = https://github.com/davidvarga/MBeautifier.git
+[submodule "lib/lab_structured_logging"]
+	path = lib/lab_structured_logging
+	url = https://github.com/brycehenson/lab_slog.git
+[submodule "lib/matlab_struct_tensor_conversions"]
+	path = lib/matlab_struct_tensor_conversions
+	url = https://github.com/brycehenson/matlab_struct_tensor_conversions.git
+[submodule "bin/fig2svg"]
+	path = bin/fig2svg
+	url = https://github.com/kupiqu/fig2svg.git

@@ -32,13 +32,10 @@ function cli_header(varargin)
         fprintf("cli_header accepts varargin, cell args will be removed next version.\n")
         args = varargin{1};
     end
-    v=1;
     if numel(args) == 1 %text only
         msg = args{1};
-
         msg_level = 0;%If no header level is passed, assumed to be top-level
         argument_index=2;
-
     else
         if isfloat(varargin{1}) %Passing header level
             msg_level = varargin{1};
@@ -47,7 +44,7 @@ function cli_header(varargin)
                 vals = varargin{3:end};
             end
 
-            argument_index = 1;
+            argument_index = 3;
 
         else % No header level passed, but other values present
             msg_level = 0;

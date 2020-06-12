@@ -4,9 +4,11 @@
 *.mat
 # dropbox
 *.dropbox
-# winows files
+# windows files
 *.ini
 # windows thumb
 *.db
 # Sandboxing
 /scratch
+# mac filesystem stuff
+.DS_Store
