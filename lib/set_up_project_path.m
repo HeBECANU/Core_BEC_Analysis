@@ -13,7 +13,7 @@ function set_up_project_path(path_to_project_root,folders_to_add,cd_proj_root)
 % cd_proj_root          - should the current directory be changed to the project root
 %                           default true 
 
-default_folders={'dev','lib','bin','test'};
+default_folders={'dev','lib','external','bin','test'};
 
 
 
