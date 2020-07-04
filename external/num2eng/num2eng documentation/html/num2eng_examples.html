@@ -1,0 +1,815 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>num2eng examples</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-07-04"><meta name="DC.source" content="num2eng_examples.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>num2eng examples</h1><!--introduction--><p><tt>num2eng</tt> converts an input numerical value into an engineering-formatted string, in either scientific format with multiples-of-three exponent, or using SI prefixes e.g. k, M, n, p etc. It can also process the tick labels on graphs and colorbars to format them according to your options.</p><p>It supports scalar, vector, and matrix inputs, and complex number inputs. Up to twenty options give extensive control over the formatting of the output string(s).</p><p><tt>num2eng</tt> has two different calling syntaxes:</p><div><ol><li><tt>string = num2eng(input,[useSI],[useMu],[spaceAfterNum],[sigFigs],[fullName],[useMinus],[useInf],[trailZeros],[pad],[cellOutput])</tt>, where input variables in square brackets are optional - i.e. with this syntax, the function accepts anywhere from 1 to 11 inputs, inclusive.</li><li><tt>string = num2eng(input,optionsStruct)</tt>, where the optionsStruct is a structure with anywhere from 1 to 20 fields, named as per the options from syntax style 1, or ten additional options only accessible via this call syntax: <tt>noExp4Tenths</tt>, <tt>expWidth</tt>, <tt>expSign</tt>, <tt>expForce</tt>, <tt>unit</tt>, <tt>noPlural</tt>, <tt>capE</tt>, <tt>smallCapE</tt>, <tt>fracMant</tt>, and <tt>axes</tt></li></ol></div><p>Please note that throughout this document, the term "string" is referring to a vector/array of characters, rather than MATLAB's "string" data type</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Basic usage</a></li><li><a href="#2">num2eng handles Inf and NaN inputs</a></li><li><a href="#3">num2eng handles complex number inputs</a></li><li><a href="#4">num2eng handles vector inputs</a></li><li><a href="#5">num2eng handles matrix inputs</a></li><li><a href="#6">1st option (<tt>useSI</tt>): use SI prefix instead of scientific notation</a></li><li><a href="#8">2nd option (<tt>useMu</tt>): for numbers with magnitude in the range [1e-6, 1e-3), use the Greek mu character (U+03BC) as SI prefix</a></li><li><a href="#9">3rd option (<tt>spaceAfterNum</tt>): include a space after the number, even if there is no prefix</a></li><li><a href="#10">4th option (<tt>sigFigs</tt>): change the number of significant figures in the output</a></li><li><a href="#11">5th option (<tt>fullName</tt>): use the full SI prefix name, rather than just a letter</a></li><li><a href="#12">6th option (<tt>useMinus</tt>): for negative numbers, use the proper minus character (U+2212) instead of hyphen-minus</a></li><li><a href="#13">7th option (<tt>useInf</tt>): use the infinity symbol (U+221E) for infinite inputs</a></li><li><a href="#14">8th option (<tt>trailZeros</tt>): pad numbers with trailing zeros to always give the specified number of significant digits</a></li><li><a href="#15">9th option (<tt>pad</tt>): pad strings to the specified length</a></li><li><a href="#18">10th option (<tt>cellOutput</tt>): control output format for cases where input is vector or 2D matrix</a></li><li><a href="#20">Using an options structure instead of individual option inputs</a></li><li><a href="#25">Additional options available only via the optionsStruct:</a></li><li><a href="#26"><tt>noExp4Tenths</tt>: For numbers in the range [0.1,1), don't use exponents or SI prefixes</a></li><li><a href="#27"><tt>expWidth</tt>: set the character width of the exponent part of the output (excluding the sign character)</a></li><li><a href="#31"><tt>expSign</tt>: control if sign of exponent is always shown or only shown for negative numbers</a></li><li><a href="#33"><tt>expForce</tt>: force exponent part to always be shown, even if it's zero</a></li><li><a href="#34"><tt>unit</tt>: provide a string/strings to use as measurement units appended at the end of the output string</a></li><li><a href="#38"><tt>noPlural</tt>: override the automatic pluralisation of units</a></li><li><a href="#39"><tt>capE</tt> &amp; <tt>smallCapE</tt>: use an upper-case "E" for the exponent instead of "e"</a></li><li><a href="#40"><tt>fracMant</tt>: force a fractional mantissa, in the range [0.001, 1)</a></li><li><a href="#44">Change the tick labels on a graph</a></li><li><a href="#53">Change the tick labels on a colorbar</a></li></ul></div><h2 id="1">Basic usage</h2><p>Calling <tt>num2eng</tt> with no options returns a string in scientific notation format with multiple-of-three exponent (aka engineering notation)</p><pre class="codeinput">num2eng(0.001)
+num2eng(78e10)
+num2eng(-1e-19)
+</pre><pre class="codeoutput">
+ans =
+
+    '1e-3'
+
+
+ans =
+
+    '780e+9'
+
+
+ans =
+
+    '-100e-21'
+
+</pre><h2 id="2">num2eng handles Inf and NaN inputs</h2><pre class="codeinput">num2eng(Inf)
+num2eng(-Inf)
+num2eng(NaN)
+</pre><pre class="codeoutput">
+ans =
+
+    '+Inf'
+
+
+ans =
+
+    '-Inf'
+
+
+ans =
+
+    'NaN'
+
+</pre><h2 id="3">num2eng handles complex number inputs</h2><pre class="codeinput">num2eng(45e13 - 0.2i)
+</pre><pre class="codeoutput">
+ans =
+
+    '450e+12&nbsp;-&nbsp;200e-3i'
+
+</pre><h2 id="4">num2eng handles vector inputs</h2><pre class="codeinput">num2eng([61e-16 inf NaN 7.8e2])
+</pre><pre class="codeoutput">
+ans =
+
+  1&times;4 cell array
+
+    {'6.1e-15'}    {'+Inf'}    {'NaN'}    {'780'}
+
+</pre><h2 id="5">num2eng handles matrix inputs</h2><pre class="codeinput">num2eng([61e-16 inf; NaN 7.8e2])
+num2eng((-1).^round(rand([2, 4, 2])).*10.^(48*rand([2, 4, 2])-24))
+</pre><pre class="codeoutput">
+ans =
+
+  2&times;2 cell array
+
+    {'6.1e-15'}    {'+Inf'}
+    {'NaN'    }    {'780' }
+
+
+  2&times;4&times;2 cell array
+
+ans(:,:,1) = 
+
+    {'1.1372e+9' }    {'33.047'    }    {'-414.86e-24'}    {'592.43e-6'  }
+    {'-2.5439e-9'}    {'819.05e+15'}    {'1.0453'     }    {'-25.442e+18'}
+
+
+ans(:,:,2) = 
+
+    {'1.7734e+6'  }    {'-12.292e+3' }    {'-31.846e-3'}    {'-395.36e-18'}
+    {'-153.37e+21'}    {'-22.416e+15'}    {'-148.14'   }    {'-2.8455e+6' }
+
+</pre><h2 id="6">1st option (<tt>useSI</tt>): use SI prefix instead of scientific notation</h2><p>Setting <tt>useSI</tt> true gives output strings with SI prefixes. There is always a non-breaking space between the number and the prefix, as per the SI standard:</p><pre class="codeinput">num2eng(0.001 , true)
+num2eng(78e10 , 1)
+num2eng(-1e-19, true)
+</pre><pre class="codeoutput">
+ans =
+
+    '1&nbsp;m'
+
+
+ans =
+
+    '780&nbsp;G'
+
+
+ans =
+
+    '-100&nbsp;z'
+
+</pre><p>If input number is out-of-range for an SI prefix, the function will fall back to engineering notation:</p><pre class="codeinput">num2eng(2.56e29, true)
+</pre><pre class="codeoutput">
+ans =
+
+    '256e+27'
+
+</pre><h2 id="8">2nd option (<tt>useMu</tt>): for numbers with magnitude in the range [1e-6, 1e-3), use the Greek mu character (U+03BC) as SI prefix</h2><pre class="codeinput">num2eng(10e-6, true)
+num2eng(10e-6, true, true)
+</pre><pre class="codeoutput">
+ans =
+
+    '10&nbsp;u'
+
+
+ans =
+
+    '10&nbsp;&#956;'
+
+</pre><h2 id="9">3rd option (<tt>spaceAfterNum</tt>): include a space after the number, even if there is no prefix</h2><pre class="codeinput">num2eng(0.001  , true , false, 0)
+num2eng(0.001  , true , false, 1)
+num2eng(0.001  , false, false, true)
+num2eng(2.56e29, true , false, true)
+num2eng(1.5    , true , false, true)
+</pre><pre class="codeoutput">
+ans =
+
+    '1&nbsp;m'
+
+
+ans =
+
+    '1&nbsp;m'
+
+
+ans =
+
+    '1e-3&nbsp;'
+
+
+ans =
+
+    '256e+27&nbsp;'
+
+
+ans =
+
+    '1.5&nbsp;'
+
+</pre><h2 id="10">4th option (<tt>sigFigs</tt>): change the number of significant figures in the output</h2><pre class="codeinput">num2eng(999e3)
+num2eng(999e3,true,false,false,1)
+num2eng(8747268847436362332849,true,false,false,12)
+</pre><pre class="codeoutput">
+ans =
+
+    '999e+3'
+
+
+ans =
+
+    '1&nbsp;M'
+
+
+ans =
+
+    '8.74726884744&nbsp;Z'
+
+</pre><h2 id="11">5th option (<tt>fullName</tt>): use the full SI prefix name, rather than just a letter</h2><pre class="codeinput">num2eng(0.001       , true, false, false, 5, true)
+num2eng(2.56e29     , true, false, false, 5, true)
+num2eng(1.5         , true, false, false, 5, true)
+num2eng(4.5645667e-6, 1   , 1    , 1    , 6, 1)
+num2eng(-15.7e10    , true, false, false, 5, true)
+</pre><pre class="codeoutput">
+ans =
+
+    '1&nbsp;milli'
+
+
+ans =
+
+    '256e+27'
+
+
+ans =
+
+    '1.5'
+
+
+ans =
+
+    '4.56457&nbsp;micro'
+
+
+ans =
+
+    '-157&nbsp;giga'
+
+</pre><h2 id="12">6th option (<tt>useMinus</tt>): for negative numbers, use the proper minus character (U+2212) instead of hyphen-minus</h2><pre class="codeinput">num2eng(-0.001     , false, false, false, 5, false) <span class="comment">% useMinus defaults to false</span>
+num2eng(-0.001     , true , false, false, 5, true , true)
+num2eng(-0.001     , false, false, false, 5, false, true)
+num2eng(1000-0.001j, false, false, false, 5, false) <span class="comment">% useMinus defaults to false</span>
+num2eng(1000-0.001j, false, false, false, 5, false, true)
+</pre><pre class="codeoutput">
+ans =
+
+    '-1e-3'
+
+
+ans =
+
+    '&#8722;1&nbsp;milli'
+
+
+ans =
+
+    '&#8722;1e&#8722;3'
+
+
+ans =
+
+    '1e+3&nbsp;-&nbsp;1e-3i'
+
+
+ans =
+
+    '1e+3&nbsp;&#8722;&nbsp;1e&#8722;3i'
+
+</pre><h2 id="13">7th option (<tt>useInf</tt>): use the infinity symbol (U+221E) for infinite inputs</h2><pre class="codeinput">num2eng(Inf , false, false, false, 4, false, false, true)
+num2eng(Inf , true , true , true , 4, true , true , true)
+num2eng(-Inf, true , true , true , 4, true , true , true)
+</pre><pre class="codeoutput">
+ans =
+
+    '+&#8734;'
+
+
+ans =
+
+    '+&#8734;&nbsp;'
+
+
+ans =
+
+    '&#8722;&#8734;&nbsp;'
+
+</pre><h2 id="14">8th option (<tt>trailZeros</tt>): pad numbers with trailing zeros to always give the specified number of significant digits</h2><pre class="codeinput">num2eng(1       , 1, 0, 1, 5, 0, 0, 0, 0) <span class="comment">% trailZeros is false (default)</span>
+num2eng(1       , 1, 0, 1, 5, 0, 0, 0, 1) <span class="comment">% trailZeros is true</span>
+num2eng(-1.34e-7, 1, 0, 1, 5, 0, 0, 0, 1)
+</pre><pre class="codeoutput">
+ans =
+
+    '1&nbsp;'
+
+
+ans =
+
+    '1.0000&nbsp;'
+
+
+ans =
+
+    '-134.00&nbsp;n'
+
+</pre><h2 id="15">9th option (<tt>pad</tt>): pad strings to the specified length</h2><p>Right-justify by using positive value for <tt>pad</tt>:</p><pre class="codeinput">num2eng(-1.34e-7, 1, 0, 1, 5, 0, 0, 0, 0, 10)
+</pre><pre class="codeoutput">
+ans =
+
+    '    -134&nbsp;n'
+
+</pre><p>Left-justify by using negative value for <tt>pad</tt>:</p><pre class="codeinput">num2eng(-1.34e-7, 1, 0, 1, 5, 0, 0, 0, 0, -10)
+</pre><pre class="codeoutput">
+ans =
+
+    '-134&nbsp;n    '
+
+</pre><p>You can use <tt>trailZeros</tt> and <tt>pad</tt> together:</p><pre class="codeinput">num2eng(-1.34e-7, 1, 0, 1, 5, 0, 0, 0, 1, 10)
+</pre><pre class="codeoutput">
+ans =
+
+    ' -134.00&nbsp;n'
+
+</pre><h2 id="18">10th option (<tt>cellOutput</tt>): control output format for cases where input is vector or 2D matrix</h2><p><tt>cellOutput</tt> true (default value) gives cell-array output with one cell per input element:</p><pre class="codeinput">num2eng([-0.001 1e6 12e8], true, true, false, 4, false, false, false, false, 0, true)
+</pre><pre class="codeoutput">
+ans =
+
+  1&times;3 cell array
+
+    {'-1&nbsp;m'}    {'1&nbsp;M'}    {'1.2&nbsp;G'}
+
+</pre><p><tt>cellOutput</tt> false gives a single string output:</p><pre class="codeinput">num2eng([-0.001 1e6 12e8]                , true , true, false, 4, false, false, false, false, 0, false )
+num2eng([-0.001 1e6 12e8; 3 56e32 6.78e7], false, true, false, 4, false, false, false, true , 0, false )
+</pre><pre class="codeoutput">
+ans =
+
+    '-1&nbsp;m 1&nbsp;M 1.2&nbsp;G'
+
+
+ans =
+
+    '-1.000&nbsp;m 1.000&nbsp;M 1.200&nbsp;G
+     3.000 5.600e+33 67.80&nbsp;M'
+
+</pre><h2 id="20">Using an options structure instead of individual option inputs</h2><p>Fields of the option structure should be named according to the individual options as described above:</p><pre class="codeinput">num2eng(18.9e-10, struct(<span class="string">'fullName'</span>,true)  )
+num2eng([12.345563e-10 89e5 -0.00003; 0.1 14.5e2 77e8], struct(<span class="string">'sigFigs'</span>,7, <span class="string">'cellOutput'</span>,false, <span class="string">'pad'</span>,10)  )
+num2eng([61e-16 inf NaN -inf 7.8e2], struct(<span class="string">'useInf'</span>,true) )
+</pre><pre class="codeoutput">
+ans =
+
+    '1.89&nbsp;nano'
+
+
+ans =
+
+    '1.234556e-9     8.9e+6     -30e-6
+         100e-3    1.45e+3     7.7e+9'
+
+
+ans =
+
+  1&times;5 cell array
+
+    {'6.1e-15'}    {'+&#8734;'}    {'NaN'}    {'-&#8734;'}    {'780'}
+
+</pre><p>Be careful with letter case; the option name must match exactly for it to be recognised by <tt>num2eng</tt>:</p><pre class="codeinput">num2eng(18.9e-10, struct(<span class="string">'FullName'</span>,true)  )
+</pre><pre class="codeoutput">WARNING: Ignoring unknown option "FullName"
+
+ans =
+
+    '1.89e-9'
+
+</pre><p>Note: you can of course still use the function hints to check the names of the first 10 options, as long as the cursor is not inside the struct call:</p><p><img vspace="5" hspace="5" src="num2engHints.png" alt=""> </p><p><img vspace="5" hspace="5" src="StructHints.png" alt=""> </p><h2 id="25">Additional options available only via the optionsStruct:</h2><h2 id="26"><tt>noExp4Tenths</tt>: For numbers in the range [0.1,1), don't use exponents or SI prefixes</h2><pre class="codeinput">num2eng(0.2)
+num2eng(0.2,struct(<span class="string">'noExp4Tenths'</span>,true))
+</pre><pre class="codeoutput">
+ans =
+
+    '200e-3'
+
+
+ans =
+
+    '0.2'
+
+</pre><h2 id="27"><tt>expWidth</tt>: set the character width of the exponent part of the output (excluding the sign character)</h2><p><tt>expWidth</tt> set to 0 (default) gives whatever minimum width is necessary to accommodate the exponent's digits:</p><pre class="codeinput">num2eng(7892,struct(<span class="string">'expWidth'</span>,0))
+num2eng(789e14,struct(<span class="string">'expWidth'</span>,0))
+</pre><pre class="codeoutput">
+ans =
+
+    '7.892e+3'
+
+
+ans =
+
+    '78.9e+15'
+
+</pre><p><tt>expWidth</tt> greater than zero will pad the exponent with leading zeros to give the desired width:</p><pre class="codeinput">num2eng(7892,struct(<span class="string">'expWidth'</span>,3))
+num2eng(789e14,struct(<span class="string">'expWidth'</span>,3))
+</pre><pre class="codeoutput">
+ans =
+
+    '7.892e+003'
+
+
+ans =
+
+    '78.9e+015'
+
+</pre><p>The exponent will never be truncated, so if <tt>expWidth</tt> is too small to accommodate all the digits in the exponent, it will be overridden:</p><pre class="codeinput">num2eng(789e140,struct(<span class="string">'expWidth'</span>,2))
+</pre><pre class="codeoutput">
+ans =
+
+    '78.9e+141'
+
+</pre><p><tt>expWidth</tt> does not count the sign character:</p><pre class="codeinput">num2eng(789e-14,struct(<span class="string">'expWidth'</span>,3))
+</pre><pre class="codeoutput">
+ans =
+
+    '7.89e-012'
+
+</pre><h2 id="31"><tt>expSign</tt>: control if sign of exponent is always shown or only shown for negative numbers</h2><p><tt>expSign</tt> true (default value) always gives a sign character:</p><pre class="codeinput">num2eng(3000,struct(<span class="string">'expSign'</span>,1))
+num2eng(0.3,struct(<span class="string">'expSign'</span>,1))
+</pre><pre class="codeoutput">
+ans =
+
+    '3e+3'
+
+
+ans =
+
+    '300e-3'
+
+</pre><p><tt>expSign</tt> false gives a sign character only for negative exponents:</p><pre class="codeinput">num2eng(3000,struct(<span class="string">'expSign'</span>,0))
+num2eng(0.3,struct(<span class="string">'expSign'</span>,0))
+</pre><pre class="codeoutput">
+ans =
+
+    '3e3'
+
+
+ans =
+
+    '300e-3'
+
+</pre><h2 id="33"><tt>expForce</tt>: force exponent part to always be shown, even if it's zero</h2><pre class="codeinput">num2eng(15,struct(<span class="string">'expForce'</span>,0)) <span class="comment">% expForce is false (default)</span>
+num2eng(15,struct(<span class="string">'expForce'</span>,1)) <span class="comment">% expForce is true</span>
+</pre><pre class="codeoutput">
+ans =
+
+    '15'
+
+
+ans =
+
+    '15e+0'
+
+</pre><h2 id="34"><tt>unit</tt>: provide a string/strings to use as measurement units appended at the end of the output string</h2><pre class="codeinput">num2eng(0.08,struct(<span class="string">'useSI'</span>,true,<span class="string">'unit'</span>,<span class="string">'A'</span>))
+</pre><pre class="codeoutput">
+ans =
+
+    '80&nbsp;mA'
+
+</pre><p>If full words are provided as the unit strings, they will be automatically pluralised when appropriate:</p><pre class="codeinput">num2eng(0.08,struct(<span class="string">'fullName'</span>,true,<span class="string">'unit'</span>,<span class="string">'amp'</span>))
+num2eng(1e-3,struct(<span class="string">'fullName'</span>,true,<span class="string">'unit'</span>,<span class="string">'amp'</span>))
+</pre><pre class="codeoutput">
+ans =
+
+    '80&nbsp;milliamps'
+
+
+ans =
+
+    '1&nbsp;milliamp'
+
+</pre><p>If input number is a vector/array/matrix, the provided unit is appended to all output strings:</p><pre class="codeinput">num2eng([0.08,1e-3],struct(<span class="string">'fullName'</span>,true,<span class="string">'unit'</span>,<span class="string">'amp'</span>))
+</pre><pre class="codeoutput">
+ans =
+
+  1&times;2 cell array
+
+    {'80&nbsp;milliamps'}    {'1&nbsp;milliamp'}
+
+</pre><p>If you need different units for different elements of the input, provide the unit strings in a cell array (note the double set of curly braces; this is due to how the built-in <tt>MATLAB</tt> function <tt>struct</tt> works):</p><pre class="codeinput">num2eng([0.08,1e-3],struct(<span class="string">'fullName'</span>,true,<span class="string">'unit'</span>,{{<span class="string">'amp'</span>,<span class="string">'watt'</span>}}))
+</pre><pre class="codeoutput">
+ans =
+
+  1&times;2 cell array
+
+    {'80&nbsp;milliamps'}    {'1&nbsp;milliwatt'}
+
+</pre><h2 id="38"><tt>noPlural</tt>: override the automatic pluralisation of units</h2><p>Set to true to override the automatic pluralising of unit strings:</p><pre class="codeinput">num2eng(0.08,struct(<span class="string">'fullName'</span>,true,<span class="string">'unit'</span>,<span class="string">'amp'</span>,<span class="string">'noPlural'</span>,true))
+</pre><pre class="codeoutput">
+ans =
+
+    '80&nbsp;milliamp'
+
+</pre><h2 id="39"><tt>capE</tt> &amp; <tt>smallCapE</tt>: use an upper-case "E" for the exponent instead of "e"</h2><pre class="codeinput">num2eng(77e4)
+num2eng(77e4,struct(<span class="string">'capE'</span>,true))
+num2eng(77e4,struct(<span class="string">'smallCapE'</span>,true))
+</pre><pre class="codeoutput">
+ans =
+
+    '770e+3'
+
+
+ans =
+
+    '770E+3'
+
+
+ans =
+
+    '770&#7431;+3'
+
+</pre><h2 id="40"><tt>fracMant</tt>: force a fractional mantissa, in the range [0.001, 1)</h2><p>Can be used to unambiguously show accuracy via the significant figures, e.g.</p><pre class="codeinput">num2eng(1e-4,struct(<span class="string">'useMu'</span>,1, <span class="string">'unit'</span>,<span class="string">'m'</span>))
+</pre><pre class="codeoutput">
+ans =
+
+    '100&nbsp;&#956;m'
+
+</pre><p>is the above 100 um +/- 5 um, or 100 um +/- 50 um?</p><pre class="codeinput">num2eng(1e-4,struct(<span class="string">'useMu'</span>,1, <span class="string">'unit'</span>,<span class="string">'m'</span>, <span class="string">'fracMant'</span>,1))
+</pre><pre class="codeoutput">
+ans =
+
+    '0.1&nbsp;mm'
+
+</pre><p>the above is 100 um +/- 50 um</p><pre class="codeinput">num2eng(1e-4,struct(<span class="string">'useMu'</span>,1, <span class="string">'unit'</span>,<span class="string">'m'</span>, <span class="string">'fracMant'</span>,1, <span class="string">'sigFigs'</span>,2, <span class="string">'trailZeros'</span>,1))
+</pre><pre class="codeoutput">
+ans =
+
+    '0.10&nbsp;mm'
+
+</pre><p>the above is 100 um +/- 5 um</p><h2 id="44">Change the tick labels on a graph</h2><p>By default, an axis with logarithmic scale will have scientific notation tick labels:</p><pre class="codeinput">loglog([100 1e9],[1e-10 1e-2])
+</pre><img vspace="5" hspace="5" src="num2eng_examples_01.png" alt=""> <p>Change the x-axis tick labels to engineering notation. (By default, <tt>num2eng</tt> will process the x-axis only):</p><pre class="codeinput">num2eng(gca)
+</pre><img vspace="5" hspace="5" src="num2eng_examples_02.png" alt=""> <p>The <tt>num2eng</tt> option <tt>axes</tt> is used to configure <tt>num2eng</tt> when processing axes or figure handles. Valid settings are:</p><div><ol><li>Any combination of <tt>'x'</tt>, <tt>'y'</tt>, <tt>'z'</tt>, e.g <tt>'yx'</tt>, <tt>'xy'</tt>, <tt>'xz'</tt>, <tt>'yz'</tt>, <tt>'zy'</tt>, <tt>'xyz'</tt>, <tt>'yzx'</tt>, etc. etc.</li><li><tt>'off'</tt></li></ol></div><p>e.g. Change the y-axis tick labels:</p><pre class="codeinput">num2eng(gca,struct(<span class="string">'axes'</span>,<span class="string">'y'</span>))
+</pre><img vspace="5" hspace="5" src="num2eng_examples_03.png" alt=""> <p>Listeners have automatically been created, so if the axes change, the labels will automatically update:</p><pre class="codeinput">axH = gca;
+axH.XLim = [1e3 1e8];
+</pre><img vspace="5" hspace="5" src="num2eng_examples_04.png" alt=""> <p>If a figure contains several axes, you can easily modify the tick labels for all axes, by passing the figure handle to <tt>num2eng</tt>:</p><pre class="codeinput"><span class="keyword">for</span> i = 1:4, subplot(2,2,i);  loglog([100 1e9],[1e-10 1e-2]); <span class="keyword">end</span>
+num2eng(gcf,struct(<span class="string">'axes'</span>,<span class="string">'xy'</span>))
+</pre><img vspace="5" hspace="5" src="num2eng_examples_05.png" alt=""> <p>When processing a figure or axes, all the other <tt>num2eng</tt> options are available. For example, use SI units and mu character for y-axis:</p><pre class="codeinput">num2eng(gcf,struct(<span class="string">'useMu'</span>,true,<span class="string">'axes'</span>,<span class="string">'y'</span>))
+</pre><img vspace="5" hspace="5" src="num2eng_examples_06.png" alt=""> <p>Revert a set of axes (in this case, the bottom-right axes) to default:</p><pre class="codeinput">num2eng(gca,struct(<span class="string">'axes'</span>,<span class="string">'off'</span>));
+</pre><img vspace="5" hspace="5" src="num2eng_examples_07.png" alt=""> <p>Revert all axes in a figure to default:</p><pre class="codeinput">num2eng(gcf,struct(<span class="string">'axes'</span>,<span class="string">'off'</span>));
+</pre><img vspace="5" hspace="5" src="num2eng_examples_08.png" alt=""> <h2 id="53">Change the tick labels on a colorbar</h2><pre class="codeinput">figure; surf(peaks*1e8); barH = colorbar;
+num2eng(barH);
+</pre><img vspace="5" hspace="5" src="num2eng_examples_09.png" alt=""> <p>listeners keep the colorbar updated:</p><pre class="codeinput">axH = gca; axH.Children.ZData = axH.Children.ZData/100;
+</pre><img vspace="5" hspace="5" src="num2eng_examples_10.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% num2eng examples
+% |num2eng| converts an input numerical value into an engineering-formatted string, in either scientific format with multiples-of-three exponent, or using
+% SI prefixes e.g. k, M, n, p etc. It can also process the tick labels on graphs and colorbars to format them according to your options.
+% 
+% It supports scalar, vector, and matrix inputs, and complex number inputs. Up to twenty options give extensive control over the formatting of the output
+% string(s).
+% 
+% |num2eng| has two different calling syntaxes:
+% 
+% # |string = num2eng(input,[useSI],[useMu],[spaceAfterNum],[sigFigs],[fullName],[useMinus],[useInf],[trailZeros],[pad],[cellOutput])|, where input
+% variables in square brackets are optional - i.e. with this syntax, the function accepts anywhere from 1 to 11 inputs, inclusive.
+% # |string = num2eng(input,optionsStruct)|, where the optionsStruct is a structure with anywhere from 1 to 20 fields, named as per the options from syntax
+% style 1, or ten additional options only accessible via this call syntax: |noExp4Tenths|, |expWidth|, |expSign|, |expForce|, |unit|, |noPlural|, |capE|,
+% |smallCapE|, |fracMant|, and |axes|
+%
+% Please note that throughout this document, the term "string" is referring to a vector/array of characters, rather than MATLAB's "string" data type
+
+%% Basic usage
+% Calling |num2eng| with no options returns a string in scientific notation format with multiple-of-three exponent (aka engineering notation)
+
+num2eng(0.001)
+num2eng(78e10)
+num2eng(-1e-19)
+
+%% num2eng handles Inf and NaN inputs
+num2eng(Inf)
+num2eng(-Inf)
+num2eng(NaN)
+
+%% num2eng handles complex number inputs
+num2eng(45e13 - 0.2i)
+
+%% num2eng handles vector inputs
+num2eng([61e-16 inf NaN 7.8e2])
+
+%% num2eng handles matrix inputs
+num2eng([61e-16 inf; NaN 7.8e2])
+num2eng((-1).^round(rand([2, 4, 2])).*10.^(48*rand([2, 4, 2])-24))
+
+%% 1st option (|useSI|): use SI prefix instead of scientific notation
+% Setting |useSI| true gives output strings with SI prefixes. There is always a non-breaking 
+% space between the number and the prefix, as per the SI standard:
+num2eng(0.001 , true)
+num2eng(78e10 , 1)
+num2eng(-1e-19, true)
+
+%%
+% If input number is out-of-range for an SI prefix, the function will fall back to engineering notation:
+num2eng(2.56e29, true)
+
+%% 2nd option (|useMu|): for numbers with magnitude in the range [1e-6, 1e-3), use the Greek mu character (U+03BC) as SI prefix
+num2eng(10e-6, true)
+num2eng(10e-6, true, true)
+
+%% 3rd option (|spaceAfterNum|): include a space after the number, even if there is no prefix
+num2eng(0.001  , true , false, 0)
+num2eng(0.001  , true , false, 1)
+num2eng(0.001  , false, false, true)
+num2eng(2.56e29, true , false, true)
+num2eng(1.5    , true , false, true)
+
+%% 4th option (|sigFigs|): change the number of significant figures in the output
+num2eng(999e3)
+num2eng(999e3,true,false,false,1)
+num2eng(8747268847436362332849,true,false,false,12)
+
+%% 5th option (|fullName|): use the full SI prefix name, rather than just a letter
+num2eng(0.001       , true, false, false, 5, true)
+num2eng(2.56e29     , true, false, false, 5, true)
+num2eng(1.5         , true, false, false, 5, true)
+num2eng(4.5645667e-6, 1   , 1    , 1    , 6, 1)
+num2eng(-15.7e10    , true, false, false, 5, true)
+
+%% 6th option (|useMinus|): for negative numbers, use the proper minus character (U+2212) instead of hyphen-minus
+num2eng(-0.001     , false, false, false, 5, false) % useMinus defaults to false
+num2eng(-0.001     , true , false, false, 5, true , true)
+num2eng(-0.001     , false, false, false, 5, false, true)
+num2eng(1000-0.001j, false, false, false, 5, false) % useMinus defaults to false
+num2eng(1000-0.001j, false, false, false, 5, false, true)
+
+%% 7th option (|useInf|): use the infinity symbol (U+221E) for infinite inputs
+num2eng(Inf , false, false, false, 4, false, false, true)
+num2eng(Inf , true , true , true , 4, true , true , true)
+num2eng(-Inf, true , true , true , 4, true , true , true)
+
+%% 8th option (|trailZeros|): pad numbers with trailing zeros to always give the specified number of significant digits
+num2eng(1       , 1, 0, 1, 5, 0, 0, 0, 0) % trailZeros is false (default)
+num2eng(1       , 1, 0, 1, 5, 0, 0, 0, 1) % trailZeros is true
+num2eng(-1.34e-7, 1, 0, 1, 5, 0, 0, 0, 1)
+
+%% 9th option (|pad|): pad strings to the specified length
+% Right-justify by using positive value for |pad|:
+num2eng(-1.34e-7, 1, 0, 1, 5, 0, 0, 0, 0, 10)
+%%
+% Left-justify by using negative value for |pad|:
+num2eng(-1.34e-7, 1, 0, 1, 5, 0, 0, 0, 0, -10)
+
+%%
+% You can use |trailZeros| and |pad| together:
+num2eng(-1.34e-7, 1, 0, 1, 5, 0, 0, 0, 1, 10)
+
+%% 10th option (|cellOutput|): control output format for cases where input is vector or 2D matrix
+% |cellOutput| true (default value) gives cell-array output with one cell per input element:
+num2eng([-0.001 1e6 12e8], true, true, false, 4, false, false, false, false, 0, true)
+%%
+% |cellOutput| false gives a single string output:
+num2eng([-0.001 1e6 12e8]                , true , true, false, 4, false, false, false, false, 0, false )
+num2eng([-0.001 1e6 12e8; 3 56e32 6.78e7], false, true, false, 4, false, false, false, true , 0, false )
+
+%% Using an options structure instead of individual option inputs
+% Fields of the option structure should be named according to the individual options as described above:
+num2eng(18.9e-10, struct('fullName',true)  )
+num2eng([12.345563e-10 89e5 -0.00003; 0.1 14.5e2 77e8], struct('sigFigs',7, 'cellOutput',false, 'pad',10)  )
+num2eng([61e-16 inf NaN -inf 7.8e2], struct('useInf',true) )
+
+%%
+%
+% Be careful with letter case; the option name must match exactly for it to be recognised by |num2eng|:
+%
+num2eng(18.9e-10, struct('FullName',true)  )
+
+%%
+% Note: you can of course still use the function hints to check the names of the first 10 options, as long as the cursor is not inside the struct call:
+%%
+% 
+% <<num2engHints.png>>
+% 
+%%
+% 
+% <<StructHints.png>>
+% 
+
+%% Additional options available only via the optionsStruct:
+%% |noExp4Tenths|: For numbers in the range [0.1,1), don't use exponents or SI prefixes
+num2eng(0.2)
+num2eng(0.2,struct('noExp4Tenths',true))
+
+%% |expWidth|: set the character width of the exponent part of the output (excluding the sign character)
+% |expWidth| set to 0 (default) gives whatever minimum width is necessary to accommodate the exponent's digits:
+num2eng(7892,struct('expWidth',0))
+num2eng(789e14,struct('expWidth',0))
+%%
+% |expWidth| greater than zero will pad the exponent with leading zeros to give the desired width:
+num2eng(7892,struct('expWidth',3))
+num2eng(789e14,struct('expWidth',3))
+%%
+% The exponent will never be truncated, so if |expWidth| is too small to accommodate all the digits in the exponent,
+% it will be overridden:
+num2eng(789e140,struct('expWidth',2))
+%%
+% |expWidth| does not count the sign character:
+num2eng(789e-14,struct('expWidth',3))
+
+%% |expSign|: control if sign of exponent is always shown or only shown for negative numbers
+% |expSign| true (default value) always gives a sign character:
+num2eng(3000,struct('expSign',1))
+num2eng(0.3,struct('expSign',1))
+%%
+% |expSign| false gives a sign character only for negative exponents:
+num2eng(3000,struct('expSign',0))
+num2eng(0.3,struct('expSign',0))
+
+%% |expForce|: force exponent part to always be shown, even if it's zero
+num2eng(15,struct('expForce',0)) % expForce is false (default)
+num2eng(15,struct('expForce',1)) % expForce is true
+
+%% |unit|: provide a string/strings to use as measurement units appended at the end of the output string
+num2eng(0.08,struct('useSI',true,'unit','A'))
+%%
+% If full words are provided as the unit strings, they will be automatically pluralised when appropriate:
+num2eng(0.08,struct('fullName',true,'unit','amp'))
+num2eng(1e-3,struct('fullName',true,'unit','amp'))
+%%
+% If input number is a vector/array/matrix, the provided unit is appended to all output strings:
+num2eng([0.08,1e-3],struct('fullName',true,'unit','amp'))
+%%
+% If you need different units for different elements of the input, provide the unit strings in a cell array (note the double set of curly braces; this is due
+% to how the built-in |MATLAB| function |struct| works):
+num2eng([0.08,1e-3],struct('fullName',true,'unit',{{'amp','watt'}}))
+
+%% |noPlural|: override the automatic pluralisation of units
+% Set to true to override the automatic pluralising of unit strings:
+num2eng(0.08,struct('fullName',true,'unit','amp','noPlural',true))
+
+%% |capE| & |smallCapE|: use an upper-case "E" for the exponent instead of "e"
+num2eng(77e4)
+num2eng(77e4,struct('capE',true))
+num2eng(77e4,struct('smallCapE',true))
+
+%% |fracMant|: force a fractional mantissa, in the range [0.001, 1)
+% Can be used to unambiguously show accuracy via the significant figures, e.g.
+num2eng(1e-4,struct('useMu',1, 'unit','m'))
+%%
+% is the above 100 um +/- 5 um, or 100 um +/- 50 um?
+num2eng(1e-4,struct('useMu',1, 'unit','m', 'fracMant',1))
+%%
+% the above is 100 um +/- 50 um
+num2eng(1e-4,struct('useMu',1, 'unit','m', 'fracMant',1, 'sigFigs',2, 'trailZeros',1))
+%%
+% the above is 100 um +/- 5 um
+
+%% Change the tick labels on a graph
+% By default, an axis with logarithmic scale will have scientific notation tick labels:
+loglog([100 1e9],[1e-10 1e-2])
+
+%%
+% Change the x-axis tick labels to engineering notation. (By default, |num2eng| will process the x-axis only):
+num2eng(gca)
+
+%%
+% The |num2eng| option |axes| is used to configure |num2eng| when processing axes or figure handles. Valid settings are:
+%%
+% 
+% # Any combination of |'x'|, |'y'|, |'z'|, e.g |'yx'|, |'xy'|, |'xz'|, |'yz'|, |'zy'|, |'xyz'|, |'yzx'|, etc. etc.
+% # |'off'|
+% 
+% e.g. Change the y-axis tick labels:
+num2eng(gca,struct('axes','y'))
+
+%%
+% Listeners have automatically been created, so if the axes change, the labels will automatically update:
+axH = gca;
+axH.XLim = [1e3 1e8];
+
+%%
+% If a figure contains several axes, you can easily modify the tick labels for all axes, by passing the figure handle to |num2eng|:
+for i = 1:4, subplot(2,2,i);  loglog([100 1e9],[1e-10 1e-2]); end
+num2eng(gcf,struct('axes','xy'))
+
+%%
+% When processing a figure or axes, all the other |num2eng| options are available. For example, use SI units and mu character for y-axis:
+num2eng(gcf,struct('useMu',true,'axes','y'))
+
+%%
+% Revert a set of axes (in this case, the bottom-right axes) to default:
+num2eng(gca,struct('axes','off'));
+
+%%
+% Revert all axes in a figure to default:
+num2eng(gcf,struct('axes','off'));
+
+%% Change the tick labels on a colorbar
+figure; surf(peaks*1e8); barH = colorbar;
+num2eng(barH);
+
+%% 
+% listeners keep the colorbar updated:
+axH = gca; axH.Children.ZData = axH.Children.ZData/100;
+
+##### SOURCE END #####
+--></body></html>
