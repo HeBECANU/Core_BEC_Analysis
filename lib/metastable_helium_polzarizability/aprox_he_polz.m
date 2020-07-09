@@ -27,7 +27,8 @@ atom_u.a0=5.29177210903e-11 ;% m
 % use the theory calculated value of the polz for states above n=3
 % found by comparing simple model with the 315.54238 value in https://journals.aps.org/pra/pdf/10.1103/PhysRevA.93.052516
 % this means that the polarizability will not be exactly correct
-n_gt_3_polz=4.844735; %a_0^2 cgs vol polz units
+%n_gt_3_polz=4.844735; %a_0^2 cgs vol polz units
+n_gt_3_polz=7.065; %a_0^2 cgs vol polz units
 transitions=metastable_helium_transition_data;
 
 

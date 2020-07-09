@@ -33,23 +33,3 @@ plot(tune_out_freq,au_polz,'xr')
 hold off
 
 
-%% try fiting a linear about the tune out
-
-fsamp=col_vec(linspace(-1,1,1e5))*4e10+tune_out_freq;
-[~,polz_si]=aprox_he_polz(fsamp);
-stfig('atomic polz');
-clf
-xscale=1e-9;
-yscale=1e44;
-plot((fsamp-tune_out_freq)*xscale,polz_si*yscale)
-xlabel('$\omega_{\mathrm{TO}}-\omega$ ($2\pi$ GHz)')
-ylabel(sprintf('$\\alpha$ ($10^{%g} \\mathrm{C}\\cdot \\mathrm{m}^{2} \\cdot\\mathrm{V}^{-1}$)',-log10(yscale)))
-yline(0)
-
-
-predictor=(fsamp-tune_out_freq)*1e-9;
-response=polz_si*yscale;
-
-fit_in=cat(2,predictor,response,response*nan);
-meth_lin_fit=fit_poly_with_int(fit_in,1,0,0);
-fprintf('fit intercept %f MHz \n',(meth_lin_fit.x_intercept.val/xscale)*1e-6)
