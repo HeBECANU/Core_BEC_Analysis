@@ -3,10 +3,15 @@ function [alpha_au,alpha_si]=aprox_he_polz(optical_freq)
 % built for the TO project meant more for finding the curvature arround the TO that the intercept itself
 % example
 % aprox_he_polz(linspace(1,600,1e2)*1e12)
+% TODO:
+% - use drake tables for states above n=3
+% - add inital and final state information to the metastable_helium_transition_data structure
+%       having the qunatum numbers for each state would be handy
+% example
+%   optical_freq=linspace(1,600,1e2)*1e12;
+% Bryce Henson 2020-07-09
+%%
 
-%%
-%optical_freq=linspace(1,600,1e2)*1e12;
-%%
 
 optical_freq=col_vec(optical_freq);
 global const
@@ -21,6 +26,7 @@ atom_u.a0=5.29177210903e-11 ;% m
 
 % use the theory calculated value of the polz for states above n=3
 % found by comparing simple model with the 315.54238 value in https://journals.aps.org/pra/pdf/10.1103/PhysRevA.93.052516
+% this means that the polarizability will not be exactly correct
 n_gt_3_polz=4.844735; %a_0^2 cgs vol polz units
 transitions=metastable_helium_transition_data;
 

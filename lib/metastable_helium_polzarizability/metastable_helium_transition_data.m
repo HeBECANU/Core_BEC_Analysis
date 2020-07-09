@@ -1,7 +1,21 @@
 function transitions=metastable_helium_transition_data
+% transition information from the 23s1 state in helium
+% construct a vector of cells, each with a structure containing information about a given transition
+% have the fields
+% .frequency_hz.val=276764094746.9e3;
+% .frequency_hz.unc=276764094746.9e3;
+% .frequency_hz.ref.link='some doi'
+% .osc_strength.ref.link='https://doi.org/10.1103/PhysRevA.93.052516';
+% .osc_strength.val=osc_strength;
+% .osc_strength.unc=nan;
 
+%define some global variables
 global const
+if isempty(const)
+    hebec_constants
+end
 
+%define conversion factors for atomic units
 atom_u=[];
 % atom_u.energy=(const.hb)^2/(const.me*(const.a0^2)); 
 % atom_u.time=const.hb/atom_u.energy;
