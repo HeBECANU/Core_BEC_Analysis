@@ -19,10 +19,6 @@ if size(x)~=size(y)
     fprintf('error the sizes are different')
 end
 
-if sum(strcmp(method,{'mean','max','min'}))~=1
-    error('invalid method input')
-end
-
 if strcmp(method,'mean')
     out=(x-y)./((x+y)./2);
 elseif strcmp(method,'max')
@@ -31,6 +27,12 @@ elseif strcmp(method,'min')
     out=(x-y)./(min(x,y));
 elseif strcmp(method,'x')
     out=(x-y)./x;    
+elseif strcmp(method,'y')
+    out=(x-y)./y;    
+elseif strcmp(method,'x abs')
+    out=(x-y)./abs(x);    
+elseif strcmp(method,'y abs')
+    out=(x-y)./abs(y);      
 else
     error('invalid method input')
 end 
