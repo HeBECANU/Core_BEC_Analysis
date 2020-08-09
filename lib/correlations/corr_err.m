@@ -55,49 +55,35 @@ normcorr=corr_func(corr_opts,counts_chunked);
 
 
 if isfield(rawcorr,'one_d_corr_density')
-    corr_density = rawcorr.one_d_corr_density./normcorr.one_d_corr_density;
+    density='one_d_corr_density';
+    centers='x_centers';
 elseif isfield(rawcorr,'rad_corr_density')
-    corr_density = rawcorr.rad_corr_density./normcorr.rad_corr_density;
+    density='rad_corr_density';
+    centers='rad_centers';
 end
+
+corr_density = rawcorr.(density)./normcorr.(density);
 
 fo = statset('TolFun',10^-6,...
     'TolX',1e-4,...
     'MaxIter',1e4,...
     'UseParallel',1);
-rad_centers=sqrt((corr_opts.redges(2:end).^3-corr_opts.redges(1:end-1).^3)./(3.*(corr_opts.redges(2:end)-corr_opts.redges(1:end-1))));%(corr_opts.redges(2:end)+corr_opts.redges(1:end-1))/2;
+
 is_data_flat = isdataflat(corr_density,0.2);
 if is_data_flat
     fun1d =  @(b,x)(b(1)+1).*ones(size(x));
     inital_guess=nanmean(corr_density)-1;
 else
     fun1d =  @(b,x) b(1).*exp(-((x).^2)./(2*b(2).^2))+1;
-    [~,sigmaHat] = normfit(rad_centers,0.01,zeros(size(rad_centers)),abs(corr_density-1).^2');
+    [~,sigmaHat] = normfit(rawcorr.(centers)',0.01,zeros(size(rawcorr.(centers)')),abs(corr_density-1).^2');
     inital_guess=[max(corr_density)-1,sigmaHat];
 end
 
-fit=fitnlm(rad_centers,corr_density,...
+fit=fitnlm(rawcorr.(centers),corr_density,...
     fun1d,...
     inital_guess,...
     'Options',fo);
-% if fit.Rsquared.Adjusted <0.7
-%     if length(inital_guess) == 1
-%         fun1d =  @(b,x) b(1).*exp(-((x).^2)./(2*b(2).^2))+1;
-%         [~,sigmaHat] = normfit(rad_centers,0.01,zeros(size(rad_centers)),abs(corr_density-1).^2');
-%         inital_guess=[max(corr_density)-1,sigmaHat];
-%     else
-%         fun1d =  @(b,x)(b(1)+1).*ones(size(x));
-%         inital_guess=nanmean(corr_density)-1;
-%     end
-%     fit_retry=fitnlm(rad_centers,corr_density,fun1d,inital_guess,'Options',fo);
-%     if fit_retry.Rsquared.Adjusted>fit.Rsquared.Adjusted && fit_retry.Rsquared.Adjusted>0.01
-%         fit = fit_retry;
-%         if length(inital_guess) == 1
-%             is_data_flat = 1;
-%         else
-%             is_data_flat = 0;
-%         end
-%     end
-% end
+
 if fit.Rsquared.Adjusted>=0
     if is_data_flat
         b = [fit.Coefficients.Estimate; nan]; %fitted parameters
@@ -110,6 +96,6 @@ end
 
 b(2) = abs(b(2));
 
-out = [rawcorr.rad_corr_density;normcorr.rad_corr_density;corr_density;b];
+out = [rawcorr.(density);normcorr.(density);corr_density;b];
 
 end
