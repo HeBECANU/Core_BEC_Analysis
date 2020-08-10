@@ -37,80 +37,101 @@ function out_struct=smooth_hist(xdata,varargin)
 p = inputParser;
 is_lims=@(x) isequal(size(x),[1,2]) && isnumeric(x);
 is_c_logical=@(in) isequal(in,true) || isequal(in,false); %can x be cast as a logical
-addOptional(p,'lims',[],is_lims);
 addOptional(p,'sorted',false,is_c_logical);
+addOptional(p,'lims',[],is_lims);
 addOptional(p,'sigma',nan,@isnumeric);
+addOptional(p,'bin_factor',nan,@isnumeric);
 addOptional(p,'bin_width',nan,@isnumeric);
 addOptional(p,'bin_num',nan,@isnumeric);
-addOptional(p,'bin_factor',nan,@isnumeric);
 addOptional(p,'max_bins',2e6,@isnumeric);
+addOptional(p,'edges',nan,@isvector);
 addOptional(p,'doplot',false,is_c_logical);
+addOptional(p,'scale_x_fun',[],@(x) isa(x,'function_handle')|| isempty(x) )
+addOptional(p,'scale_y_fun',[],@(x) isa(x,'function_handle')|| isempty(x))
 parse(p,varargin{:});
 parsed_input= p.Results;
+scale_x_fun=parsed_input.scale_x_fun;
+scale_y_fun=parsed_input.scale_y_fun;
+
+if ~isempty(scale_x_fun)
+    xdata=scale_x_fun(xdata);
+end  
+
+sigma=parsed_input.sigma;
 
 if nargout==0
     parsed_input.doplot=true;
 end
 
+if  isempty(parsed_input.edges) || (numel(parsed_input.edges)==1 && isnan(parsed_input.edges) )
+    
+    if sum(~isnan([parsed_input.bin_factor,parsed_input.bin_width,parsed_input.bin_num]))>1
+        error('must pass only one of ''bin_factor'' or ''bin_width'' or ''bin_num''  ')
+    end
 
-if sum(~isnan([parsed_input.bin_factor,parsed_input.bin_width,parsed_input.bin_num]))>1
-    error('must pass only one of ''bin_factor'' or ''bin_width'' or ''bin_num''  ')
-end
+    if ~isnan(parsed_input.sigma) && sum(~isnan([parsed_input.bin_width,parsed_input.bin_num,parsed_input.bin_factor]))==0
+        %using default bin factor
+        parsed_input.bin_factor=5;
+    end
 
-if ~isnan(parsed_input.sigma) && sum(~isnan([parsed_input.bin_width,parsed_input.bin_num,parsed_input.bin_factor]))==0
-    %using default bin factor
-    parsed_input.bin_factor=5;
-end
+    if (isnan(parsed_input.sigma) || parsed_input.sigma==0) && ~isnan(parsed_input.bin_factor)
+        error('cant specify bin width using bin_factor when sigma is zero')
+    end
 
-if (isnan(parsed_input.sigma) || parsed_input.sigma==0) && ~isnan(parsed_input.bin_factor)
-    error('cant specify bin width using bin_factor when sigma is zero')
-end
+    if  isempty(parsed_input.lims) || sum(isnan(parsed_input.lims)) ~= 0
+        bin_limits=[nanmin(xdata),nanmax(xdata)];
+    else
+        bin_limits=parsed_input.lims;
+    end
 
-if  isempty(parsed_input.lims) || sum(isnan(parsed_input.lims)) ~= 0
-    bin_limits=[nanmin(xdata),nanmax(xdata)];
-else
-    bin_limits=parsed_input.lims;
-end
+    if isnan(parsed_input.sigma) && sum(~isnan([parsed_input.bin_width,parsed_input.bin_num,parsed_input.bin_factor]))==0
+        %using default bin factor
+        parsed_input.sigma=range(bin_limits)*5e-3;
+        parsed_input.bin_factor=5;
+    end
 
-if isnan(parsed_input.sigma) && sum(~isnan([parsed_input.bin_width,parsed_input.bin_num,parsed_input.bin_factor]))==0
-    %using default bin factor
-    parsed_input.sigma=range(bin_limits)*5e-3;
-    parsed_input.bin_factor=5;
-end
+    if ~isnan(parsed_input.bin_factor)
+        bin_width=parsed_input.sigma/parsed_input.bin_factor;
+        x_bin_num=floor(range(bin_limits)/bin_width);
+        bin_limits=[min(bin_limits),min(bin_limits)+x_bin_num*bin_width];
+    elseif ~isnan(parsed_input.bin_width)
+        x_bin_num=floor(range(bin_limits)/bin_width);
+        bin_limits=[min(bin_limits),min(bin_limits)+x_bin_num*bin_width];
+    elseif ~isnan(parsed_input.bin_num)
+        x_bin_num=parsed_input.bin_num;
+    end
 
-if ~isnan(parsed_input.bin_factor)
-    bin_width=parsed_input.sigma/parsed_input.bin_factor;
-    x_bin_num=floor(range(bin_limits)/bin_width);
-    bin_limits=[min(bin_limits),min(bin_limits)+x_bin_num*bin_width];
-elseif ~isnan(parsed_input.bin_width)
-    x_bin_num=floor(range(bin_limits)/bin_width);
-    bin_limits=[min(bin_limits),min(bin_limits)+x_bin_num*bin_width];
-elseif ~isnan(parsed_input.bin_num)
-    x_bin_num=parsed_input.bin_num;
-end
+    if x_bin_num==0
+       error("auto binning has returned no bins, try seting the limits with the 'lim'")
+    end
 
-if x_bin_num==0
-   error("auto binning has returned no bins, try seting the limits with the 'lim'")
-end
+    if x_bin_num>parsed_input.max_bins
+        warning('%s: number of bins exceeds %g will reduce bin number to this',mfilename,parsed_input.max_bins)
+        x_bin_num=parsed_input.max_bins;
+    end
+    
+    
+    bin_width=range(bin_limits)/x_bin_num;
+    if bin_width>sigma*5
+         warning('%s: bin width was much larger than sigma will not smooth',mfilename)
+         sigma=0;
+    end
 
-if x_bin_num>parsed_input.max_bins
-    warning('%s: number of bins exceeds %g will reduce bin number to this',mfilename,parsed_input.max_bins)
-    x_bin_num=parsed_input.max_bins;
-end
-
-sigma=parsed_input.sigma;
-
-bin_width=range(bin_limits)/x_bin_num;
-if bin_width>sigma*5
-     warning('%s: bin width was much larger than sigma will not smooth',mfilename)
-     sigma=0;
-end
-
-if ndims(xdata)<3
     xdata=col_vec(xdata);
 
     %function that resturns a gaussian smoothed histogram
     edges=linspace(min(bin_limits),max(bin_limits),x_bin_num+1)';
+    
+else
+    edges=parsed_input.edges;
+end
+
+
+
+
+
+if ndims(xdata)<3
+
     centers=(edges(2:end)+edges(1:end-1))./2;
 
     hist_counts_raw=hist_adaptive_method(xdata,edges,parsed_input.sorted,1);
@@ -128,6 +149,9 @@ else
     out_struct.counts.raw=hist_counts_raw;
 end
 
+if ~isempty(scale_y_fun)
+    out_struct.counts.raw=scale_y_fun(centers,out_struct.counts.raw);
+end  
 
 if sigma~=0 || ~isnan(sigma)
     out_struct.counts.smooth=gaussfiltn(centers,out_struct.counts.raw,sigma);
@@ -140,6 +164,14 @@ out_struct.count_rate.raw=out_struct.counts.raw./diff(edges);
 
 out_struct.bin.edge=edges;
 out_struct.bin.centers=centers;
+
+
+% normalize
+if ndims(xdata)>2
+    warning('smooth_prob is not yet implmented properly for xdata hgiher dim than vector')
+else
+    out_struct.count_rate.smooth_prob=out_struct.count_rate.smooth/numel(xdata);
+end
 
 if parsed_input.doplot
     stfig('smooth histogram')

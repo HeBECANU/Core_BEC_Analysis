@@ -36,7 +36,7 @@ const.g0 =9.7960207-78e-8;
 %9.796 cbr approx grav at (-35.283103 , 149.112634) from http://ddfe.curtin.edu.au/gravitymodels/GGMplus/data/ga/S40E145.ga.png
 
 %customary
-const.a0 = 0.529*10^-10;%(*bohr radius*)
+const.a0 = 5.29177210903e-11;%bohr radius (m) (0.00000000080e-11) %https://physics.nist.gov/cgi-bin/cuu/Value?Abohrrada0
 
 %experiment
 const.fall_distance = 0.8587; 
