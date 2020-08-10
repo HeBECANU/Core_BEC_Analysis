@@ -11,7 +11,7 @@ function dumy = find_dist_cent_test(data, opts_cent)
 %     opts.partition.t_win
 %     opts.visual
  data=hotspot_mask(data); %mask outhot spots
-num_thr = 500;
+num_thr = 250;
 num_shots = num_thr;%length(data.shot_num);
 bec_centres = zeros(num_shots, 3);
 bec_widths= zeros(num_shots, 3);
@@ -38,18 +38,19 @@ end
 % Set the t limits by conversion to k
 % lims(1, :) = t_peak + [-1, 1] * (opts.c.hbar * opts.spherify.k_max / opts.c.m_He) / (0.5 * opts.c.g0 * 0.4187);
 
-threshold = [linspace(21,1500,num_thr).*1e3;linspace(15,500,num_thr).*1e3;linspace(15,500,num_thr).*1e3]; %now in set in Hz
-min_threshod = [-1,-1,-1];%[1e4,3e3,3e3];%[2e4,5e3,9e3];
+threshold = [linspace(21,600,num_thr).*1e3;linspace(15,130,num_thr).*1e3;linspace(15,130,num_thr).*1e3]; %now in set in Hz
+min_threshod = [0,4,0].*1e3;%[20,11,10.2].*1e3;%[12,11,10.2].*1e3;%[0,0,0];%[1e4,3e3,3e3];%[2e4,5e3,9e3];
 threshold3d = linspace(0,1.5,num_thr).*1e11; %now in Hz/m^2
 bin_size  = [20e-5,3e-3,3e-3];%3e-5 * [1, 10, 10];%
-sigma = [8e-5,25e-5,25e-5];
+sigma = [3e-5,12e-5,12e-5];
 bin_edges_3d = [];
 for axis = 1:3
     this_edge = (lims(axis, 1):bin_size(axis):lims(axis, 2)).';
     bin_edges_3d{axis} = this_edge;
     bin_centers_3d{axis} =(this_edge(1:end-1)+this_edge(2:end))./2;
 end
-
+figure(1)
+clf
 for this_idx = 1:num_thr%num_shots % Loop over all QD shots
     %         trim_counts(this_idx) = length(trim_txy);
     this_txy = data.masked.counts_txy{45};
@@ -83,6 +84,9 @@ for this_idx = 1:num_thr%num_shots % Loop over all QD shots
         count_hist = smooth_hist(this_axis,'sigma',this_sigma);
         flux = count_hist.count_rate.smooth;%hist_adaptive_method(this_axis, bin_edges', 0);
         bin_centres = count_hist.bin.centers;%0.5 * (bin_edges(2:end) + bin_edges(1:end-1));
+        outer_cut = ~or((max(bin_centres)-bin_centres)./range(bin_centres)<0.05,(-min(bin_centres)+bin_centres)./range(bin_centres)<0.05);
+        flux = flux(outer_cut);
+        bin_centres = bin_centres(outer_cut);
 %         flux = flux(2:end-1);
         mask = flux > threshold(axis,this_idx);
         locs = find(mask);
@@ -98,7 +102,8 @@ for this_idx = 1:num_thr%num_shots % Loop over all QD shots
             bec_widths(this_idx, axis) = diff(t_margins);
         end
         mask = flux > threshold(axis,this_idx) | flux < min_threshod(axis);
-            bec_centres_avg(this_idx,axis) = nansum(flux(~mask).*bin_centres(~mask))./nansum(flux(~mask));
+%             bec_centres_avg(this_idx,axis) = nansum(flux(~mask).*bin_centres(~mask))./nansum(flux(~mask));
+            bec_centres_avg(this_idx,axis) = trapz(bin_centres(~mask),flux(~mask).*bin_centres(~mask))./trapz(bin_centres(~mask),flux(~mask));
             bec_widths_avg(this_idx,axis) = sqrt(nansum(flux(~mask).*(bin_centres(~mask)-bec_centres_avg(this_idx,axis)).^2)./nansum(flux(~mask)));
             
             centre_OK(this_idx) = 1;
@@ -130,12 +135,13 @@ for this_idx = 1:num_thr%num_shots % Loop over all QD shots
             bec_widths_fit(this_idx,axis) = fit_params(3);
             bec_widths_fit_bimod(this_idx,axis) = fit_params_both(3);
 %         end
-%         if opts_cent.visual > 1
-%             subplot(3, 1, axis);
-%             plot(bin_centres, flux, 'k')
-%             hold on
-%             plot(bin_centres(mask), flux(mask), 'r')
-%         end
+        if opts_cent.visual > 1 && this_idx == 100
+            figure(1)
+            subplot(3, 1, axis);
+            plot(bin_centres, flux, 'k')
+            hold on
+            plot(bin_centres(~mask), flux(~mask), 'b')
+        end
     end
 end
 
@@ -145,12 +151,13 @@ plot(threshold(2,:)./1e3,bec_centres(:,2))
 hold on
 plot(threshold(2,:)./1e3,bec_centres_avg(:,2))
 plot(threshold(2,:)./1e3,bec_centres_fit(:,2))
-plot(threshold(2,:)./1e3,bec_centres_fit_bimod(:,2))
+% plot(threshold(2,:)./1e3,bec_centres_fit_bimod(:,2))
 % plot(threshold(2,:)./1e3,bec_centres_avg_3d(:,2))
 legend('margin x','weighted x','fit x','fit bimod x')
 xlabel('threshold value (\(mm^{-1}\))')
 ylabel('x center (m)')
-xlim([0,500])
+% xlim([0,500])
+ylim([-4e-3,-1e-3])
 
 stfig('centering test y');
 clf
@@ -158,12 +165,13 @@ plot(threshold(3,:)./1e3,bec_centres(:,3))
 hold on
 plot(threshold(3,:)./1e3,bec_centres_avg(:,3))
 plot(threshold(3,:)./1e3,bec_centres_fit(:,3))
-plot(threshold(3,:)./1e3,bec_centres_fit_bimod(:,3))
+% plot(threshold(3,:)./1e3,bec_centres_fit_bimod(:,3))
 % plot(threshold(3,:)./1e3,bec_centres_avg_3d(:,3))
 legend('margin y','weighted y','fit y','fit bimod y')
 xlabel('threshold value (\(mm^{-1}\))')
 ylabel('y center (m)')
-xlim([0,500])
+% xlim([0,500])
+ylim([3e-3,7e-3])
 
 stfig('centering test z');
 clf
@@ -171,26 +179,26 @@ plot(threshold(1,:)./1e3,bec_centres(:,1))
 hold on
 plot(threshold(1,:)./1e3,bec_centres_avg(:,1))
 plot(threshold(1,:)./1e3,bec_centres_fit(:,1))
-plot(threshold(1,:)./1e3,bec_centres_fit_bimod(:,1))
+% plot(threshold(1,:)./1e3,bec_centres_fit_bimod(:,1))
 % plot(threshold(1,:)./1e3,bec_centres_avg_3d(:,1))
 legend('margin z','weighted z','fit z','fit bimod z')
 xlabel('threshold value (kHz)')
 ylabel('z center (s)')
-ylim([3.861 3.865])
+ylim([3.8503 3.8513])
 
-stfig('widths')
-clf
-subplot(3,1,1)
-plot(threshold(2,:)./1e3,bec_widths(:,2))
-hold on
-plot(threshold(2,:)./1e3,bec_widths_avg(:,2))
-plot(threshold(2,:)./1e3,bec_widths_fit(:,2))
-plot(threshold(2,:)./1e3,bec_widths_fit_bimod(:,2))
-% plot(threshold(2,:)./1e3,bec_centres_avg_3d(:,2))
-legend('margin x','weighted x','fit x','fit bimod x')
-xlabel('threshold value (\(mm^{-1}\))')
-ylabel('x width (m)')
-xlim([0,500])
+% stfig('widths')
+% clf
+% subplot(3,1,1)
+% plot(threshold(2,:)./1e3,bec_widths(:,2))
+% hold on
+% plot(threshold(2,:)./1e3,bec_widths_avg(:,2))
+% plot(threshold(2,:)./1e3,bec_widths_fit(:,2))
+% % plot(threshold(2,:)./1e3,bec_widths_fit_bimod(:,2))
+% % plot(threshold(2,:)./1e3,bec_centres_avg_3d(:,2))
+% legend('margin x','weighted x','fit x','fit bimod x')
+% xlabel('threshold value (\(mm^{-1}\))')
+% ylabel('x width (m)')
+% xlim([0,500])
 % subplot(3,1,2)
 
 
