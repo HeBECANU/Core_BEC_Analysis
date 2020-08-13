@@ -5,12 +5,12 @@ A reasonably comprehensive toolset for analysis of data generated in the He* BEC
 
 ## Install 
 
-As a submodule (most common usage)
+As a submodule, most common usage. Usually installed in the lib folder of a project.
 ```
 git submodule add -b dev  https://github.com/brycehenson/Core_BEC_Analysis.git lib/Core_BEC_Analysis
 ```
 
-Solo (not recomended)
+Solo install. Not recomended for including Core_BEC_Analysis in a project. It makes install for new users harder and does not point to a particular version of this code making debuging harder.
 ``` 
 git clone --recursive https://github.com/brycehenson/Core_BEC_Analysis.git
 ```
