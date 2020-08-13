@@ -41,10 +41,11 @@ function out=col_row_fun_mat(funhandle,mat_in,dirn)
 % Known BUGS/ Possible Improvements
 %    - speed improvements may be possible with less of the x(:) syntax
 %    - could try to catch when the function output nonuniform len
-%    - build for higher dimension operation
+%    - build for arb dimension operation
+%    - build cell output option
 %
 % Author: Bryce Henson
-% email: Bryce.Henson[a circle]live.com  %YOU MUST INCLUDE '[matlab][col_row_fun_mat]' in the subject line OR I WILL NOT REPLY
+% email: Bryce.Henson[a circle]live.com  include '[matlab][col_row_fun_mat]' in the subject line
 % Last revision:2019-05-11
 %------------- BEGIN CODE --------------
 

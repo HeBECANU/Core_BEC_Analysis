@@ -55,47 +55,77 @@ end
 percent = 0;
 w = 50; % Width of progress bar
 
+
 if N > 0
     f = fopen(fullfile(tempdir,'parfor_progress.bin'), 'w');
     if f<0
         error('Do you have write permissions for %s?', pwd);
     end
-    fwrite(f,N,'uint32');
-    fwrite(f,0,'uint32');
+    fwrite(f,tic,'uint64'); %current system time in 1e-7 seconds
+    fwrite(f,N,'uint64');
+    fwrite(f,0,'uint64');
     fclose(f);
 
     if nargout == 0
-        disp([' 0%[>', repmat(' ', 1, w), ']']);
+        print_cli_data(0,0,0,w);
     end
 elseif N == 0
-    delete(fullfile(tempdir,'parfor_progress.bin'));
-    percent = 100;
-
+    fname = fullfile(tempdir,'parfor_progress.bin');
+    if (exist(fname, 'file')~=2)
+        error('parfor_progress.bin not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.bin.');
+    end
+    
+    f = fopen(fname, 'r');
+    A = fread(f,3,'uint64');
+    time_start_pointer=uint64(A(1));
+    fclose(f);
+    delete(fname);
     if nargout == 0
-        disp([repmat(char(8), 1, (w+9)), char(10), '100%[', repmat('=', 1, w+1), ']']);
+        run_time_s=toc(time_start_pointer);
+        print_cli_data(1,run_time_s,0,w);
+        fprintf('done.\n')
     end
 else
     fname = fullfile(tempdir,'parfor_progress.bin');
-    if ~exist(fname, 'file')
+    if (exist(fname, 'file')~=2)
         error('parfor_progress.bin not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.bin.');
     end
-
+    
     f = fopen(fname, 'r+');
-    A = fread(f,2,'uint32');
-    todo = A(1);
-    progress = A(2) + 1;
-    fseek(f, 4, 'bof');
+    A = fread(f,3,'uint64');
+    time_start_pointer=uint64(A(1));
+    todo = A(2);
+    progress = A(3) + 1;
+    % move to the progress position in the file 8*2=15 bytes
+    fseek(f, 16, 'bof');
     fwrite(f,progress,'uint32');
     fclose(f);
-
-    percent = progress/todo * 100;
-
+    progress_frac=progress/todo;
+    
     if nargout == 0
-        perc = sprintf('%3.0f%%', percent); % 4 characters wide, percentage
-        disp([repmat(char(8), 1, (w+9)), char(10), perc, '[', repmat('=', 1, round(percent*w/100)), '>', repmat(' ', 1, w - round(percent*w/100)), ']']);
+        %delete_chars=repmat('\b', 1, (w+10)); %char(8)
+        fprintf(repmat('\b',[1,w+12+36])); %9 wide for the percent 36 for the progress
+        run_time_s=toc(time_start_pointer);
+        %est_time_full=runtime/progress_frac
+        %est_time_from_now=est_time_full(1-progress_frac)
+        %est_time_from_now=(runtime/progress_frac)(1-progress_frac)
+        eta_s=(run_time_s/progress_frac)*(1-progress_frac);
+        print_cli_data(progress_frac,run_time_s,eta_s,w)
+        
     end
 end
 
+end
+
+
+function print_cli_data(progress_frac,run_time_s,eta_s,w)
+n_bars=round(progress_frac*w);
+n_bars=min(n_bars,w);
+progress_bar=[repmat('=', 1, n_bars) , '>', repmat(' ', 1, w - n_bars)];
+fprintf('%5.1f%%[%s]\n',progress_frac*100,progress_bar);
+run_time_hms = fix(mod(run_time_s, [0, 3600, 60]) ./ [3600, 60, 1]);
+eta_hms = fix(mod(eta_s, [0, 3600, 60]) ./ [3600, 60, 1]);
+fprintf('       runtime %02u:%02u:%02u eta %02u:%02u:%02u.\n',run_time_hms,eta_hms)
 end
 
 

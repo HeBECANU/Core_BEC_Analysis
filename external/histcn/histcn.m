@@ -83,7 +83,11 @@ end
 
 % Get the dimension
 nd = size(X,2);
-edges = varargin;
+if iscell(varargin{1}) %kieran change, so you can pass edges as a cell array
+    edges = varargin{1};
+else
+    edges = varargin;
+end
 if nd<length(edges)
     nd = length(edges); % wasting CPU time warranty
 else
