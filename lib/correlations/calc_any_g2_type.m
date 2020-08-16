@@ -194,10 +194,10 @@ out.between_shot_corr.(centers)=normcorr.(centers);
 out.between_shot_corr.(corr_density)=normcorr.(corr_density);
 out.norm_g2.(centers)=shotscorr.(centers);
 out.norm_g2.g2_amp=xg2;
-is_data_flat = isdataflat(xg2,0.2);%0.2
+is_data_flat = isdataflat(xg2,1.75);%0.2
 if corr_opts.fit
     if ~corr_opts.calc_err && ~is_data_flat
-        [muHat,sigmaHat] = normfit(shotscorr.(centers),0.01,zeros(size(shotscorr.(centers))),abs(xg2-1).^2');
+        [muHat,sigmaHat] = normfit(shotscorr.(centers),0.01,zeros(size(shotscorr.(centers))),abs(xg2-1).^2);
         inital_guess=[max(xg2)-1,sigmaHat];
         if corr_opt.param_num == 4 %full freedom gaussian fit
             inital_guess = [inital_guess,muHat,1];

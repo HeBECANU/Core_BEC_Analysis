@@ -80,7 +80,7 @@ for this_idx = 1:num_shots % Loop over all shots
         flux = count_hist.count_rate.smooth;
         bin_centres = count_hist.bin.centers;
         outer_cut = ~or((max(bin_centres)-bin_centres)./range(bin_centres)...
-            <0.05,(-min(bin_centres)+bin_centres)./range(bin_centres)<0.05);
+            <0.02,(-min(bin_centres)+bin_centres)./range(bin_centres)<0.02);
         flux = flux(outer_cut);
         bin_centres = bin_centres(outer_cut);
         mask_upper = (flux > opts_cent.threshold(axis));
@@ -107,7 +107,10 @@ for this_idx = 1:num_shots % Loop over all shots
                     bec_widths(this_idx, axis) = diff(t_margins);
                 case 'average'
 %                     bec_centres(this_idx,axis) = nansum(flux(~mask).*bin_centres(~mask))./nansum(flux(~mask));
-                    bec_centres(this_idx,axis) = trapz(bin_centres(~mask),flux(~mask).*bin_centres(~mask))./trapz(bin_centres(~mask),flux(~mask));
+                    flux_masked = flux;
+                    flux_masked(mask) = 0;
+                    flux_masked(~mask) = flux_masked(~mask)-opts_cent.min_threshold(axis);
+                    bec_centres(this_idx,axis) = trapz(bin_centres,flux_masked.*bin_centres)./trapz(bin_centres,flux_masked);
                     bec_widths(this_idx,axis) = sqrt(nansum(flux(~mask).*(bin_centres(~mask)-bec_centres(this_idx,axis)).^2)./nansum(flux(~mask)));
                 case 'gauss_fit'
                     gauss =  @(b,x) b(1).*exp(-((x-b(2)).^2)./(2*b(3).^2));
