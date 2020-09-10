@@ -156,13 +156,13 @@ if ~corr_opts.calc_err
             counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
         end
     elseif strcmp(corr_opts.sampling_method,'complete')
-        if size(counts,1)>1
-            chunk_num = min([sum(cellfun(@(x)size(x,1),counts(1,:)))-size(counts{1,1},1),sum(cellfun(@(x)size(x,1),counts(2,:)))-size(counts{2,1},1)]);
-            counts_chunked(1,:)=chunk_data_complete(counts(1,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
-            counts_chunked(2,:)=chunk_data_complete(counts(2,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
-        else
+%         if size(counts,1)>1
+%             chunk_num = min([sum(cellfun(@(x)size(x,1),counts(1,:)))-size(counts{1,1},1),sum(cellfun(@(x)size(x,1),counts(2,:)))-size(counts{2,1},1)]);
+%             counts_chunked(1,:)=chunk_data_complete(counts(1,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
+%             counts_chunked(2,:)=chunk_data_complete(counts(2,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
+%         else
             counts_chunked=chunk_data_complete(counts,corr_opts.sample_proportion,norm_sort_dir);
-        end
+%         end
     end
     corr_opts.do_pre_mask=corr_opts.sort_norm; %can only do premask if data is sorted
     if corr_opts.verbose

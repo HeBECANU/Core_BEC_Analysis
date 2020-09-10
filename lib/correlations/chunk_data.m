@@ -22,27 +22,30 @@ else
     norm_chunk_size=floor(total_counts/num_chunks);
 end
 
-if num_chunks<max(num_counts)
-    num_chunks = max(num_counts);
-end
+% if num_chunks<max(num_counts)
+%     num_chunks = max(num_counts);
+% end
 
 counts_chunked=cell(1,num_chunks);
-for ii=1:num_shots
-    this_counts = counts{ii};
-    chunk_dist = randperm(num_chunks);
-    for jj = 1:num_counts(ii)
-        box = chunk_dist(jj);
-        counts_chunked{box}=[counts_chunked{box};this_counts(jj,:)];
-    end
-end
 % for ii=1:num_shots
 %     this_counts = counts{ii};
 %     chunk_dist = randperm(num_chunks);
-%     for jj = 1:num_chunks%num_counts(ii)
+%     for jj = 1:num_counts(ii)
 %         box = chunk_dist(jj);
-%         counts_chunked{box}=[counts_chunked{box};this_counts(mod(jj,num_counts(ii))+1,:)];
+%         counts_chunked{box}=[counts_chunked{box};this_counts(jj,:)];
 %     end
 % end
+for ii=1:num_shots
+    if num_counts(ii)<1
+       continue 
+    end
+    this_counts = counts{ii};
+    chunk_dist = randperm(num_chunks);
+    for jj = 1:num_chunks%num_counts(ii)
+        box = chunk_dist(jj);
+        counts_chunked{box}=[counts_chunked{box};this_counts(mod(jj,num_counts(ii))+1,:)];
+    end
+end
 if ~isnan(sort_dir)
     for ii = 1:num_chunks
         tmp_data = counts_chunked{ii};

@@ -148,7 +148,7 @@ for this_idx = 1:num_shots % Loop over all shots
                     bec_widths(this_idx,axis) = fit_params_both(3);
             end
         end
-        if opts_cent.visual > 1 && mod(this_idx,100)==0
+        if opts_cent.visual > 1 %&& mod(this_idx,100)==0
             subplot(3, 1, axis);
             plot(bin_centres-bec_centres(this_idx,axis), flux, 'k')
             hold on
