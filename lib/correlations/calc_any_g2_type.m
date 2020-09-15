@@ -136,6 +136,10 @@ elseif isequal(corr_opts.type,'3d_cart_cl')  || isequal(corr_opts.type,'3d_cart_
     warning('3d corrs temporarily removed')
 end
 
+if ~isfield(corr_opts,'print_update')
+    corr_opts.print_update = true;
+end
+
 if ~corr_opts.calc_err
     if corr_opts.verbose
         cli_format_text('Calculating Correlations','c',3)
@@ -155,14 +159,9 @@ if ~corr_opts.calc_err
         else
             counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
         end
+        corr_opts.normalisation_factor = (size(counts,2)/nanmean(cellfun(@(x)size(x,1),counts),'all'))^2;
     elseif strcmp(corr_opts.sampling_method,'complete')
-%         if size(counts,1)>1
-%             chunk_num = min([sum(cellfun(@(x)size(x,1),counts(1,:)))-size(counts{1,1},1),sum(cellfun(@(x)size(x,1),counts(2,:)))-size(counts{2,1},1)]);
-%             counts_chunked(1,:)=chunk_data_complete(counts(1,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
-%             counts_chunked(2,:)=chunk_data_complete(counts(2,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
-%         else
-            counts_chunked=chunk_data_complete(counts,corr_opts.sample_proportion,norm_sort_dir);
-%         end
+        counts_chunked=chunk_data_complete(counts,corr_opts.sample_proportion,norm_sort_dir);
     end
     corr_opts.do_pre_mask=corr_opts.sort_norm; %can only do premask if data is sorted
     if corr_opts.verbose
@@ -194,7 +193,7 @@ out.between_shot_corr.(centers)=normcorr.(centers);
 out.between_shot_corr.(corr_density)=normcorr.(corr_density);
 out.norm_g2.(centers)=shotscorr.(centers);
 out.norm_g2.g2_amp=xg2;
-is_data_flat = isdataflat(xg2,1.75);%0.2
+is_data_flat = isdataflat(xg2,1.75,9);%0.2
 if corr_opts.fit
     if ~corr_opts.calc_err && ~is_data_flat
         [muHat,sigmaHat] = normfit(shotscorr.(centers),0.01,zeros(size(shotscorr.(centers))),abs(xg2-1).^2);

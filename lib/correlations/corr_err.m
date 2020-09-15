@@ -41,14 +41,19 @@ corr_opts.print_update = false;
 rawcorr = corr_func(corr_opts,counts);
 
 norm_sort_dir=corr_opts.sorted_dir;
-if size(counts,1)>1
-    %set the number of chunks to be at least as many as the heighest
-    %count number out of all halos
-    chunk_num = max([cellfun(@(x)size(x,1),counts(1,:)),cellfun(@(x)size(x,1),counts(2,:))]);
-    counts_chunked(1,:)=chunk_data(counts(1,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
-    counts_chunked(2,:)=chunk_data(counts(2,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
-else
-    counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
+if strcmp(corr_opts.sampling_method,'basic')
+    if size(counts,1)>1
+        %set the number of chunks to be at least as many as the heighest
+        %count number
+        chunk_num = max([cellfun(@(x)size(x,1),counts(1,:)),cellfun(@(x)size(x,1),counts(2,:))]);
+        counts_chunked(1,:)=chunk_data(counts(1,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
+        counts_chunked(2,:)=chunk_data(counts(2,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
+    else
+        counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
+    end
+    corr_opts.normalisation_factor = (size(counts,2)/nanmean(cellfun(@(x)size(x,1),counts)))^2;
+elseif strcmp(corr_opts.sampling_method,'complete')
+    counts_chunked=chunk_data_complete(counts,corr_opts.sample_proportion,norm_sort_dir);
 end
 normcorr=corr_func(corr_opts,counts_chunked);
 
