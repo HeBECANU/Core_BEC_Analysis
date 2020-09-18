@@ -31,6 +31,8 @@ function out=calc_any_g2_type(corr_opts,counts)
 %find the num of counts in each shot
 num_counts=cellfun(@(x)size(x,1),counts);
 
+%% OPTIONS CHECKS
+
 if ~isfield(corr_opts,'verbose') || ~islogical(corr_opts.verbose)
     corr_opts.verbose = true;
 end
@@ -92,7 +94,7 @@ if ~isfield(corr_opts,'fig')
 end
 
 if ~isfield(corr_opts,'one_d_smoothing')
-   corr_opts.one_d_smoothing=nan; 
+    corr_opts.one_d_smoothing=nan;
 end
 
 if ~isfield(corr_opts,'param_num')
@@ -136,7 +138,9 @@ elseif isequal(corr_opts.type,'3d_cart_cl')  || isequal(corr_opts.type,'3d_cart_
     warning('3d corrs temporarily removed')
 end
 
-if ~corr_opts.calc_err
+%% CALCULATE THE CORRELATIONS
+
+if ~corr_opts.calc_err %normal method without error calculations
     if corr_opts.verbose
         cli_format_text('Calculating Correlations','c',3)
         fprintf('calculating intra-shot correlations \n')
@@ -156,13 +160,13 @@ if ~corr_opts.calc_err
             counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
         end
     elseif strcmp(corr_opts.sampling_method,'complete')
-%         if size(counts,1)>1
-%             chunk_num = min([sum(cellfun(@(x)size(x,1),counts(1,:)))-size(counts{1,1},1),sum(cellfun(@(x)size(x,1),counts(2,:)))-size(counts{2,1},1)]);
-%             counts_chunked(1,:)=chunk_data_complete(counts(1,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
-%             counts_chunked(2,:)=chunk_data_complete(counts(2,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
-%         else
-            counts_chunked=chunk_data_complete(counts,corr_opts.sample_proportion,norm_sort_dir);
-%         end
+        %         if size(counts,1)>1
+        %             chunk_num = min([sum(cellfun(@(x)size(x,1),counts(1,:)))-size(counts{1,1},1),sum(cellfun(@(x)size(x,1),counts(2,:)))-size(counts{2,1},1)]);
+        %             counts_chunked(1,:)=chunk_data_complete(counts(1,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
+        %             counts_chunked(2,:)=chunk_data_complete(counts(2,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
+        %         else
+        counts_chunked=chunk_data_complete(counts,corr_opts.sample_proportion,norm_sort_dir);
+        %         end
     end
     corr_opts.do_pre_mask=corr_opts.sort_norm; %can only do premask if data is sorted
     if corr_opts.verbose
@@ -172,7 +176,7 @@ if ~corr_opts.calc_err
     %%
     xg2=shotscorr.(corr_density)./normcorr.(corr_density);
     [g2peak,~] = max(xg2);
-else
+else %bootstrap your errors
     corrs=corr_err(corr_func,corr_opts,counts);
     shotscorr.(centers) = bin_centers;%
     shotscorr.(corr_density) = corrs.rawcorr.val; %weighted average
@@ -194,8 +198,11 @@ out.between_shot_corr.(centers)=normcorr.(centers);
 out.between_shot_corr.(corr_density)=normcorr.(corr_density);
 out.norm_g2.(centers)=shotscorr.(centers);
 out.norm_g2.g2_amp=xg2;
-is_data_flat = isdataflat(xg2,1.75);%0.2
+
+%% FIT CORRELATIONS
 if corr_opts.fit
+    % Check if data is flat
+    is_data_flat = isdataflat(xg2,1.75);%0.2
     if ~corr_opts.calc_err && ~is_data_flat
         [muHat,sigmaHat] = normfit(shotscorr.(centers),0.01,zeros(size(shotscorr.(centers))),abs(xg2-1).^2);
         inital_guess=[max(xg2)-1,sigmaHat];
@@ -236,6 +243,7 @@ if corr_opts.fit
     out.norm_g2.fitted_g2peak_unc = b_unc(1);
 end
 
+%% PLOT CORRELATIONS
 if corr_opts.plots
     stfig(corr_opts.fig);
     clf
@@ -285,6 +293,7 @@ if corr_opts.plots
     pause(1e-6);
 end
 
+%% WRITE OUT RESULTS
 if corr_opts.verbose
     if corr_opts.calc_err
         fprintf('g2 peak amplitude         %s\n',string_value_with_unc(g2peak,g2peak_unc,'type','b','separator',0))
