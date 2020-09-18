@@ -138,6 +138,14 @@ elseif isequal(corr_opts.type,'3d_cart_cl')  || isequal(corr_opts.type,'3d_cart_
     warning('3d corrs temporarily removed')
 end
 
+if ~isfield(corr_opts,'print_update')
+    corr_opts.print_update = true;
+end
+
+if ~isfield(corr_opts,'plots')
+    corr_opts.plots = true;
+end
+
 %% CALCULATE THE CORRELATIONS
 
 if ~corr_opts.calc_err %normal method without error calculations
@@ -159,14 +167,9 @@ if ~corr_opts.calc_err %normal method without error calculations
         else
             counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
         end
+        corr_opts.normalisation_factor = (size(counts,2)/nanmean(cellfun(@(x)size(x,1),counts),'all'))^2;
     elseif strcmp(corr_opts.sampling_method,'complete')
-        %         if size(counts,1)>1
-        %             chunk_num = min([sum(cellfun(@(x)size(x,1),counts(1,:)))-size(counts{1,1},1),sum(cellfun(@(x)size(x,1),counts(2,:)))-size(counts{2,1},1)]);
-        %             counts_chunked(1,:)=chunk_data_complete(counts(1,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
-        %             counts_chunked(2,:)=chunk_data_complete(counts(2,:),corr_opts.sample_proportion,norm_sort_dir,chunk_num);
-        %         else
         counts_chunked=chunk_data_complete(counts,corr_opts.sample_proportion,norm_sort_dir);
-        %         end
     end
     corr_opts.do_pre_mask=corr_opts.sort_norm; %can only do premask if data is sorted
     if corr_opts.verbose
@@ -200,6 +203,7 @@ out.norm_g2.(centers)=shotscorr.(centers);
 out.norm_g2.g2_amp=xg2;
 
 %% FIT CORRELATIONS
+
 if corr_opts.fit
     % Check if data is flat
     is_data_flat = isdataflat(xg2,1.75);%0.2
@@ -244,6 +248,7 @@ if corr_opts.fit
 end
 
 %% PLOT CORRELATIONS
+
 if corr_opts.plots
     stfig(corr_opts.fig);
     clf
@@ -294,6 +299,7 @@ if corr_opts.plots
 end
 
 %% WRITE OUT RESULTS
+
 if corr_opts.verbose
     if corr_opts.calc_err
         fprintf('g2 peak amplitude         %s\n',string_value_with_unc(g2peak,g2peak_unc,'type','b','separator',0))

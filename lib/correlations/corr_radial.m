@@ -318,7 +318,13 @@ end
 
 rad_volume=(4/3)*pi*(corr_opts.redges(2:end).^3-corr_opts.redges(1:end-1).^3);
 % out.rad_corr_density=rad_bins./(rad_volume.*out.pairs);
-out.rad_corr_density=rad_bins./(shots);
+if isfield(corr_opts,'normalisation_factor')
+    norm_factor = corr_opts.normalisation_factor;
+else
+    norm_factor = 1;
+end
+
+out.rad_corr_density=rad_bins./(shots*norm_factor);
 if ~(isnan(corr_opts.rad_smoothing) || corr_opts.rad_smoothing==0)
     out.rad_corr_density=gaussfilt(out.rad_centers,out.rad_corr_density,corr_opts.rad_smoothing);
 end

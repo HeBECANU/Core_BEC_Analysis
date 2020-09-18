@@ -10,19 +10,19 @@
 [submodule "lib/bootstrap_error"]
 	path = lib/bootstrap_error
 	url = https://github.com/brycehenson/bootstrap_error.git
-[submodule "bin/export_fig"]
+[submodule "external/export_fig"]
 	path = external/export_fig
 	url = https://github.com/altmany/export_fig.git
-[submodule "bin/errorbarxy"]
+[submodule "external/errorbarxy"]
 	path = external/errorbarxy
 	url = https://github.com/cthissen/errorbarxy.git
 [submodule "lib/fast_search_histogram"]
 	path = lib/fast_search_histogram
 	url = https://github.com/brycehenson/fast_search_histogram.git
-[submodule "bin/ciecam02"]
+[submodule "external/ciecam02"]
 	path = external/ciecam02
 	url = https://github.com/brycehenson/CIECAM02.git
-[submodule "bin/MBeautifier"]
+[submodule "external/MBeautifier"]
 	path = external/MBeautifier
 	url = https://github.com/davidvarga/MBeautifier.git
 [submodule "lib/lab_structured_logging"]
@@ -31,6 +31,6 @@
 [submodule "lib/matlab_struct_tensor_conversions"]
 	path = lib/matlab_struct_tensor_conversions
 	url = https://github.com/brycehenson/matlab_struct_tensor_conversions.git
-[submodule "bin/fig2svg"]
+[submodule "external/fig2svg"]
 	path = external/fig2svg
 	url = https://github.com/kupiqu/fig2svg.git
