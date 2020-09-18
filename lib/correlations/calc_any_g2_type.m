@@ -140,6 +140,10 @@ if ~isfield(corr_opts,'print_update')
     corr_opts.print_update = true;
 end
 
+if ~isfield(corr_opts,'plots')
+    corr_opts.plots = true;
+end
+
 if ~corr_opts.calc_err
     if corr_opts.verbose
         cli_format_text('Calculating Correlations','c',3)
