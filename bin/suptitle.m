@@ -1,4 +1,4 @@
-function hout=suptitle(str)
+function hout=suptitle(str,varargin)
 %SUPTITLE puts a title above all subplots.
 %
 %	SUPTITLE('text') adds text to the top of the figure
@@ -8,7 +8,6 @@ function hout=suptitle(str)
 %   SUPTITLE is a helper function for yeastdemo.
 
 %   Copyright 2003-2010 The MathWorks, Inc.
-
 
 % Warning: If the figure or axis units are non-default, this
 % will break.
@@ -22,7 +21,11 @@ plotregion = .92;
 titleypos  = .95;
 
 % Fontsize for supertitle
-fs = get(gcf,'defaultaxesfontsize')+4;
+if nargin > 1
+    fs = varargin{1};
+else
+    fs = get(gcf,'defaultaxesfontsize')+4;
+end
 
 % Fudge factor to adjust y spacing between subplots
 fudge=1;

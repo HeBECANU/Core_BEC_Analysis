@@ -117,6 +117,7 @@ if nargin>=1
                     handle_out=figure('Name',fig_str,'NumberTitle','off');
                 end
                 set(handle_out,'color','w')
+%                 set(handle_out,'DefaultAxesXLabelFontSize','20')
                 if focus_back_to_cwin
                     drawnow
                     commandwindow

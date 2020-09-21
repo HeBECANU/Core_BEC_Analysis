@@ -4,8 +4,8 @@ function lims = getlims(data)
     naxis = size(data,2);
     lims = zeros(naxis,2);
     for axis = 1:naxis
-       axmin = min(data(axis,:)); 
-       axmax = max(data(axis,:)); 
+       axmin = min(data(:,axis)); 
+       axmax = max(data(:,axis)); 
        lims(axis,:) = [axmin,axmax];
     end    
 end

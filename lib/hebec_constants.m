@@ -6,8 +6,8 @@
 % - add references for all values
 % - include transitions
 
-
-global const
+function const = hebec_constants()
+% global const
 %fundamental
 const.c = 299792458; %speed of light (m/s)
 const.h = 6.626070040*10^-34; %Planck constant (J s)
@@ -24,7 +24,8 @@ const.grav=6.67430*10^-11;  %Newtonian constant of gravitation %https://physics.
 %Helium
 % const.ahe_scat=15*10^-9;
 const.ahe_scat=7.512000000000000e-09; %m^2 Moal et al https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.96.023203
-const.b_freq=2.802*1e6*1e4; %hz/T
+const.b_freq=2*const.mub/const.h /(1e4); %for the metastable state - hz/G
+% calculated for the metastable state
 const.mhe = 1.66*10^-27*4.002;%(*helium mass*)
 const.interaction_energy = 4*pi*const.hb^2*const.ahe_scat/const.mhe; % interaction strength []
 
@@ -38,3 +39,36 @@ const.g0 =9.7960207-78e-8;
 %customary
 const.a0 = 0.529*10^-10;%(*bohr radius*)
 
+%experiment
+const.fall_distance = 0.8587; 
+
+const.mu = 9.27e-28; %J/G
+const.h = 6.63e-34;
+const.hbar = const.h/(2*pi);
+const.f_mu = const.mu/const.h;
+const.w_mu = const.mu/const.hbar;
+const.c = 299792458;
+const.q = 1.602e-19;
+% Notation & lookup
+const.terms = {'S','P','D','F','G'};
+%% Reference values
+const.f_table.g_2_3P_2.e_5_3S_1 = 727.3032446e12;
+% Misc transitions - what do the stars mean?
+const.f_table.g_2_3P_2.e_5_3P_0 = 1e9*const.c/404.628937550957;
+const.f_table.g_2_3P_2.e_5_3P_1 = 1e9*const.c/404.629844755577;
+const.f_table.g_2_3P_2.e_5_3P_2 = 1e9*const.c/404.629918705477; 
+% Historically controversial transitions
+const.f_table.g_2_3P_2.e_5_3D_3 = 744.39620968e12;
+const.f_table.g_2_3P_2.e_5_3D_2 = 744.39622889e12;
+const.f_table.g_2_3P_2.e_5_3D_1 = 744.39651246e12; 
+% Singlet-triplet transitions
+const.f_table.g_2_3P_2.e_5_1S_0 = 1e9*const.c/406.8886971706;
+const.f_table.g_2_3P_2.e_5_1P_1 = 1e9*const.c/402.322271224483;
+const.f_table.g_2_3P_2.e_5_1D_2 = 744.43034335e12; % 402.7nm
+
+%Fitted valuse for the 5^3D's
+const.f_table.g_2_3P_2.e_5_3D_3 = 744.39620836e12;
+const.f_table.g_2_3P_2.e_5_3D_2 = 744.39622758e12;
+const.f_table.g_2_3P_2.e_5_3D_1 = 744.39651114e12;
+
+end

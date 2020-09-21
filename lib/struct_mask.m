@@ -13,10 +13,12 @@ num_entries = length(m);
 for ii=1:nfields
    this_field = fieldnames{ii};
    this_data = s.(this_field);
-   if size(this_data,1) == 1
-       this_data = this_data';
+   % make row vec to col vec
+   if size(this_data,2) == num_entries %
+      this_data = this_data';
    end
-   if size(this_data,2) > 1
+   
+   if all(size(this_data,2) > 1)
        out.(this_field) =this_data(m,:);
    else
        out.(this_field) =this_data(m);

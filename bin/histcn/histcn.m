@@ -1,4 +1,4 @@
-function [count edges mid loc] = histcn(X, varargin)
+function [count,edges,mid,loc] = histcn(X, varargin)
 % function [count edges mid loc] = histcn(X, edge1, edge2, ..., edgeN)
 %
 % Purpose: compute n-dimensional histogram
@@ -59,7 +59,7 @@ function [count edges mid loc] = histcn(X, varargin)
 % Bruno Luong: <brunoluong@yahoo.com>
 % Last update: 25/August/2011
 
-if ndims(X)>2
+if ~ismatrix(X)
     error('histcn: X requires to be an (M x N) array of M points in R^N');
 end
 DEFAULT_NBINS = 32;
@@ -105,20 +105,19 @@ for d=1:nd
     end
     edges{d} = ed;
     % Call histc on this dimension
-    [dummy loc(:,d)] = histc(Xd, ed, 1);
+    [~, loc(:,d)] = histc(Xd, ed, 1); %bryce change dummy to ~
     % Use sz(d) = length(ed); to create consistent number of bins
     sz(d) = length(ed)-1;
 end % for-loop
 
-% Clean
-clear dummy
+
 
 % This is need for seldome points that hit the right border
 sz = max([sz; max(loc,[],1)]);
 
 % Compute the mid points
 mid = cellfun(@(e) 0.5*(e(1:end-1)+e(2:end)), edges, ...
-              'UniformOutput', false);
+              'UniformOutput', false);  %%very slow part of the code, would be better to vector
           
 % Count for points where all coordinates are falling in a corresponding
 % bins
@@ -133,6 +132,7 @@ else
     count = accumarray(loc(hasdata,:), 1, sz);
 end
 
-return
+%count=loc; %speed diagnosing
+
 
 end % histcn
