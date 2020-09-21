@@ -13,7 +13,7 @@ function lambda = deBroglie_wavelength(temperature, varargin)
     if nargin>1
         mass = varargin{1};
     else
-        mass = 6.6433e-27;
+        mass = 6.64332e-27;
     end
     lambda = sqrt((2*pi*(1.0540e-34)^2) ./ (mass * 1.3806e-23 *temperature));
 

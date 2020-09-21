@@ -18,10 +18,10 @@ function GZ = g_bose(Z,varargin)
 if nargin==2
     tol_err = varargin{1};
 else
-    tol_err=1e-20;   % incremental error from evaluating series sum
+    tol_err=1e-16;   % incremental error from evaluating series sum
 end
 
-zmask = Z >= 0.9999;
+zmask = Z >= 0.99999;
 if any(zmask)
     warning('g_bose will not converge for Z>=1 !')
     Z(zmask) = nan;

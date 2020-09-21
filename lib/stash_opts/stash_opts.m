@@ -1,5 +1,5 @@
 function flag = stash_opts(stash_dir,opts)
-% A quick function for storing the configuration files used in a given data
+% A quick function for caching the configuration files used in a given data
 % run for structured recollection by get_stashed_opts() later on.
 % Required inputs: A structure s with mandatory fields:
     % stash_dir         The destination for storage (full form)
