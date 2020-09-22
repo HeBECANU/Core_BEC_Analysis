@@ -1,12 +1,4 @@
 function h_data = show_txy_raw(data_in,varargin)
-% imports from file if given opts.import
-% displays from TXY if given opts.txy
-% Features to add
-    % Default import all shots if num = nan
-    % monitor run
-        % Cumulative monitor
-    % 'fancy display'
-    % change input to varargin (data/opts)
 % Returns a structure with fields:
 % h_data.flux3 = bin_flux;
 % h_data.counts3 = voxel_counts;
