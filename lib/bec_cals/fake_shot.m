@@ -45,6 +45,7 @@ function shot_data = fake_shot(total_number,trap_freqs,const,varargin)
 
 % Calculate some useful objects
     w_HO = 2*pi*geomean(trap_freqs);
+    total_number = ceil(total_number);
     critical_temperature = (0.94*const.hbar*w_HO*total_number^(1/3))/const.kb;
     if temperature > critical_temperature
         error('T > T_c, many calculations will fail');
@@ -198,10 +199,11 @@ function shot_data = fake_shot(total_number,trap_freqs,const,varargin)
                                       length(thermal_kvec),length(depletion_counts),length(background_kvec)];
         shot_data.stats.QD_detect_region = sum(depletion_mask);
         shot_data.stats.noise_detect_region = sum(background_mask);
-
-
+        shot_data.properties = bec_prop;
+        shot_data.detection_density = nan;
+        
         if visual
-            xplt = linspace(1,100,101);
+%             xplt = linspace(1,100,101);
             log_edges = logspace(min(log10(k_detections)),max(log10(k_detections)),100);
             hist_signal = histcounts(depletion_kvec,log_edges);
             hist_noise = histcounts(background_kvec,log_edges);
@@ -212,6 +214,8 @@ function shot_data = fake_shot(total_number,trap_freqs,const,varargin)
             log_bin_centres= 0.5*(log_edges(2:end)+log_edges(1:end-1));
             noise_density = (hist_noise./log_bin_volumes);
             detection_density = hist_allcounts./log_bin_volumes;
+%             shot_data.hist.density = detection_density;
+%             shot_data.hist.edges = log_edges;
             plot_profile = thermal_chang + depletion_profile + background_rate;
 
             stfig('Data generation');
@@ -243,7 +247,7 @@ function shot_data = fake_shot(total_number,trap_freqs,const,varargin)
             plot(k_plot,plot_profile,'LineWidth',2)
             legend('Thermal','Depletion','Noise floor','All counts','QD thry','Thermal thry','Full thry',...
                 'Location','Best')
-            ylim([.3e-20,10*max(plot_profile)])
+            ylim([.3*min(plot_profile),10*max(plot_profile)])
             xlabel('k ($ m^{-1}$)')
             ylabel('n(k) ($m^{3}$)')
             set(gca,'Xscale','log')

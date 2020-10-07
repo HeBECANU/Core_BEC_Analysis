@@ -84,7 +84,7 @@ if opts_cent.visual
     c_edges = 0.5*linspace(xmin,xmax,30);
     w_edges = 1.5*linspace(xmin,xmax,30);
 
-   subplot(2,2,1)
+   subplot(3,2,1)
    hold on
    plot(bec_centres(:,1)-mean(bec_centres(:,1)),'r.')
    plot(bec_centres(:,2)-mean(bec_centres(:,2)),'b.')
@@ -93,7 +93,7 @@ if opts_cent.visual
    xlabel('Shot number')
    ylabel('Centre offset from mean')
    legend('T','X','Y')
-   subplot(2,2,2)
+   subplot(3,2,2)
    hold on
    histogram(bec_centres(:,1)-mean(bec_centres(:,1)),c_edges,'FaceColor','r','FaceAlpha',0.2)
     histogram(bec_centres(:,2)-mean(bec_centres(:,2)),c_edges,'FaceColor','b','FaceAlpha',0.2)
@@ -104,7 +104,7 @@ if opts_cent.visual
    ylabel('Centre offset from mean')
    ylabel('Number of shots')
    
-   subplot(2,2,3)
+   subplot(3,2,3)
    hold on
    plot(bec_widths(:,1)-mean(bec_widths(:,1)),'r.')
    plot(bec_widths(:,2)-mean(bec_widths(:,2)),'b.')
@@ -113,7 +113,7 @@ if opts_cent.visual
    title('BEC width variation')
    xlabel('Shot number')
    ylabel('Width variation from mean')
-   subplot(2,2,4)
+   subplot(3,2,4)
    hold on
     histogram(bec_widths(:,1)-mean(bec_widths(:,1)),w_edges,'FaceColor','r','FaceAlpha',0.2)
     histogram(bec_widths(:,2)-mean(bec_widths(:,2)),w_edges,'FaceColor','b','FaceAlpha',0.2)

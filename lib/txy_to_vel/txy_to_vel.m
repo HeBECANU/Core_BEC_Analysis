@@ -4,7 +4,7 @@ function vzxy_out=txy_to_vel(txy_in,out_time,gravity,fall_distance)
 if size(txy_in,2)~=3
     error('wrong txy size')
 end 
-if ~isscalar(out_time) & size(txy_in(:,1))~=size(out_time)
+if ~isscalar(out_time) && size(txy_in(:,1))~=size(out_time)
     error('time_offset should be scalar')
 end 
 if ~isscalar(gravity)

@@ -5,18 +5,21 @@ function [plt,f] = ci_plot(X,Y,I,varargin)
 %     defaultFontSize = 12; 
 %     defaultFont = 'times'; 
     addParameter(p,'mask',ones(size(X)));
-    addParameter(p,'logscale',0);
+    addParameter(p,'LogScale',0);
     addParameter(p,'FaceAlpha',0.2);
     addParameter(p,'Ymin',nan);
-    addParameter(p,'linecol',[0,0,0]);
-    addParameter(p,'areacol',0.5*[1,1,1]);
+    addParameter(p,'LineCol',[0,0,0]);
+    addParameter(p,'AreaCol',0.5*[1,1,1]);
+    addParameter(p,'LineWidth',2);    
     addParameter(p,'mode','Interval');
     parse(p,varargin{:});
-    areacol = p.Results.areacol;
+    areacol = p.Results.AreaCol;
     fill_alpha = p.Results.FaceAlpha;
-    linecol = p.Results.linecol;
+    linecol = p.Results.LineCol;
     plotmode = p.Results.mode;
     ymin = p.Results.Ymin;
+    lw = p.Results.LineWidth;
+    logscale = p.Results.LogScale;
     
     X = col_vec(X);
 
@@ -42,7 +45,7 @@ function [plt,f] = ci_plot(X,Y,I,varargin)
         error('CI size specification error')
     end
     
-    if p.Results.logscale
+    if logscale
         if isnan(ymin)
             ymin = 0.1*min(Y(Y>0));
         end
@@ -50,14 +53,14 @@ function [plt,f] = ci_plot(X,Y,I,varargin)
     end
     
     
-    plt=plot(X,Y,'Color',linecol,'LineWidth',2);
+    plt=plot(X,Y,'Color',linecol,'LineWidth',lw);
     hold on
     f=fill([X;flipud(X)],[Y_upper;flipud(Y_lower)],areacol,'LineStyle','none','FaceAlpha',fill_alpha);
     uistack(f,'bottom')
 %     plot(X,Y_upper,':','Color',areacol)
 %     plot(X,Y_lower,':','Color',areacol)
     
-    if p.Results.logscale
+    if logscale
         ylim([ymin,2*max(Y_upper)])
         set(gca,'Yscale','log')
     end

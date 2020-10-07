@@ -61,7 +61,7 @@ function h_data = show_txy_raw(data_in,varargin)
         mask = OK_num & OK_counts & OK_txy;
         data_in = struct_mask(data_in,mask);
         num_shots = sum(mask);
-        all_together = cell_vertcat(data_in.counts_txy);
+        all_together = vertcat(data_in.counts_txy{:});
     elseif ismatrix(data_in) && size(data_in,2) == 3 % passed a raw TXY array
         shots_in = 1;
         num_shots = 1;
@@ -80,8 +80,7 @@ function h_data = show_txy_raw(data_in,varargin)
    
     
     h_data.pulse_cen = mean(txy);
-%     vprint(h_data.pulse_cen,verbose,2)
-%         fprintf('COM (%.3f,%.3f,%.3f)\n',h_data,pulse_cen)
+    
     h_data.pulse_std = std(txy);
     if centre_bec && numel(centre_bec) == 1
         % centre coords automatically (less accurate)
@@ -90,7 +89,6 @@ function h_data = show_txy_raw(data_in,varargin)
         % Centre coords set manually
         txy = txy - centre_bec;
     end
-    
     
     if verbose
         fprintf('DISPLAYING TXY DATA:\n')
@@ -102,14 +100,20 @@ function h_data = show_txy_raw(data_in,varargin)
         fprintf('VAR (%.3f,%.3f,%.3f)\n',h_data.pulse_std');
     end %verbose 
     
-    [voxel_counts,bin_edges,bin_cents,~] = histcn(txy,num_bins(1),num_bins(2),num_bins(3));
-    bin_volumes = (OuterProduct(diff(bin_edges{1})'.*diff(bin_edges{2}),diff(bin_edges{3}')));
+    
+    bounds = getlims(txy);
+    t_edges = linspace(bounds(1,1),bounds(1,2)*1.01,num_bins(1)+1);
+    x_edges = linspace(bounds(2,1),bounds(2,2)*1.01,num_bins(2)+1);
+    y_edges = linspace(bounds(3,1),bounds(3,2)*1.01,num_bins(3)+1);
+    [voxel_counts,bin_edges,bin_cents,~] = histcn(txy,t_edges,x_edges,y_edges);
+    bin_volumes = (OuterProduct(diff(t_edges)'.*diff(x_edges),diff(y_edges')));
     voxel_counts = voxel_counts/num_shots;
     bin_flux = voxel_counts./bin_volumes;
     
     h_data.flux3 = bin_flux;
     h_data.counts3 = voxel_counts;
     h_data.volumes = bin_volumes;
+    h_data.mean_counts = sum(h_data.counts3,'all');
     
     profile_labels = {'T','X','Y'};    
     axis_labels = {'T (s)','X (m)','Y (m)'};
@@ -122,16 +126,20 @@ function h_data = show_txy_raw(data_in,varargin)
         warning('Counts too low');
     end
     
+    ax_order = [1,3,2]; % to align the X and Y axes in the figure
+    
     for axis = 1:3
         ax_excl = 1:3;
+        ax_1d = ax_order(axis);
         ax_excl(axis) = [];
+        
         h_data.edges{axis} = bin_edges{axis};
         h_data.centres{axis} = bin_cents{axis};
         h_data.counts_1d{axis} = col_vec(squeeze(sum(voxel_counts,ax_excl)));
         h_data.mean_1d = sum(voxel_counts,ax_excl);
-        h_data.flux_1d{axis} = h_data.counts_1d{axis}./col_vec(diff(bin_edges{axis})); % normalized by 1d bin areas so will give different peak heights
+        h_data.flux_1d{axis} = h_data.counts_1d{axis}./(col_vec(diff(bin_edges{axis}))); % normalized by 1d bin areas so will give different peak heights
     end
-
+    
     h_data.counts_2d = cell(3,1);
     for txy_count = 1:3
         h_data.counts_2d{txy_count} = squeeze(sum(voxel_counts,txy_count));        
@@ -140,20 +148,23 @@ function h_data = show_txy_raw(data_in,varargin)
     %% PLOTTING
     grid_height = 2 + sum([log_plot,log_hist]);
     grid_width = 3;
+    
     if draw_plots
         stfig(sprintf('BEC TXY display %s',label));
         clf
         tiledlayout(grid_height,grid_width)
-        for axis = 1:3
+        for axis_count = 1:3
+            axis = ax_order(axis_count);
+%             kept_axes(axis) = [];
             nexttile
             hold on
-            plot(h_data.centres{axis},(h_data.counts_1d{axis}))
-            title(sprintf('Mean %s counts',profile_labels{axis}))
-            ylabel('Counts per shot')
+            plot(h_data.centres{axis},(h_data.flux_1d{axis}))
+            title(sprintf('Mean %s flux',profile_labels{axis}))
+            ylabel('Flux ')
             xlabel(sprintf('%s',axis_labels{axis}))
             xlim([min(h_data.centres{axis}),max(h_data.centres{axis})])
         end
-        
+%         h_data.flux_1d = h_data.flux_1d{1,3,2};
         
         if log_plot
             for axis = 1:3
@@ -167,7 +178,7 @@ function h_data = show_txy_raw(data_in,varargin)
             end
         end
         
-        ax_order = [1,3,2]; % to align the X and Y axes in the figure
+        
         for txy_count = 1:3
             kept_axes = ax_order;
             kept_axes(txy_count) = [];

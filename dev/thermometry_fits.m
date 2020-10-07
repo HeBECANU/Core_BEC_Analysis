@@ -62,7 +62,7 @@ function shot_data = thermo_fit_core(data,opts)
     x_guess.gauss = x_guess.bose;
 
 %     gfit_guess(3) = sqrt(const.mhe*gfit_guess(3)/const.kb);
-    g_tol = 1e-5;
+    g_tol = 1e-4;
     n_p = @(p,v) p(1)*g_bose(exp(-const.mhe*abs((v-p(2))).^2/(2*const.kb*p(3)*1e-9)),g_tol)+p(4);
     gfun = @(b,x) b(1).*exp(-const.mhe*((x-b(2)).^2)./(2*const.kb*b(3)*1e-9))+b(4); 
     fit_options = statset('TolFun',1e-6);
@@ -251,7 +251,7 @@ function shot_data = thermo_fit_core(data,opts)
                 end % single shot plot
                 
             end %if enough counts
-% 
+
         catch
             warning('on')
             warning('Error in shot %u',i);
@@ -259,13 +259,15 @@ function shot_data = thermo_fit_core(data,opts)
             
         end %try shot
     end %loop over shots
-    stfig('PAL results');
-    clf
-    hold on
-    errorbar(1:length(shot_data.T),1e9*shot_data.T(:,1),1e9*shot_data.T(:,2),'kx')
-    xlabel('Shot number')
-    ylabel('T (nK)')
-    set(gca,'FontSize',16)
+%     if opts.visual
+%         stfig('PAL results');
+%         clf
+%         hold on
+%         errorbar(1:length(shot_data.T),1e9*shot_data.T(:,1),1e9*shot_data.T(:,2),'kx')
+%         xlabel('Shot number')
+%         ylabel('T (nK)')
+%         set(gca,'FontSize',16)
+%     end
 %     title('$v_y$ residuals')
     
 end
