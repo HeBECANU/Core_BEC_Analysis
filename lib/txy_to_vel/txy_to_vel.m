@@ -33,6 +33,25 @@ fall_distance=abs(fall_distance);
 % vz(0)~(t-sqrt(2*fall_dist/g))*g
 % vz(0)~ g t -sqrt(2*g*fall_dist)
 
+% We can also use the expression
+% tau = sqrt(2*fall_distance/g); % the COM fall time
+% fall_times = (-v - sqrt(v.^2 + 2*g*fall_distance))/g;
+% recover_v = g*(tau^2-fall_times.^2)./(2*fall_times);
+% This result can be found by:
+% 1. Solve for the arrival time in terms of fall distance and initial 
+% vertical velocity via the quadratic formula, 
+% 2. Square the expression and substitute from 1 to eliminate the radical
+% 3. Solve the resulting quadratic for v(0) in terms of gravity and
+% measured times. This agrees within machine precision. For example:
+% n = 1e4;
+% v = randn(n,1);
+% s = -0.8587;
+% g = -9.796;
+% tau = sqrt(2*s/g);
+% fall_times = (-v - sqrt(v.^2 + 2*g*s))/g;
+% recover_v = g*(tau^2-fall_times.^2)./(2*fall_times);
+% % Correct to within a few x machine precision
+
 % initalize the output array
 vzxy_out=txy_in*nan;
 % now we dont have the fall time directly, we can use the offset from the output time (generaly atom laser

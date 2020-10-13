@@ -26,6 +26,8 @@ function h_data = show_txy_raw(data_in,varargin)
                         -3e-2,3e-2
                         -3e-2,3e-2]);
     addParameter(p,'label','');
+    addParameter(p,'txy2v',false);
+    addParameter(p,'t_COM',nan);
     
     parse(p,varargin{:});
     num_bins = p.Results.num_bins;
@@ -39,6 +41,8 @@ function h_data = show_txy_raw(data_in,varargin)
     min_counts= p.Results.min_counts;
     gamma = p.Results.gamma;
     lims = p.Results.lims;
+    txy2v = p.Results.txy2v;
+    t_COM = p.Results.t_COM;
     
 %     data_in = varargin{1};
 %     if nargin > 1
@@ -78,16 +82,25 @@ function h_data = show_txy_raw(data_in,varargin)
     end
     
    
-    
-    h_data.pulse_cen = mean(txy);
-    
-    h_data.pulse_std = std(txy);
-    if centre_bec && numel(centre_bec) == 1
-        % centre coords automatically (less accurate)
-        txy = txy - h_data.pulse_cen;
-    elseif centre_bec && numel(centre_bec) == 3 
-        % Centre coords set manually
-        txy = txy - centre_bec;
+    if txy2v
+        if isnan(t_COM)
+            t_COM = mean(txy(:,1));
+        end
+        txy = txy2vzxy(txy,'t_COM',t_COM);
+        h_data.pulse_cen = mean(txy);
+        h_data.pulse_std = std(txy);
+        txy(:,2:3) = txy(:,2:3) - h_data.pulse_cen(2:3);
+    else
+        h_data.pulse_cen = mean(txy);
+        h_data.pulse_std = std(txy);
+        %centering not necessary in v conversion
+        if centre_bec && numel(centre_bec) == 1
+            % centre coords automatically (less accurate)
+            txy = txy - h_data.pulse_cen;
+        elseif centre_bec && numel(centre_bec) == 3 
+            % Centre coords set manually
+            txy = txy - centre_bec;
+        end
     end
     
     if verbose
@@ -96,7 +109,7 @@ function h_data = show_txy_raw(data_in,varargin)
         fprintf('%u total counts\n',sum(data_in.num_counts))
         fprintf('Mean %.2f std %.2f stderr %.2f\n',mean(data_in.num_counts),std(data_in.num_counts),std(data_in.num_counts)/length(data_in.shot_num))
         fprintf('%u windowed counts\n',size(txy,1))
-        fprintf('COM (%.3f,%.3f,%.3f)\n',h_data.pulse_cen');
+        fprintf('t_COM (%.3f,%.3f,%.3f)\n',h_data.pulse_cen');
         fprintf('VAR (%.3f,%.3f,%.3f)\n',h_data.pulse_std');
     end %verbose 
     
@@ -115,8 +128,15 @@ function h_data = show_txy_raw(data_in,varargin)
     h_data.volumes = bin_volumes;
     h_data.mean_counts = sum(h_data.counts3,'all');
     
-    profile_labels = {'T','X','Y'};    
-    axis_labels = {'T (s)','X (m)','Y (m)'};
+    if txy2v
+        profile_labels = {'Z','X','Y'};    
+        axis_labels = {'$v_z$ (m/s)','$v_x$ (m/s)','$v_y$ (m/s)'};
+    else
+         profile_labels = {'T','X','Y'};    
+         axis_labels = {'T (s)','X (m)','Y (m)'};
+    end
+    
+    
     h_data.edges = cell(3,1);
     h_data.counts_1d = cell(3,1);   
     h_data.centres = cell(3,1);
