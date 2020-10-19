@@ -40,10 +40,10 @@ mass = p.Results.mass;
 a_scat_len = p.Results.a_scat_len;
 
 
-isotropic = false;
+% isotropic = false;
 % input parsing
 % omega
-if size(omega,1) == 1
+if isvector(omega)
     omega_vec = true;
     omega=col_vec(omega);
     if numel(omega)==1
@@ -60,7 +60,7 @@ else
     omega_vec = false;
     if size(omega,2) == 1
         omega = cat(2,omega,omega,omega);
-        isotropic = true;
+%         isotropic = true;
     end
     omega = omega'; %each omega is now a col_vec
 end

@@ -22,7 +22,7 @@ function h_data = show_txy_raw(data_in,varargin)
     addParameter(p,'gamma',1);
     addParameter(p,'min_counts',5);
     addParameter(p,'verbose',true);
-    addParameter(p,'lims',[0,nan
+    addParameter(p,'lims',[nan,nan
                         -3e-2,3e-2
                         -3e-2,3e-2]);
     addParameter(p,'label','');
@@ -74,7 +74,8 @@ function h_data = show_txy_raw(data_in,varargin)
     end
         
     if isnan(lims(1,2))
-        lims(1,2) = max(all_together(:,1));
+%         lims(1,2) = max(all_together(:,1));
+        lims = getlims(all_together);
     end
     txy = masktxy_square(all_together,lims);
     if iscell(txy)
@@ -84,24 +85,15 @@ function h_data = show_txy_raw(data_in,varargin)
    
     if txy2v
         if isnan(t_COM)
-            t_COM = mean(txy(:,1));
+            t_COM = mean(txy(:,1)); %this will be incorrect
         end
         txy = txy2vzxy(txy,'t_COM',t_COM);
         h_data.pulse_cen = mean(txy);
         h_data.pulse_std = std(txy);
         txy(:,2:3) = txy(:,2:3) - h_data.pulse_cen(2:3);
-    else
-        h_data.pulse_cen = mean(txy);
-        h_data.pulse_std = std(txy);
-        %centering not necessary in v conversion
-        if centre_bec && numel(centre_bec) == 1
-            % centre coords automatically (less accurate)
-            txy = txy - h_data.pulse_cen;
-        elseif centre_bec && numel(centre_bec) == 3 
-            % Centre coords set manually
-            txy = txy - centre_bec;
-        end
     end
+    
+
     
     if verbose
         fprintf('DISPLAYING TXY DATA:\n')
@@ -109,8 +101,8 @@ function h_data = show_txy_raw(data_in,varargin)
         fprintf('%u total counts\n',sum(data_in.num_counts))
         fprintf('Mean %.2f std %.2f stderr %.2f\n',mean(data_in.num_counts),std(data_in.num_counts),std(data_in.num_counts)/length(data_in.shot_num))
         fprintf('%u windowed counts\n',size(txy,1))
-        fprintf('t_COM (%.3f,%.3f,%.3f)\n',h_data.pulse_cen');
-        fprintf('VAR (%.3f,%.3f,%.3f)\n',h_data.pulse_std');
+%         fprintf('t_COM (%.3f,%.3f,%.3f)\n',h_data.pulse_cen');
+%         fprintf('VAR (%.3f,%.3f,%.3f)\n',h_data.pulse_std');
     end %verbose 
     
     
@@ -158,6 +150,15 @@ function h_data = show_txy_raw(data_in,varargin)
         h_data.counts_1d{axis} = col_vec(squeeze(sum(voxel_counts,ax_excl)));
         h_data.mean_1d = sum(voxel_counts,ax_excl);
         h_data.flux_1d{axis} = h_data.counts_1d{axis}./(col_vec(diff(bin_edges{axis}))); % normalized by 1d bin areas so will give different peak heights
+    end
+    
+    
+    h_data.X_c = [0,0,0];
+    thr = .08;
+    for ax=1:3
+        mask = rescale(h_data.flux_1d{ax}) > thr;
+        X=h_data.centres{ax};
+        h_data.X_c(ax) = median(X(mask));
     end
     
     h_data.counts_2d = cell(3,1);

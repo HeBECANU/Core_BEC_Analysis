@@ -33,7 +33,7 @@ function v_out = txy2vel(txy_in,varargin)
     if isnan(t_COM) %if nothing passed
         t_COM = mean(txy_in(:,1));
     else
-        warning('t_COM argument not understood, using mean arrival time')
+        warning('t_COM argument not passed, using mean arrival time')
         t_COM = mean(txy_in(:,1));
     end
 %     end

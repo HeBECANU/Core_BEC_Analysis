@@ -10,6 +10,9 @@ function lims = getlims(data)
 % x = [d1;d2;d3];
 % isequal(getlims(x),[0,2;-1,0;0,3]);
 % ```
+if isrow(data)
+    data = data';
+end
     naxis = size(data,2);
     lims = zeros(naxis,2);
     for axis = 1:naxis
