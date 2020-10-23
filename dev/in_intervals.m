@@ -25,7 +25,7 @@ if numel(lims) < 2
     error('Limits must be pairs of values');
 end
 
-if size(lims,2) ~= 2 && size(lims(1)) == 2
+if iscolumn(lims)
     lims = lims';
 end
 

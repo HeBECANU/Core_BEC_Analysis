@@ -32,9 +32,7 @@ function v_out = txy2vel(txy_in,varargin)
 %     if strcmP(mode,'array')
     if isnan(t_COM) %if nothing passed
         t_COM = mean(txy_in(:,1));
-    else
-        warning('t_COM argument not passed, using mean arrival time')
-        t_COM = mean(txy_in(:,1));
+        warning('t_COM argument not passed, using mean arrival time')        
     end
 %     end
     
