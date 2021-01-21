@@ -19,8 +19,10 @@ function I = intCDF(domain,data,varargin)
 % ```
     p = inputParser;
     addParameter(p,'normalize',false);
+    addParameter(p,'reverse',false);
     parse(p,varargin{:});
     nmlz = p.Results.normalize;
+    reverse = p.Results.reverse;
     domain = col_vec(domain);
     data = col_vec(data);
     I = zeros(size(domain));
@@ -31,6 +33,9 @@ function I = intCDF(domain,data,varargin)
     if nmlz
         % returns normalized CDF i.e. final value is 1
         I = I/length(data);
+    end
+    if reverse
+        I = I(end) - I;
     end
     I = I';
 end

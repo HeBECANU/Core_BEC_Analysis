@@ -33,11 +33,13 @@ p = inputParser;
 %     defaultFont = 'times'; 
 addParameter(p,'temperature',0);
 addParameter(p,'mass',const.mhe);
+addParameter(p,'th_frac',nan);
 addParameter(p,'a_scat_len',const.ahe_scat);
 parse(p,varargin{:});
 temperature = p.Results.temperature;
 mass = p.Results.mass;
 a_scat_len = p.Results.a_scat_len;
+th_frac = p.Results.th_frac;
 
 
 % isotropic = false;
@@ -90,8 +92,11 @@ tc_finite_interacting=tc_finite_number-tc_non_interacting.*...
 
 
 %fprintf('tc finite non interacting %g \n',tc_finite_interacting)                  
-
-condensed_fraction = 1 - (temperature./tc_finite_interacting).^3;
+if isnan(th_frac)
+    condensed_fraction = 1 - (temperature./tc_finite_interacting).^3;
+else
+    condensed_fraction = 1 - th_frac;
+end
 condensed_number = atom_number.*condensed_fraction; 
 
 % other things we can calculate
@@ -176,6 +181,10 @@ details.tc.non_interacting=tc_non_interacting;
 details.tc.finite_number=tc_finite_number;
 details.tc.finite_interacting=tc_finite_interacting;
 details.LHY_correction= LHY_correction;
+
+details.inputs.omega = omega;
+details.inputs.atom_number = atom_number;
+details.inputs.mass = mass;
 
 end
 

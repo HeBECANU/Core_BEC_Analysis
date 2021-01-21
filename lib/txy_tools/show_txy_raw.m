@@ -27,9 +27,11 @@ function h_data = show_txy_raw(data_input,varargin)
                         -3e-2,3e-2]);
     addParameter(p,'label','');
     addParameter(p,'txy2v',false);
+    addParameter(p,'txy',false);
     addParameter(p,'t_COM',nan);
     addParameter(p,'auto_align',false);
     addParameter(p,'v_mask',nan);
+    addParameter(p,'keep_3d',false);
     
     parse(p,varargin{:});
     num_bins = p.Results.num_bins;
@@ -47,6 +49,8 @@ function h_data = show_txy_raw(data_input,varargin)
     txy2v = p.Results.txy2v;
     t_COM = p.Results.t_COM;
     v_mask = p.Results.v_mask;
+    keep_3d = p.Results.keep_3d;
+    keep_txy = p.Results.txy;
     
 %     data_in = varargin{1};
 %     if nargin > 1
@@ -251,6 +255,15 @@ function h_data = show_txy_raw(data_input,varargin)
 %             clf
 %             nexttile
 %         end
+    if ~keep_3d
+        h_data = rmfield(h_data,'flux3');
+        h_data = rmfield(h_data,'counts3');
+        h_data = rmfield(h_data,'volumes');
+    end
+    
+    if ~keep_txy
+        h_data = rmfield(h_data,'txy');
+    end
         colormap(viridis)
         suptitle(label)
         
