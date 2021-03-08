@@ -64,13 +64,23 @@ if ~isfield(corr_opts,'progress_updates') || isnan(corr_opts.progress_updates)
         mean((corr_opts.attenuate_counts*num_counts(1,:)).^2)/(pairs_per_sec));
     corr_opts.progress_updates=min(100,max(5,dyn_updates));
 end
-
+if ~isfield(corr_opts,'sampling_method')
+    corr_opts.sampling_method = 'basic';
+end
 if isfield(corr_opts,'norm_samp_factor')
     if corr_opts.norm_samp_factor<0.01 || corr_opts.norm_samp_factor>2e7
         error('corr_opts.norm_samp_factor exceeds limits');
     end
 else
     corr_opts.norm_samp_factor=3;
+end
+
+if isfield(corr_opts,'sample_proportion')
+    if corr_opts.sample_proportion<=0 || corr_opts.sample_proportion>1
+        error('Sample proportion must be between 0 and 1');
+    end
+else
+    corr_opts.sample_proportion=0.15;
 end
 
 if ~isfield(corr_opts,'sort_norm')
@@ -126,6 +136,14 @@ elseif isequal(corr_opts.type,'3d_cart_cl')  || isequal(corr_opts.type,'3d_cart_
     warning('3d corrs temporarily removed')
 end
 
+if ~isfield(corr_opts,'print_update')
+    corr_opts.print_update = true;
+end
+
+if ~isfield(corr_opts,'plots')
+    corr_opts.plots = true;
+end
+
 if ~corr_opts.calc_err
     if corr_opts.verbose
         cli_format_text('Calculating Correlations','c',3)
@@ -135,14 +153,19 @@ if ~corr_opts.calc_err
     %%
     norm_sort_dir=corr_opts.sorted_dir;
     if ~corr_opts.sort_norm,norm_sort_dir=nan; end
-    if size(counts,1)>1
-        %set the number of chunks to be at least as many as the heighest
-        %count number
-        chunk_num = max([cellfun(@(x)size(x,1),counts(1,:)),cellfun(@(x)size(x,1),counts(2,:))]);
-        counts_chunked(1,:)=chunk_data(counts(1,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
-        counts_chunked(2,:)=chunk_data(counts(2,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
-    else
-        counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
+    if strcmp(corr_opts.sampling_method,'basic')
+        if size(counts,1)>1
+            %set the number of chunks to be at least as many as the heighest
+            %count number
+            chunk_num = max([cellfun(@(x)size(x,1),counts(1,:)),cellfun(@(x)size(x,1),counts(2,:))]);
+            counts_chunked(1,:)=chunk_data(counts(1,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
+            counts_chunked(2,:)=chunk_data(counts(2,:),corr_opts.norm_samp_factor,norm_sort_dir,chunk_num);
+        else
+            counts_chunked=chunk_data(counts,corr_opts.norm_samp_factor,norm_sort_dir);
+        end
+        corr_opts.normalisation_factor = (size(counts,2)/nanmean(cellfun(@(x)size(x,1),counts),'all'))^2;
+    elseif strcmp(corr_opts.sampling_method,'complete')
+        counts_chunked=chunk_data_complete(counts,corr_opts.sample_proportion,norm_sort_dir);
     end
     corr_opts.do_pre_mask=corr_opts.sort_norm; %can only do premask if data is sorted
     if corr_opts.verbose
@@ -174,10 +197,10 @@ out.between_shot_corr.(centers)=normcorr.(centers);
 out.between_shot_corr.(corr_density)=normcorr.(corr_density);
 out.norm_g2.(centers)=shotscorr.(centers);
 out.norm_g2.g2_amp=xg2;
-is_data_flat = isdataflat(xg2,0.2);%0.2
+is_data_flat = isdataflat(xg2,1.75,9);%0.2
 if corr_opts.fit
     if ~corr_opts.calc_err && ~is_data_flat
-        [muHat,sigmaHat] = normfit(shotscorr.(centers),0.01,zeros(size(shotscorr.(centers))),abs(xg2-1).^2');
+        [muHat,sigmaHat] = normfit(shotscorr.(centers),0.01,zeros(size(shotscorr.(centers))),abs(xg2-1).^2);
         inital_guess=[max(xg2)-1,sigmaHat];
         if corr_opt.param_num == 4 %full freedom gaussian fit
             inital_guess = [inital_guess,muHat,1];
@@ -247,7 +270,7 @@ if corr_opts.plots
     title('Norm. Corr.')
     ylabel(sprintf('$g^{(2)}(\\Delta %s)$',direction_label))
     xlabel(sprintf('$\\Delta %s$ Seperation',direction_label))
-    if corr_opts.fit
+    if corr_opts.plots && corr_opts.fit
         hold on
         xx = linspace(min([max(shotscorr.(centers)),0]),max(shotscorr.(centers)),3e3)';
         if ~corr_opts.calc_err
@@ -258,7 +281,7 @@ if corr_opts.plots
             plot(xx,fun1d(b-b_unc,xx),'r-')
             plot(xx,fun1d(b+b_unc,xx),'r-')
         end
-     end
+    end
     if g2peak < 1.5
         ylim([0.8 2.1])
     end
@@ -270,7 +293,7 @@ if corr_opts.verbose
         fprintf('g2 peak amplitude         %s\n',string_value_with_unc(g2peak,g2peak_unc,'type','b','separator',0))
     else
         fprintf('g2 peak amplitude         %4.2f \n',g2peak)
-    end  
+    end
     if corr_opts.fit
         fprintf('fitted g2(0) amplitude         %s\n',string_value_with_unc(b(1)+1,b_unc(1),'type','b','separator',0))
         fprintf('fitted g2 width         %s\n',string_value_with_unc(abs(b(2)),b_unc(2),'type','b','separator',0))
