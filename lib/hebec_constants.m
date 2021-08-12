@@ -19,6 +19,7 @@ const.epsilon0 = 8.858*10^-12;%(*electric permittivity of free space*)
 const.mub =9.274009994*10^-24; %Bohr magneton*(J/T)
 const.electron = 1.60217657*10^-19;%(*charge of electron*)
 const.me = 9.10938291*10^-31;%(*mass of electron*)
+const.mp = 1.67262158*10^-27;%(*mass of proton*)
 const.grav=6.67430*10^-11;  %Newtonian constant of gravitation %https://physics.nist.gov/cgi-bin/cuu/Value?bg
 
 %Helium
@@ -43,14 +44,14 @@ const.a0 = 0.529*10^-10;%(*bohr radius*)
 const.fall_distance = 0.8587; 
 
 const.mu = 9.27e-28; %J/G
-const.h = 6.63e-34;
+const.h = 6.62607015e-34;
 const.hbar = const.h/(2*pi);
 const.f_mu = const.mu/const.h;
 const.w_mu = const.mu/const.hbar;
 const.c = 299792458;
 const.q = 1.602e-19;
 % Notation & lookup
-const.terms = {'S','P','D','F','G'};
+const.terms = {'S','P','D','F','G','H','I','K'};
 %% Reference values
 const.f_table.g_2_3P_2.e_5_3S_1 = 727.3032446e12;
 % Misc transitions - what do the stars mean?

@@ -10,7 +10,8 @@ function [plt,f] = ci_plot(X,Y,I,varargin)
     addParameter(p,'Ymin',nan);
     addParameter(p,'LineCol',[0,0,0]);
     addParameter(p,'AreaCol',0.5*[1,1,1]);
-    addParameter(p,'LineWidth',2);    
+    addParameter(p,'LineWidth',2);
+    addParameter(p,'LineStyle','-');
     addParameter(p,'mode','Interval');
     parse(p,varargin{:});
     areacol = p.Results.AreaCol;
@@ -20,6 +21,7 @@ function [plt,f] = ci_plot(X,Y,I,varargin)
     ymin = p.Results.Ymin;
     lw = p.Results.LineWidth;
     logscale = p.Results.LogScale;
+    lstyle = p.Results.LineStyle;
     
     X = col_vec(X);
 
@@ -53,7 +55,7 @@ function [plt,f] = ci_plot(X,Y,I,varargin)
     end
     
     
-    plt=plot(X,Y,'Color',linecol,'LineWidth',lw);
+    plt=plot(X,Y,lstyle,'Color',linecol,'LineWidth',lw);
     hold on
     f=fill([X;flipud(X)],[Y_upper;flipud(Y_lower)],areacol,'LineStyle','none','FaceAlpha',fill_alpha);
     uistack(f,'bottom')

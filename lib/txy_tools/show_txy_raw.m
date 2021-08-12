@@ -32,6 +32,8 @@ function h_data = show_txy_raw(data_input,varargin)
     addParameter(p,'auto_align',false);
     addParameter(p,'v_mask',nan);
     addParameter(p,'keep_3d',false);
+    addParameter(p,'RotationAngle',0);
+    addParameter(p,'FontSize',18);
     
     parse(p,varargin{:});
     num_bins = p.Results.num_bins;
@@ -51,7 +53,8 @@ function h_data = show_txy_raw(data_input,varargin)
     v_mask = p.Results.v_mask;
     keep_3d = p.Results.keep_3d;
     keep_txy = p.Results.txy;
-    
+    fontsize =  p.Results.FontSize;
+    theta =  p.Results.RotationAngle;
 %     data_in = varargin{1};
 %     if nargin > 1
 %         opts = varargin{2};
@@ -88,6 +91,9 @@ function h_data = show_txy_raw(data_input,varargin)
         lims = getlims(all_together);
     end
     txy = masktxy_square(all_together,lims);
+    R = [cos(theta),sin(theta);
+        -sin(theta),cos(theta)];
+    txy(:,[2,3]) = (R*txy(:,[2,3])')';
     if iscell(txy)
         txy = cell2mat(txy);
     end
@@ -131,13 +137,13 @@ function h_data = show_txy_raw(data_input,varargin)
     end %verbose 
     
     
-    
+    bounds = lims;
     t_edges = linspace(bounds(1,1),bounds(1,2)*1.01,num_bins(1)+1);
     x_edges = linspace(bounds(2,1),bounds(2,2)*1.01,num_bins(2)+1);
     y_edges = linspace(bounds(3,1),bounds(3,2)*1.01,num_bins(3)+1);
     [voxel_counts,bin_edges,bin_cents,~] = histcn(txy,t_edges,x_edges,y_edges);
     bin_volumes = (OuterProduct(diff(t_edges)'.*diff(x_edges),diff(y_edges')));
-    voxel_counts = voxel_counts/num_shots;
+    voxel_counts = voxel_counts/num_shots; % av counts per voxel
     bin_flux = voxel_counts./bin_volumes;
     
     h_data.flux3 = bin_flux;
@@ -150,7 +156,7 @@ function h_data = show_txy_raw(data_input,varargin)
         axis_labels = {'$v_z$ (m/s)','$v_x$ (m/s)','$v_y$ (m/s)'};
     else
          profile_labels = {'T','X','Y'};    
-         axis_labels = {'T (s)','X (m)','Y (m)'};
+         axis_labels = {'T (s)','X (cm)','Y (cm)'};
     end
     
     
@@ -170,22 +176,25 @@ function h_data = show_txy_raw(data_input,varargin)
         ax_excl = 1:3;
         ax_1d = ax_order(axis);
         ax_excl(axis) = [];
-        
         h_data.edges{axis} = bin_edges{axis};
         h_data.centres{axis} = bin_cents{axis};
-        h_data.counts_1d{axis} = col_vec(squeeze(sum(voxel_counts,ax_excl)));
-        h_data.mean_1d = sum(voxel_counts,ax_excl);
-        h_data.flux_1d{axis} = h_data.counts_1d{axis}./(col_vec(diff(bin_edges{axis}))); % normalized by 1d bin areas so will give different peak heights
+        h_data.counts_1d{axis} = histcounts(txy(:,axis),bin_edges{axis});
+%         h_data.counts_1d{axis} = col_vec(squeeze(sum(voxel_counts,ax_excl)));
+        h_data.mean_1d = h_data.counts_1d{axis}/num_shots;
+        h_data.flux_1d{axis} = h_data.counts_1d{axis}./diff(h_data.edges{axis});
+        if axis ~= 1
+            h_data.flux_1d{axis} = h_data.flux_1d{axis}/diff(bounds(1,:));
+        end
     end
     
     
     h_data.X_c = [0,0,0];
-    thr = .08;
-    for ax=1:3
-        mask = rescale(h_data.flux_1d{ax}) > thr;
-        X=h_data.centres{ax};
-        h_data.X_c(ax) = median(X(mask));
-    end
+    thr = .00;
+%     for ax=1:3
+%         mask = rescale(h_data.flux_1d{ax}) > thr;
+%         X=h_data.centres{ax};
+%         h_data.X_c(ax) = median(X(mask));
+%     end
     
     h_data.counts_2d = cell(3,1);
     for txy_count = 1:3
@@ -196,34 +205,65 @@ function h_data = show_txy_raw(data_input,varargin)
     grid_height = 2;
     grid_width = 3;
     
+    subplot_indices = {[10],[2,3],[4,7],[5,6,8,9],[11],[12]};
+    subplot_counter = 0;
+    
     if draw_plots
         stfig(sprintf('BEC TXY display %s',label));
         clf
-        tiledlayout(grid_height,grid_width)
+%         tiledlayout(grid_height,grid_width)
         for axis_count = 1:3
+            subplot_counter = subplot_counter + 1;
+            subplot(4,3,subplot_indices{subplot_counter})
             axis = ax_order(axis_count);
-            nexttile
+%             nexttile
+            
             hold on
-            plot(h_data.centres{axis},(h_data.flux_1d{axis}))
-            title(sprintf('Mean %s flux',profile_labels{axis}))
-            ylabel('Flux ')
-            xlabel(sprintf('%s',axis_labels{axis}))
-            xlim([min(h_data.centres{axis}),max(h_data.centres{axis})])
+            if axis ~=1
+                fact = 1e2;
+            else
+                fact = 1;
+            end
+            plot(fact*h_data.centres{axis},(h_data.flux_1d{axis})/1e3)
+%             title(sprintf('%s profile',profile_labels{axis}))
+            if axis_count == 1
+                ylabel('Flux (Hz)')
+            end
+            if axis_count ~= 1
+                ylabel('Flux (m$^2$ s)$^{-1}$')
+            end
+%             yticks([])
+            
+            xlim(fact*[min(lims(axis,:)),max(lims(axis,:))])
             if log_plot
                 set(gca,'Yscale','log')
             end
-            set(gca,'FontSize',16)
+            if axis_count == 3
+                camroll(90)
+            end
+%             if axis_count ~=2
+%                 set(gca,'XAxisLocation','top')
+%             end
+            if axis_count == 1
+                xticks([])
+                camroll(90)
+            else
+                xlabel(sprintf('%s',axis_labels{axis}))
+            end
+            set(gca,'FontSize',fontsize)
         end
 %         h_data.flux_1d = h_data.flux_1d{1,3,2};
         
         
-        
+        axis_labels = {'T(s)','X (cm)','Y (cm)'};
         for txy_count = 1:3
             kept_axes = ax_order;
             ax_sel = hist_ax_order(txy_count);
             kept_axes(txy_count) = [];
             
-            nexttile
+%             nexttile
+            subplot_counter = subplot_counter + 1;
+            subplot(4,3,subplot_indices{subplot_counter})
             if blur_size == 1
                 V = h_data.counts_2d{ax_sel};
             else
@@ -233,20 +273,43 @@ function h_data = show_txy_raw(data_input,varargin)
                 V = V';
                 kept_axes = fliplr(kept_axes);
                 ax_labels = {axis_labels{2},axis_labels{3}};
+                edges_2d{1} = h_data.edges{kept_axes(1)};
+                edges_2d{2} = h_data.edges{kept_axes(2)};
+                fact = 1;
             else
+                fact = 1e2;
                 ax_labels = {axis_labels{txy_count},axis_labels{1}};
+                kept_axes(2) = txy_count;
+                edges_2d{1} = h_data.edges{kept_axes(1)};
+                edges_2d{2} = fact*h_data.edges{txy_count};
             end
             if log_hist
                 V = log(V);
             end
-            edges_2d{1} = h_data.edges{kept_axes(1)};
-            edges_2d{2} = h_data.edges{kept_axes(2)};
+
+
             imagesc(edges_2d{2},edges_2d{1},V)
-            title(sprintf('%s%s projection',profile_labels{kept_axes(1)},profile_labels{kept_axes(2)}));
+            
+            if txy_count == 1
+                xticks([])
+            else
+                xlabel(sprintf('%s',ax_labels{1}))
+                
+%                 if txy_count ~= 1
+%                     ylabel(sprintf('%s',ax_labels{2}))
+%                 end
+            end
+            if txy_count ~=3
+                yticks([])
+            else
+                set(gca,'YAxisLocation','right')
+                ylabel('T (s)')
+            end
+            xlim(fact*lims(kept_axes(2),:))
+            ylim(lims(kept_axes(1),:))
             set(gca,'YDir','normal')
-            xlabel(sprintf('%s',ax_labels{1}))
-            ylabel(sprintf('%s',ax_labels{2}))
-            set(gca,'FontSize',16)
+            
+            set(gca,'FontSize',fontsize)
         end
         
              

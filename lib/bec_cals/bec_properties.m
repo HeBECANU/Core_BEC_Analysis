@@ -53,7 +53,6 @@ if isvector(omega)
     elseif numel(omega)~=3 && numel(omega)~=1
         error('omega must be 1, or 3 elements')
     end
-
     if sum(omega<0)>0 && sum(imag(omega)>0)>0
         error('omega must be positive real')
     end
@@ -62,7 +61,6 @@ else
     omega_vec = false;
     if size(omega,2) == 1
         omega = cat(2,omega,omega,omega);
-%         isotropic = true;
     end
     omega = omega'; %each omega is now a col_vec
 end
@@ -97,6 +95,7 @@ if isnan(th_frac)
 else
     condensed_fraction = 1 - th_frac;
 end
+ideal_condensed_fraction = 1 - (temperature./tc_non_interacting).^3;
 condensed_number = atom_number.*condensed_fraction; 
 
 % other things we can calculate
@@ -167,7 +166,8 @@ details.density_mean=n_mean_density;
 details.tan_contact= tan_contact;
 details.healing_length = healing_length;
 details.speed_of_sound = speed_of_sound;
-details.condensed_fraction = condensed_fraction;
+details.condensed_fraction.interacting = condensed_fraction;
+details.condensed_fraction.non_interacting = ideal_condensed_fraction;
 details.tf_radi=r_tf_radi;
 details.tf_radi_bar=r_bar;
 details.tf_radi_mean=r_mean;
