@@ -16,13 +16,16 @@ bec_centres = zeros(num_shots, 3);
 bec_widths= zeros(num_shots, 3);
 bec_counts = zeros(num_shots, 1);
 centre_OK = zeros(num_shots, 1);
-
+axis_label = {'z','x','y'};
 lims = opts_cent.crop;
 if length(opts_cent.threshold) < 3
     opts_cent.threshold = opts_cent.threshold(1)*[1,1,1];
 end
 if length(opts_cent.sigma) < 3
     opts_cent.sigma = opts_cent.sigma(1)*[1,1,1];
+end
+if length(opts_cent.min_threshold) < 3
+    opts_cent.min_threshold = opts_cent.min_threshold(1)*[1,1,1];
 end
 if ~iscell(opts_cent.method)
     opts_cent.method{2} = opts_cent.method{1};
@@ -62,6 +65,7 @@ for this_idx = 1:num_shots % Loop over all shots
         clf;
     end
     % fancy centering
+    centre_OK(this_idx) = 1; %starts off ok until told otherwise
     for axis = 1:3
         this_axis = trim_txy(:, axis);
         this_sigma = opts_cent.sigma(axis);
@@ -70,30 +74,43 @@ for this_idx = 1:num_shots % Loop over all shots
             centre_OK(this_idx) = 0;
             bec_centres(this_idx, axis) = nan;
             bec_widths(this_idx, axis) = nan;
-            continue
+            %             continue
         end
         count_hist = smooth_hist(this_axis,'sigma',this_sigma);
         flux = count_hist.count_rate.smooth;
         bin_centres = count_hist.bin.centers;
-        mask = flux > opts_cent.threshold(axis);
+        outer_cut = ~or((max(bin_centres)-bin_centres)./range(bin_centres)...
+            <0.02,(-min(bin_centres)+bin_centres)./range(bin_centres)<0.02);
+        flux = flux(outer_cut);
+        bin_centres = bin_centres(outer_cut);
+        mask_upper = (flux > opts_cent.threshold(axis));
+        mask_lower = (flux < opts_cent.min_threshold(axis));
+        mask = or(mask_upper,mask_lower);
         if all(mask) || sum(~mask)/length(mask)<0.1
             centre_OK(this_idx) = 0;
             bec_centres(this_idx, axis) = nan;
             bec_widths(this_idx, axis) = nan;
-            continue
-        elseif all(~mask) && strcmp(this_method,'margin')
-            this_method = 'average';
+            %             continue
+        elseif sum(mask_upper)<5 && strcmp(this_method,'margin')
+            centre_OK(this_idx) = 0;
+            bec_centres(this_idx, axis) = nan;
+            bec_widths(this_idx, axis) = nan;
+            %             continue
+            %             this_method = 'average';
         else
-            centre_OK(this_idx) = 1;
             switch this_method
                 case 'margin'
-                    locs = find(mask);
+                    locs = find(mask_upper);
                     margins = [min(locs(2:end-1)), max(locs(2:end-1))];
                     t_margins = bin_centres(margins);
                     bec_centres(this_idx, axis) = mean(t_margins);
                     bec_widths(this_idx, axis) = diff(t_margins);
                 case 'average'
-                    bec_centres(this_idx,axis) = nansum(flux(~mask).*bin_centres(~mask))./nansum(flux(~mask));
+%                     bec_centres(this_idx,axis) = nansum(flux(~mask).*bin_centres(~mask))./nansum(flux(~mask));
+                    flux_masked = flux;
+                    flux_masked(mask) = 0;
+                    flux_masked(~mask) = flux_masked(~mask)-opts_cent.min_threshold(axis);
+                    bec_centres(this_idx,axis) = trapz(bin_centres,flux_masked.*bin_centres)./trapz(bin_centres,flux_masked);
                     bec_widths(this_idx,axis) = sqrt(nansum(flux(~mask).*(bin_centres(~mask)-bec_centres(this_idx,axis)).^2)./nansum(flux(~mask)));
                 case 'gauss_fit'
                     gauss =  @(b,x) b(1).*exp(-((x-b(2)).^2)./(2*b(3).^2));
@@ -131,26 +148,30 @@ for this_idx = 1:num_shots % Loop over all shots
                     bec_widths(this_idx,axis) = fit_params_both(3);
             end
         end
-        if opts_cent.visual > 1
+        if opts_cent.visual > 1 %&& mod(this_idx,100)==0
             subplot(3, 1, axis);
             plot(bin_centres-bec_centres(this_idx,axis), flux, 'k')
             hold on
-            plot(bin_centres(mask)-bec_centres(this_idx,axis), flux(mask), 'r')
+            plot(bin_centres(mask_upper)-bec_centres(this_idx,axis), flux(mask_upper), 'r')
+            plot(bin_centres(mask_lower)-bec_centres(this_idx,axis), flux(mask_lower), 'b')
         end
     end
 end
 
-% cut outliers
-for ii = 1:3
-centre_outlier = isoutlier(bec_centres(:,ii));
-width_outlier = isoutlier(bec_widths(:,ii));
-centre_OK = centre_OK & ~centre_outlier & ~width_outlier;
-end
-
+% cut outliers if there is enough data
+% if num_shots>9
+%     for ii = 1:3
+%         centre_outlier = isoutlier(bec_centres(:,ii));
+%         width_outlier = isoutlier(bec_widths(:,ii));
+%         centre_OK = centre_OK & ~centre_outlier & ~width_outlier;
+%     end
+% end
 if opts_cent.visual > 1
     for splt = 1:3
         subplot(3,1,splt)
         ylabel('Counts')
+        xlabel(axis_label{splt})
+        grid on
     end
 end
 
@@ -164,11 +185,13 @@ if opts_cent.visual
     title('BEC centre deviation')
     xlabel('Shot number')
     ylabel('Centre offset (mm)')
+    legend('z','x','y')
     subplot(2,1,2)
     plot(indexes(centre_OK),bec_widths(centre_OK,:))
     title('BEC width')
     xlabel('Shot number')
     ylabel('widths (mm)')
+    legend('z','x','y')
     if opts_cent.savefigs
         cli_header(1,'Saving images...');
         saveas(f,fullfile(opts_cent.data_out,'centering.fig'));

@@ -79,18 +79,18 @@ if N > 0
 elseif N == 0
     fname = fullfile(tempdir,'parfor_progress.bin');
     if (exist(fname, 'file')~=2)
-        error('parfor_progress.bin not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.bin.');
-    end
-    
-    f = fopen(fname, 'r');
-    A = fread(f,3,'uint64');
-    time_start_pointer=uint64(A(1));
-    fclose(f);
-    delete(fname);
-    if nargout == 0
-        run_time_s=toc(time_start_pointer);
-        print_cli_data(1,run_time_s,0,w);
-        fprintf('done.\n')
+        warning('parfor_progress.bin not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.bin.');
+    else
+        f = fopen(fname, 'r');
+        A = fread(f,3,'uint64');
+        time_start_pointer=uint64(A(1));
+        fclose(f);
+        delete(fname);
+        if nargout == 0
+            run_time_s=toc(time_start_pointer);
+            print_cli_data(1,run_time_s,0,w);
+            fprintf('done.\n')
+        end
     end
 else
     fname = fullfile(tempdir,'parfor_progress.bin');
