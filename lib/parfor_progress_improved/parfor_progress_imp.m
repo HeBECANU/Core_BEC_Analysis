@@ -43,8 +43,15 @@ function percent = parfor_progress_imp(N)
 %not enough, feel free to use uint64). In addition, the filename is now stored in the folder 
 %determined by matlab's 'tempname'-function (less filesystem clutter if the delete fails & e.g. tempdir 
 %on an ssd is much faster than working dir somewhere on the network)."
-
 % this makes this improved version about 30 times faster than stock
+
+% bugs and impovements
+% at the moment all calls to parfor_progress_imp go to the same file
+% this could be improved by passing an argument which is some random number
+% that could identify a particular process  
+
+% could also be greatly improved by recording the time of the last N
+% updates and extrapolating to the dinish time  
 
 narginchk(0,1)
 
