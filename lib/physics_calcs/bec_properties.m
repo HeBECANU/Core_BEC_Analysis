@@ -7,7 +7,7 @@ function details=bec_properties(trap_freq,atom_number,mass,a_scat_len)
 % 
 % todo: Vectorize omega x atom_num
 
-warning('do not trust this function, it has not been tested well enough')
+warning('use some caution with this function a full test suite is not yet developed')
 %if the constants strucure already exists do not run
 % set up the constants
 global const
@@ -94,6 +94,10 @@ a_bar=sqrt(const.hb/(const.mhe*omega_bar)); % a bar is a the characteristic leng
 tf_goodness=atom_number*a_scat_len/a_bar;
 % TF is good approx for bulk when this is much greater than 1
 
+% the maximum velocity an atom placed at the top of the TF mean field potenial would reach in rolling off the potential
+% this sets the bonds of the central disk of the PAL velocity distribution
+details.pal_vmax=sqrt(mu_chem_pot/mass);
+
 % not sure which one is gravity axis so do all
 grav_sag=-const.g0./(omega.^2);
 details.tc.non_interacting=tc_non_interacting;
@@ -117,6 +121,7 @@ details.inputs.omega=omega;
 details.inputs.atom_number=atom_number;
 details.inputs.mass=mass;
 details.inputs.a_scat_len=a_scat_len;
+
 
 
 end
