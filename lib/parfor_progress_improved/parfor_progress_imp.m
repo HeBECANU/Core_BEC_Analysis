@@ -43,8 +43,15 @@ function percent = parfor_progress_imp(N)
 %not enough, feel free to use uint64). In addition, the filename is now stored in the folder 
 %determined by matlab's 'tempname'-function (less filesystem clutter if the delete fails & e.g. tempdir 
 %on an ssd is much faster than working dir somewhere on the network)."
-
 % this makes this improved version about 30 times faster than stock
+
+% bugs and impovements
+% at the moment all calls to parfor_progress_imp go to the same file
+% this could be improved by passing an argument which is some random number
+% that could identify a particular process  
+
+% could also be greatly improved by recording the time of the last N
+% updates and extrapolating to the dinish time  
 
 narginchk(0,1)
 
@@ -72,18 +79,18 @@ if N > 0
 elseif N == 0
     fname = fullfile(tempdir,'parfor_progress.bin');
     if (exist(fname, 'file')~=2)
-        error('parfor_progress.bin not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.bin.');
-    end
-    
-    f = fopen(fname, 'r');
-    A = fread(f,3,'uint64');
-    time_start_pointer=uint64(A(1));
-    fclose(f);
-    delete(fname);
-    if nargout == 0
-        run_time_s=toc(time_start_pointer);
-        print_cli_data(1,run_time_s,0,w);
-        fprintf('done.\n')
+        warning('parfor_progress.bin not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.bin.');
+    else
+        f = fopen(fname, 'r');
+        A = fread(f,3,'uint64');
+        time_start_pointer=uint64(A(1));
+        fclose(f);
+        delete(fname);
+        if nargout == 0
+            run_time_s=toc(time_start_pointer);
+            print_cli_data(1,run_time_s,0,w);
+            fprintf('done.\n')
+        end
     end
 else
     fname = fullfile(tempdir,'parfor_progress.bin');
