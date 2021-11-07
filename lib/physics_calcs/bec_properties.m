@@ -96,7 +96,9 @@ tf_goodness=atom_number*a_scat_len/a_bar;
 
 % the maximum velocity an atom placed at the top of the TF mean field potenial would reach in rolling off the potential
 % this sets the bonds of the central disk of the PAL velocity distribution
-details.pal_vmax=sqrt(mu_chem_pot/mass);
+% 1/2 m v^2 =U_tf
+% v_max=sqrt(2*U_ft/m)
+details.pal_vmax=sqrt(2*mu_chem_pot/mass);
 
 % not sure which one is gravity axis so do all
 grav_sag=-const.g0./(omega.^2);
