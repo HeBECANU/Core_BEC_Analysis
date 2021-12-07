@@ -1,4 +1,4 @@
-function [alpha_au,alpha_si]=aprox_he_polz(optical_freq)
+function [alpha_au,alpha_si]=aprox_he_polz(optical_freq,transitions)
 % find the polarizability of He* using published osc strengths
 % built for the TO project meant more for finding the curvature arround the TO that the intercept itself
 % example
@@ -11,26 +11,22 @@ function [alpha_au,alpha_si]=aprox_he_polz(optical_freq)
 %   optical_freq=linspace(1,600,1e2)*1e12;
 % Bryce Henson 2020-07-09
 %%
-
-
-optical_freq=col_vec(optical_freq);
 global const
 
-atom_u=[];
-% atom_u.energy=(const.hb)^2/(const.me*(const.a0^2)); 
-% atom_u.time=const.hb/atom_u.energy;
-atom_u.energy=4.3597447222071e-18 ;%J
-atom_u.time=2.4188843265857e-17 ;%s
-atom_u.polz=1.64877727436e-41;% C2⋅m2⋅J−1 
-atom_u.second_hyp_polz=6.2353799905e-65;% C^4⋅m^4⋅J^-3
-atom_u.a0=5.29177210903e-11 ;% m
+if nargin<2
+    transitions=metastable_helium_transition_data;
+end
+
+optical_freq=col_vec(optical_freq);
+
+atom_u=atomic_units;
 
 % use the theory calculated value of the polz for states above n=3
 % found by comparing simple model with the 315.54238 value in https://journals.aps.org/pra/pdf/10.1103/PhysRevA.93.052516
 % this means that the polarizability will not be exactly correct
 %n_gt_3_polz=4.844735; %a_0^2 cgs vol polz units
 n_gt_3_polz=7.065; %a_0^2 cgs vol polz units
-transitions=metastable_helium_transition_data;
+
 
 
 % first we preprocess the structure to get an array of osc strength and transition freq
