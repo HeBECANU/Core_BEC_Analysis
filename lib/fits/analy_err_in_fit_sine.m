@@ -18,7 +18,10 @@ function unc_est=analy_err_in_fit_sine(in_st)
         %    sqrt(time_samp*damp_rate.*(1+coth(time_samp*damp_rate)));
 
         sigma_amp=sigma_obs*sqrt(2/num_samp)*...
-            sqrt(time_samp*damp_rate.*(1/16+coth(time_samp*damp_rate)));
+            sqrt(time_samp*damp_rate.* ...
+            (1/16+coth(time_samp*damp_rate)) ... %emp 1/16 factor helps a lot here
+            ...
+            );
         sigma_amp=sigma_amp*2;  % emp factor
 
         sigma_freq=(2*sigma_obs)./(amp*sqrt(pi*num_samp)).*    ...
@@ -37,17 +40,16 @@ function unc_est=analy_err_in_fit_sine(in_st)
                             -2.*time_samp*damp_rate.*(1+time_samp*damp_rate)))./...
             (-1-2.*(time_samp*damp_rate)^2+cosh(2.*time_samp*damp_rate)) ...
             );
-
-
     else
         % the normal formula
+        % note if you are fitting a dampened sine then the amplitude uncert will be hald this
+        % even at times short compared to the damping time
 
         sigma_amp=sqrt(2./num_samp).*sigma_obs;
-        sigma_amp=sigma_amp*2;  % emp factor
         sigma_freq=sqrt(6/num_samp).*(1/(pi*time_samp))...
             .*(sigma_obs/amp);
-
         sigma_phi=sqrt(2./num_samp).*sigma_obs/(amp);
+        sigma_phi=sigma_phi*2;
     end
 
     

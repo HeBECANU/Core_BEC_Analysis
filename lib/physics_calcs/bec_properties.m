@@ -7,7 +7,7 @@ function details=bec_properties(trap_freq,atom_number,mass,a_scat_len)
 % 
 % todo: Vectorize omega x atom_num
 
-warning('use some caution with this function a full test suite is not yet developed')
+%warning('use some caution with this function a full test suite is not yet developed')
 %if the constants strucure already exists do not run
 % set up the constants
 global const

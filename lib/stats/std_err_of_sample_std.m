@@ -8,7 +8,7 @@ function out=std_err_of_sample_std(n,stdin)
 %https://math.stackexchange.com/questions/1259383/calculating-uncertainty-in-standard-deviation
 
 %warning('needs testing, will be biased for small N')
-out=stdin/sqrt((2*n-2));
+out=stdin./sqrt((2.*n-2));
 
 
 end

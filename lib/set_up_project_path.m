@@ -50,6 +50,8 @@ if strcmp(path_to_project_root(1),'.')
     path_to_project_root=fullfile(calling_function_path,path_to_project_root);
 end
 
+
+
 %change to the project root if requested and if the current folder is not that already
 if cd_proj_root && ~strcmp(pwd,cd_proj_root)
     cd(path_to_project_root)

@@ -1,8 +1,8 @@
 %test_std_err_of_sample_std
 
 
-n_samp=30;
-data_sd=2;
+n_samp=10;
+data_sd=5;
 test_itteration=1000;
 normdat=normrnd(0,data_sd,n_samp,test_itteration);
 
