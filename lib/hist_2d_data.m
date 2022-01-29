@@ -25,6 +25,9 @@ function hist_fig=hist_2d_data(data_in,opts)
 cords_to_plot=opts.cords_to_plot;
 cords_labels=opts.cords_labels;
 
+if ~isfield(opts,'filter_in_all_axis')
+    opts.filter_in_all_axis=true;
+end
 if ~isfield(opts,'filter_in_other_axis')
     opts.filter_in_other_axis=false;
 end
@@ -118,6 +121,15 @@ if opts.filter_in_other_axis
     int_cord(cords_to_plot)=[];
     mask_int_axis=data_in(:,int_cord)>hist_bounds(int_cord,1)  &  data_in(:,int_cord)<hist_bounds(int_cord,2);
     data_in=data_in(mask_int_axis,:);
+end
+
+if opts.filter_in_all_axis
+    mask=true(size(data_in,1),1);
+    for ii=1:3
+        mask=mask & data_in(:,ii)>hist_bounds(ii,1)  &  data_in(:,ii)<hist_bounds(ii,2);
+    end
+    data_in=data_in(mask,:);
+    data_mean=mean(data_in,1)';
 end
 
 bin_area=prod(lin_bin_size(cords_to_plot));
