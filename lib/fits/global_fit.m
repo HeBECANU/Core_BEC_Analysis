@@ -1,6 +1,6 @@
 function out_st=global_fit(predictor,response,modelfun,gf_opt)
 
-cost_fun=@(x) sqrt(nansum((modelfun(col_vec(x),predictor)-response).^2)/(numel(response)-numel(x)));
+cost_fun=@(x) double(sqrt(nansum((modelfun(col_vec(x(:,1)),predictor)-response).^2)/(numel(response)-numel(x(:,1)))));
 
 %inital start rmse
 %cost_fun(rf_opt.start)
@@ -44,7 +44,11 @@ if sum(gf_opt.start>ub | gf_opt.start<lb)>0
         fprintf('values %s\n',sprintf('%f,',gf_opt.start(elm_idx)))
         fprintf('lb %s\n',sprintf('%f,',lb(elm_idx)))
     end
-    error('start is not in bounds')
+    mask=gf_opt.start>ub;
+    gf_opt.start(mask)=ub(mask);
+    mask=gf_opt.start<lb;
+    gf_opt.start(mask)=lb(mask);
+    warning('will set start to bound')
     
 end
 
@@ -67,7 +71,7 @@ while out_st.rmse>gf_opt.rmse_thresh && method_counter<=gf_opt.level
         case 1
             out_st.history.optimizer{end+1}='fmincon';
             options = optimset('Display','off'); 
-            params=fmincon(cost_fun,gf_opt.start,[],[],[],[],lb,ub,[],options);
+            params=fmincon(cost_fun,double(gf_opt.start),[],[],[],[],lb,ub,[],options);
             cost_fun_fmincon=cost_fun(params);
             params=col_vec(params);
             out_st.history.cost=[out_st.history.cost,cost_fun_fmincon];
@@ -80,7 +84,7 @@ while out_st.rmse>gf_opt.rmse_thresh && method_counter<=gf_opt.level
             'MaxFunctionEvaluations',1e5,...
             'MeshTolerance',1e-5,...
             'Display','off');
-            [params,costend] = patternsearch(cost_fun,gf_opt.start,...
+            [params,costend] = patternsearch(cost_fun,double(gf_opt.start),...
             [],[],[],[],...
             col_vec(min(gf_opt.domain,[],2)),col_vec(max(gf_opt.domain,[],2)),PSoptions);
             cost_fun_patternsearch=costend;
