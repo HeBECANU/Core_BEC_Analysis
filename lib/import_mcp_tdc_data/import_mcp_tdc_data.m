@@ -138,6 +138,7 @@ if ~isfield(import_opts,'shot_num')
     import_opts.shot_num=find_data_files(import_opts);
 end
 
+
 %check optionals
 if ~isa(import_opts.file_name,'char') ,error('Bad Input:file_name'), end
 if ~isa(import_opts.force_load_save,'logical') ,error('Bad Input:force_load_save'), end

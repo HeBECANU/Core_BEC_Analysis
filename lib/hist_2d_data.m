@@ -1,4 +1,4 @@
-function hist_fig=hist_2d_data(data_in,opts)
+function [hist_fig,ch]=hist_2d_data(data_in,opts)
 % plot a histogram 'slice' or integeration of xyz data
 % opts.cords_to_plot
 % opts.cords_labels
@@ -220,8 +220,8 @@ ylabel(sprintf('%s (%s%s)',...
     prefixes{cords_to_plot(2)},...
     opts.cords_units{cords_to_plot(2)}))
 
-c=colorbar;
-set(c,'LineWidth',1.1,'TickLength',[0.025]);
+ch=colorbar;
+set(ch,'LineWidth',1.1,'TickLength',[0.025]);
 if opts.norm_den_unity
     den_units='arb. u.';
 elseif opts.scale_den_disp_fac
@@ -247,8 +247,9 @@ else
     end
 end
 %den_units=strrep(den_units,'$$','');
-c.Label.Interpreter = 'latex';
-c.Label.String=sprintf('Density (%s)',den_units);
+ch.Label.Interpreter = 'latex';
+ch.Label.String=sprintf('Density (%s)',den_units);
+ch.FontName='cmr10';
 daspect([1,1,1])
 
 if opts.save_hist_as_image
