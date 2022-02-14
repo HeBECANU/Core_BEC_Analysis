@@ -8,7 +8,7 @@ if numel(sigma)~=1
     error('sigma is the wrong size')
 end
     
-Y = 1/sqrt(2*pi*sigma)*exp(-0.5*((x-mu)/sigma).^2);
+Y = 1/sqrt(2*pi*sigma)*exp(-(1/2)*((x-mu)/sigma).^2);
 
 
 end
