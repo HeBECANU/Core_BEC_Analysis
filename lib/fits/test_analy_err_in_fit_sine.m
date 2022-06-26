@@ -177,7 +177,7 @@ osc_param.samp_num=1e4;
 %samp_durations=col_vec(linspace(0.05,4,60));
 samp_durations=col_vec(logspace(log10(0.5/osc_param.freq),log10(900),1e2));
 %samp_durations=linspace(1,1.000001,1e5);
-if isfield(osc_param_loc,'samp_rate')
+if isfield(osc_param,'samp_rate')
     nyquist_region=osc_param.freq/(osc_param.samp_rate/2);
 else
     min_samp_rate=osc_param.samp_num/max(samp_durations);
@@ -186,6 +186,7 @@ end
 fprintf('higest nyqist zone %.2f\n',nyquist_region)
 
 num_rep_samp=100; % number of times to repeat the sample and fit
+% 100
 do_fit_plots=false;
 
 
@@ -193,8 +194,8 @@ iimax=numel(samp_durations);
 % store the unc values as a amplitude, frequency, phase vector
 sim_unc_afp=nan(numel(samp_durations),4); % this incudes damping uncert
 sim_unc_unc_afp=nan(numel(samp_durations),4);
-uncorrected_unc_afp=nan(numel(samp_durations),3);
-corrected_unc_afp=nan(numel(samp_durations),3);
+uncorrected_unc_afp=nan(numel(samp_durations),4);
+corrected_unc_afp=nan(numel(samp_durations),4);
 samp_numbers=nan(numel(samp_durations),1);
 
 parfor_progress_imp(iimax)
@@ -291,7 +292,7 @@ for ii=1:iimax
     in_st.sigma_obs=osc_param_loc.samp_err;
     unc_est=analy_err_in_fit_sine(in_st);
     
-    uncorrected_unc_afp(ii,:)=[unc_est.amp,unc_est.freq,unc_est.phase];
+    uncorrected_unc_afp(ii,:)=[unc_est.amp,unc_est.freq,unc_est.phase,unc_est.lambda];
     
     in_st=[];
     in_st.amp=osc_param_loc.amp;
@@ -301,13 +302,13 @@ for ii=1:iimax
     in_st.damp_rate=osc_param_loc.damp_rate;
     unc_est=analy_err_in_fit_sine(in_st);
     
-    corrected_unc_afp(ii,:)=[unc_est.amp,unc_est.freq,unc_est.phase];
+    corrected_unc_afp(ii,:)=[unc_est.amp,unc_est.freq,unc_est.phase,unc_est.lambda];
 
 end
 
 
-ratio_uncorrected_unc_afp=uncorrected_unc_afp./sim_unc_afp(:,1:3);
-ratio_corrected_unc_afp=corrected_unc_afp./sim_unc_afp(:,1:3);
+ratio_uncorrected_unc_afp=uncorrected_unc_afp./sim_unc_afp(:,1:4);
+ratio_corrected_unc_afp=corrected_unc_afp./sim_unc_afp(:,1:4);
 
 
 % predicted sampled time optima
@@ -334,15 +335,15 @@ color_shaded=colorspace('LCH->RGB',lch);
 font_name='cmr10';
 font_size_global=12;
 font_size_label=10;
-stfig('fit unc dep');
+stfig('fit unc dep 1');
 clf
-y_axis_names={'fit amp unc (m)','fit freq unc (Hz)','fit phase unc (rad)'};
-legend_location={'northwest','southwest','northwest'};
-ylims={[uncorrected_unc_afp(1,1)*0.8,2e-1],[1e-5,3e-2],[1e-3,1e-2]}
+y_axis_names={'fit amp unc (m)','fit freq unc (Hz)','fit phase unc (rad)','fit lambda unc (s)'};
+legend_location={'northwest','southwest','northwest','northwest'};
+ylims={[uncorrected_unc_afp(1,1)*0.8,2e-1],[1e-5,3e-2],[1e-3,1e-2],[]}
 xlims=[min(samp_durations),max(samp_durations)];
-idx=1;
-for idx=1:3
-    subplot(3,1,idx)
+
+for idx=1:2
+    subplot(2,1,idx)
     plot(samp_durations,sim_unc_afp(:,idx),'k-','LineWidth',0.8)
     %errorbar(samp_durations,sim_unc_afp(:,idx),sim_unc_unc_afp(:,idx),'o','CapSize',0,'MarkerSize',5,'Color',colors_main(1,:),'MarkerFaceColor',colors_detail(1,:),'LineWidth',1.5)
     hold on
@@ -375,7 +376,57 @@ end
 
 set(gcf,'Position',[100,100,800,700])
 %plot_name='impulse_n_3e5_osc_10mms_in_y';
-plot_name=sprintf('compare_a_%.2f_f_%.2f_tau_%.2f_se_%.2f_n_%.g',...
+plot_name=sprintf('compare_1_a_%.2f_f_%.2f_tau_%.2f_se_%.2f_n_%.g',...
+                    osc_param.amp,osc_param.freq,1/osc_param.damp_rate,osc_param.samp_err,osc_param.samp_num);
+out_dir='./figs/fit_sine_unc/'
+saveas(gcf,[out_dir,plot_name,'.png'])
+saveas(gcf,[out_dir,plot_name,'.pdf'])
+saveas(gcf,[out_dir,plot_name,'.svg'])
+saveas(gcf,[out_dir,plot_name,'.fig'])
+export_fig([out_dir,plot_name,'.eps'])
+
+pause(1)
+
+font_name='cmr10';
+font_size_global=12;
+font_size_label=10;
+stfig('fit unc dep 2');
+clf
+for idx=3:3
+    subplot(1,1,idx-2)
+    plot(samp_durations,sim_unc_afp(:,idx),'k-','LineWidth',0.8)
+    %errorbar(samp_durations,sim_unc_afp(:,idx),sim_unc_unc_afp(:,idx),'o','CapSize',0,'MarkerSize',5,'Color',colors_main(1,:),'MarkerFaceColor',colors_detail(1,:),'LineWidth',1.5)
+    hold on
+    plot(samp_durations,uncorrected_unc_afp(:,idx),'r--','LineWidth',1.2)
+    plot(samp_durations,corrected_unc_afp(:,idx),'b-.','LineWidth',1.2)
+    xline(1/osc_param.damp_rate,':g','LineWidth',2.5)
+    xline(1/osc_param.freq,':g','LineWidth',2.5)
+    unc_fac=10;
+    ci_up=sim_unc_afp(:,idx)+sim_unc_unc_afp(:,idx);
+    ci_down=sim_unc_afp(:,idx)-sim_unc_unc_afp(:,idx);
+    ci_down=bound(ci_down,1e-6,inf);
+    patch([samp_durations', fliplr(samp_durations')], ...
+        [ci_up', fliplr(ci_down')], color_shaded(1,:),'EdgeColor','none',...
+    'FaceAlpha',0.3)  %[1,1,1]*0.80
+    hold off
+    legend('simulation','an. CW','an. damped','location',legend_location{idx})
+    xlabel('Sample Duration (s)')
+    ylabel(y_axis_names{idx})
+    set(gca, 'YScale', 'log')
+    set(gca, 'XScale', 'log')
+    set(gca, {'XColor', 'YColor'}, {'k', 'k'});
+    set(gca,'linewidth',0.8)
+    set(gca,'FontSize',font_size_global,'FontName',font_name)
+    if ~isempty(ylims{idx})
+        this_ylims=ylims{idx};
+        ylim(this_ylims)
+    end
+    xlim(xlims)
+end
+
+set(gcf,'Position',[100,100,800,700/2])
+%plot_name='impulse_n_3e5_osc_10mms_in_y';
+plot_name=sprintf('compare_2_a_%.2f_f_%.2f_tau_%.2f_se_%.2f_n_%.g',...
                     osc_param.amp,osc_param.freq,1/osc_param.damp_rate,osc_param.samp_err,osc_param.samp_num);
 out_dir='./figs/fit_sine_unc/'
 saveas(gcf,[out_dir,plot_name,'.png'])
@@ -385,14 +436,15 @@ saveas(gcf,[out_dir,plot_name,'.fig'])
 export_fig([out_dir,plot_name,'.eps'])
 
 
-osc_param.amp=10;
-osc_param.freq=10;
-osc_param.phase=1;
-osc_param.damp_rate=1/10;
-%osc_param.samp_duration=10;
-osc_param.samp_err=0.5;
-%osc_param.samp_rate=10*osc_param.freq;
-osc_param.samp_num=1e4;
+
+% osc_param.amp=10;
+% osc_param.freq=10;
+% osc_param.phase=1;
+% osc_param.damp_rate=1/10;
+% %osc_param.samp_duration=10;
+% osc_param.samp_err=0.5;
+% %osc_param.samp_rate=10*osc_param.freq;
+% osc_param.samp_num=1e4;
 
 
 

@@ -7,7 +7,7 @@ function out_string=string_value_with_unc(value,unc,varargin)
 %    value      - numeric, value 
 %    unc        - nmeric, uncertianty in the value
 % String value pairs
-%    type       - to use the ± notation as in 10±3 pass 's','standard','pm' to use the () notation as in 10(3) pass , 'b','brackets'
+%    type       - to use the ± notation as in 10±3 pass 's','standard' or 'pm' to use the () notation as in 10(3) pass , 'b','brackets'
 
 %
 % Outputs:
