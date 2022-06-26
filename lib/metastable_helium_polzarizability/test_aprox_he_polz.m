@@ -1,11 +1,41 @@
-fsamp=linspace(1,1000,1e5)*1e12;
-polz_au=aprox_he_polz(fsamp);
-stfig('atomic polz');
+fsamp=linspace(276.4,277,1e3)*1e12;
+
+
+[polz_au,polz_si,higher_terms]=aprox_he_polz(fsamp);
+stfig('polz au');
 clf
 plot(fsamp*1e-12,polz_au)
-ylim([-200,600])
+yrange=1e6;
+ylim([-1,1]*yrange)
 yline(0)
+xlim([fsamp(1),fsamp(end)]*1e-12)
+xlabel('Frequency, $f$ (THz)')
+ylabel('Polarizability, $\alpha$ (atom. u.)')
 
+stfig('polz si');
+plot(fsamp*1e-12,polz_si)
+hold on
+plot(fsamp*1e-12,higher_terms.si_polz.scalar)
+hold off
+xlim([fsamp(1),fsamp(end)]*1e-12)
+yrange=1e-34;
+%ylim([-1,1]*yrange)
+xlabel('Frequency, $f$ (THz)')
+ylabel('Polarizability, $\alpha$ (SI)')
+
+stfig('polz_vec si');
+plot(fsamp*1e-12,higher_terms.si_polz.scalar)
+hold on
+plot(fsamp*1e-12,higher_terms.si_polz.vector)
+plot(fsamp*1e-12,higher_terms.si_polz.tensor)
+hold off
+xlim([fsamp(1),fsamp(end)]*1e-12)
+yrange=1e-34;
+%ylim([-1,1]*yrange)
+xlabel('Frequency, $f$ (THz)')
+ylabel('Polarizability, $\alpha$ (SI)')
+
+%%
 
 % tune out freq
 fminopt = optimset('TolX',1,'TolFun',1e-12);  
@@ -29,7 +59,7 @@ tune_out_freq=tune_out_freq*1e-9;
 au_polz_at_to=aprox_he_polz(tune_out_freq)
 f2wl(tune_out_freq)
 hold on
-plot(tune_out_freq,au_polz,'xr')
+plot(tune_out_freq,polz_au,'xr')
 hold off
 
 
