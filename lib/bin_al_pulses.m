@@ -11,6 +11,10 @@ al_pulses.pos.std=nan(iimax,anal_opts.pulses,3);
 al_pulses.vel.mean=nan(iimax,anal_opts.pulses,3);
 al_pulses.vel.std=nan(iimax,anal_opts.pulses,3);
 
+if ~isfield(anal_opts,'plot')
+    anal_opts.plot=true;
+end
+
 global const %get gravity
 fprintf('binning pulses in files %04u:%04u',size(data.mcp_tdc.counts_txy,2),0)
 first_good_shot=true;
@@ -23,7 +27,7 @@ for shot=1:iimax
                 trange=t_pulse_cen+anal_opts.pulse_twindow*[-0.5,0.5];
                 pulse_win_txy=[trange;anal_opts.xylim]; 
                 counts_pulse=masktxy_square(data.mcp_tdc.counts_txy{shot},pulse_win_txy);
-                if anal_opts.plot.all
+                if anal_opts.plot
                     stfig;
                     set(gcf,'Color',[1 1 1]);
                     subplot(3,1,1)
