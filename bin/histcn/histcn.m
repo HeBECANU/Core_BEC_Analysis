@@ -55,7 +55,7 @@ function [count edges mid loc] = histcn(X, varargin)
 %   meanData = histcn([Lat(:) Lon(:)], lat_edge, lon_edge, 'AccumData', Data, 'Fun', @mean);
 %
 % See also: HIST, ACCUMARRAY
-% 
+%
 % Bruno Luong: <brunoluong@yahoo.com>
 % Last update: 25/August/2011
 
@@ -118,8 +118,8 @@ sz = max([sz; max(loc,[],1)]);
 
 % Compute the mid points
 mid = cellfun(@(e) 0.5*(e(1:end-1)+e(2:end)), edges, ...
-              'UniformOutput', false);
-          
+    'UniformOutput', false);
+
 % Count for points where all coordinates are falling in a corresponding
 % bins
 if nd==1
@@ -127,10 +127,14 @@ if nd==1
 end
 
 hasdata = all(loc>0, 2);
-if ~isempty(AccumData)
-    count = accumarray(loc(hasdata,:), AccumData(hasdata), sz, Fun{:});
+if size(X,1) == 0
+    count = zeros(size(edges{1},1)-1,size(edges{2},1)-1);
 else
-    count = accumarray(loc(hasdata,:), 1, sz);
+    if ~isempty(AccumData)
+        count = accumarray(loc(hasdata,:), AccumData(hasdata), sz, Fun{:});
+    else
+        count = accumarray(loc(hasdata,:), 1, sz);
+    end
 end
 
 return

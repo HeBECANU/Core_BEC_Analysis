@@ -1,7 +1,7 @@
 % voigt fit play
 
 
-
+% git a gaussian ad a voidt to some data
 
 %%
 

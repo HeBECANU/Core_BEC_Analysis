@@ -185,7 +185,7 @@ x = real(z); y = imag(z);
 %% Set program defaults
 filtering=0;
 userParam=0;
-stdTimes=3; % the number of times the standard deviation to set the upper end of the axis to be.
+stdTimes=5; % the number of times the standard deviation to set the upper end of the axis to be.
 minBins=10;
 maxBins=1000;
 binFactorX = 1;
@@ -416,9 +416,9 @@ if filtering
 %     N=filtN;
 end
 
-if 0 % IMPLEMENTATION NOT TESTED if you wanted real probabilities instead of counts then you would use this one.
+if 1 % IMPLEMENTATION NOT TESTED if you wanted real probabilities instead of counts then you would use this one.
 %     what exactly is 'x' here?
-    N=N/(binWidthX*binWidthY*length(x)); % normalize by area to get probability distribution
+    N=N/(binWidthX*binWidthY); % normalize by area to get probability distribution,*length(x)
 end
 
 if userParam % to do the radial normalizing
@@ -501,7 +501,7 @@ end % ndhist function over
 
 
 %%
-% 2D histogram which is actually kind of fast making use of matlab's histc
+% 2D histogram which is actually kind of fast making pcoloruse of matlab's histc
 function allN = hist3(x,y,edgesX,edgesY)
     allN = zeros(length(edgesY),length(edgesX));
     [~,binX] = histc(x,edgesX);

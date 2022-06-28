@@ -10,7 +10,13 @@ function [bec_centres,bec_widths,bec_counts,centre_OK] = find_dist_cen(data, opt
 %     opts_cent.method
 %     opts.partition.t_win
 %     opts.visual
-data=hotspot_mask(data); %mask outhot spots
+if isfield(opts_cent,'hotspot_mask') && opts_cent.hotspot_mask
+    data=hotspot_mask(data); %mask outhot spots
+    counts_txy=data.masked.counts_txy;
+else
+    counts_txy=data.counts_txy;
+end
+
 num_shots = length(data.shot_num);
 bec_centres = zeros(num_shots, 3);
 bec_widths= zeros(num_shots, 3);
@@ -46,7 +52,7 @@ if opts_cent.visual>1
 end
 
 for this_idx = 1:num_shots % Loop over all shots
-    this_txy = data.masked.counts_txy{this_idx};
+    this_txy = counts_txy{this_idx};
     if size(this_txy,2) ~= 3 || isempty(this_txy)
         centre_OK(this_idx) = 0;
         bec_centres(this_idx, :) = nan;
@@ -103,10 +109,14 @@ for this_idx = 1:num_shots % Loop over all shots
                     locs = find(mask_upper);
                     margins = [min(locs(2:end-1)), max(locs(2:end-1))];
                     t_margins = bin_centres(margins);
-                    bec_centres(this_idx, axis) = mean(t_margins);
+%                     if axis == 1
+%                         bec_centres(this_idx, axis) = adjusted_t_mean(t_margins(1),t_margins(2));
+%                     else
+                        bec_centres(this_idx, axis) = mean(t_margins);
+%                     end
                     bec_widths(this_idx, axis) = diff(t_margins);
                 case 'average'
-%                     bec_centres(this_idx,axis) = nansum(flux(~mask).*bin_centres(~mask))./nansum(flux(~mask));
+                    %                     bec_centres(this_idx,axis) = nansum(flux(~mask).*bin_centres(~mask))./nansum(flux(~mask));
                     flux_masked = flux;
                     flux_masked(mask) = 0;
                     flux_masked(~mask) = flux_masked(~mask)-opts_cent.min_threshold(axis);

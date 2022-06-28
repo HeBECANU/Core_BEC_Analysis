@@ -22,7 +22,7 @@ import_opts.file_name='d';
 
 addpath('./lib/') %add the path to set_up_project_path, this will change if Core_BEC_Analysis is included as a submodule
                   % in this case it should be './lib/Core_BEC_Analysis/lib/'
-set_up_project_path
+set_up_project_path('.')
 
 
 % % find this .m file's path, this must be in the project root dir
@@ -40,7 +40,7 @@ set_up_project_path
 
 hebec_constants %call the constants function that makes some globals
 
-
+pause
 %% Importing Data
 %now we can find all the data files in that directory
 import_opts.shot_num=find_data_files(import_opts);
