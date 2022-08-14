@@ -21,16 +21,16 @@ logic_file_done_writing=(time_posix_write+wait_for_mod)<time_posix_now;
 if logic_file_done_writing
     %checks that the last charater of the file is a newline
     %modified from https://stackoverflow.com/questions/2659375/matlab-command-to-access-the-last-line-of-each-file
-    fid = fopen(file_pointer,'r');    %# Open the file as a binary
-    offset = 30;                      %# Offset from the end of file (bytes)
-    fseek(fid,-offset,'eof');        %# Seek to the file end, minus the offset
-    new_char = fread(fid,1,'*char');  %# Read one character
+    fid = fopen(file_pointer,'r');    % Open the file as a binary
+    offset = 30;                      % Offset from the end of file (bytes)
+    fseek(fid,-offset,'eof');        % Seek to the file end, minus the offset
+    new_char = fread(fid,1,'*char');  % Read one character
     last_char=''; %initalize to deal with empty file case
     while  numel(new_char)>0
-        last_char = new_char;   %# Add the character to a string
-        new_char = fread(fid,1,'*char');  %# Read one character
+        last_char = new_char;   % Add the character to a string
+        new_char = fread(fid,1,'*char');  % Read one character
     end
-    fclose(fid);  %# Close the file
+    fclose(fid);  % Close the file
     logic_file_done_writing=isequal(last_char,newline);
 end
 

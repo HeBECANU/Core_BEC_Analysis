@@ -1,4 +1,4 @@
-function out=corr_radial(corr_opts,counts)
+function out=corr_angle(corr_opts,counts)
 %a low/high memory implementation of the one D correlation
 %Inputs
 %   counts_txy- as a cell array of zxy counts size=[num_counts,3]
@@ -33,10 +33,6 @@ else
     if corr_opts.attenuate_counts>1 || corr_opts.attenuate_counts<0
         error('invalid attenuation value, pass a value between 0 and 1\n')
     end
-end
-
-if ~isfield(corr_opts,'cl_or_bb')
-    error('corr_opts.cl_or_bb not specified!do you want co-linear or back-to-back? ')
 end
 
 if isfield(corr_opts,'do_pre_mask') && ~isfield(corr_opts,'sorted_dir')
@@ -91,15 +87,13 @@ if corr_opts.print_update
 end
 
 pairs_count=zeros(1,shots);
-delta_multiplier=[1,-1];
-delta_multiplier=delta_multiplier(1+corr_opts.cl_or_bb); %gives 1 when cl and -1 when bb
 
-[rad_bins,corr_opts.redges]=histcounts([],corr_opts.redges);
-out.rad_centers=sqrt((corr_opts.redges(2:end).^3-corr_opts.redges(1:end-1).^3)./(3.*(corr_opts.redges(2:end)-corr_opts.redges(1:end-1))));%(corr_opts.redges(2:end)+corr_opts.redges(1:end-1))/2; %this is slightly wrong it should be r^3 weighted
+[ang_bins,corr_opts.edges]=histcounts([],corr_opts.edges);
+out.centers=(corr_opts.edges(2:end)+corr_opts.edges(1:end-1))./2;
 
 if corr_opts.low_mem %calculate with the low memory mode
     % the low memory mode is serial and is a bit easier on mem requirements
-    rad_bins=col_vec(rad_bins);
+    ang_bins=col_vec(ang_bins);
     for shotnum=1:shots
         if corr_opts.between_sets
             shot_txy_1=counts{1,shotnum};
@@ -157,31 +151,31 @@ if corr_opts.low_mem %calculate with the low memory mode
                     temp_1d_diff,...
                     prewindow(1),...
                     prewindow(2));
-                delta=shot_txy(ii,:)-delta_multiplier*shot_txy(ii+mask_idx(1):ii+mask_idx(2),:);
+                delta=cos_theta(shot_txy(ii,:),shot_txy(ii+mask_idx(1):ii+mask_idx(2),:));
             else
                 if corr_opts.between_sets
                     if isequal(shot_txy_1,shot_txy_2)
                         if ii == num_counts_shot-1
                             continue
                         end
-                        delta=shot_txy_1(ii,:)-delta_multiplier*shot_txy_2(ii+1:(num_counts_shot-1),:);
+                        delta=cos_theta(shot_txy_1(ii,:),shot_txy_2(ii+1:(num_counts_shot-1),:));
                     else
-                        delta=shot_txy_1(ii,:)-delta_multiplier*shot_txy_2(:,:);
+                        delta=cos_theta(shot_txy_1(ii,:),shot_txy_2(:,:));
                     end
                 else
-                    delta=shot_txy(ii,:)-delta_multiplier*shot_txy(ii+1:num_counts_shot,:);
+                    delta=cos_theta(shot_txy(ii,:),shot_txy(ii+1:num_counts_shot,:));
                 end
             end
             
-            %Radial correlations
-            rad_delta=sqrt(sum(delta.^2,2));
+            %Angular correlations
+            ang_delta=delta;%
             % using fast histogram gives speedup of
-            rad_increment=hist_adaptive_method(rad_delta,corr_opts.redges);
+            ang_increment=hist_adaptive_method(ang_delta,corr_opts.edges);
             %rad_increment=histcounts(rad_delta,corr_opts.redges)';
             if corr_opts.between_sets && ~isequal(shot_txy_1,shot_txy_2)
-                rad_bins=rad_bins+rad_increment;
+                ang_bins=ang_bins+ang_increment;
             else
-                rad_bins=rad_bins+rad_increment*2;
+                ang_bins=ang_bins+ang_increment*2;
             end
         end
         if mod(shotnum,update_interval)==0 && corr_opts.print_update
@@ -192,116 +186,7 @@ if corr_opts.low_mem %calculate with the low memory mode
 else%calculate with the high memory mode
 %     tic
 %     rad_bins=zeros(shots,size(rad_bins,2));
-    rad_bins=col_vec(rad_bins);
-    attenuate_counts=corr_opts.attenuate_counts;
-    between_sets =corr_opts.between_sets;
-    do_pre_mask=corr_opts.do_pre_mask ;
-    sorted_dir=corr_opts.sorted_dir;
-    redges=corr_opts.redges;
-    print_update=corr_opts.print_update;
-    for shotnum=1:shots
-        if between_sets
-            shot_txy_1=counts{1,shotnum};
-            shot_txy_2=counts{2,shotnum};
-            num_counts_shot_1=num_counts(1,shotnum);
-            num_counts_shot_2=num_counts(2,shotnum);
-            %             num_counts_shot=(num_counts_shot_1+num_counts_shot_2)/2;
-        else
-            shot_txy=counts{shotnum};
-            num_counts_shot=num_counts(shotnum);
-        end
-        if attenuate_counts~=1 %randomly keep corr_opts.attenuate_counts fraction of the data
-            %             mask=rand(num_counts_shot,1)<attenuate_counts;
-            %             shot_txy=shot_txy(mask,:);
-            %             num_counts_shot=size(shot_txy,1); %recalulate the number of counts
-            if between_sets
-                %                 mask1=rand(num_counts_shot_1,1)<corr_opts.attenuate_counts;
-                %                 mask2=rand(num_counts_shot_2,1)<corr_opts.attenuate_counts;
-                
-                dist = randperm(num_counts_shot_1);
-                dist = dist(1:ceil(attenuate_counts*num_counts_shot_1));
-                mask1 = zeros(num_counts_shot_1,1);
-                mask1(dist) = 1;
-                mask1 = logical(mask1);
-                
-                dist = randperm(num_counts_shot_2);
-                dist = dist(1:ceil(attenuate_counts*num_counts_shot_2));
-                mask2 = zeros(num_counts_shot_2,1);
-                mask2(dist) = 1;
-                mask2 = logical(mask2);
-                
-                shot_txy_1=shot_txy_1(mask1,:);
-                shot_txy_2=shot_txy_2(mask2,:);
-                num_counts_shot_1=size(shot_txy_1,1);
-                num_counts_shot_2=size(shot_txy_2,1);
-            else
-                dist = randperm(num_counts_shot);
-                dist = dist(1:ceil(attenuate_counts*num_counts_shot));
-                mask = zeros(num_counts_shot,1);
-                mask(dist) = 1;
-                mask = logical(mask);
-                %                 mask=rand(num_counts_shot,1)<corr_opts.attenuate_counts;
-                shot_txy=shot_txy(mask,:);
-                num_counts_shot=size(shot_txy,1); %recalulate the number of counts
-            end
-        end
-        %         if num_counts_shot<2
-        %             warning('%u counts input\n',num_counts_shot)
-        %         end
-        % full number of pairs in the shot
-%         pairs_count(shotnum)=num_counts_shot^2 -num_counts_shot;
-%         upper_triangle_size=pairs_count(shotnum)/2;
-%         delta_idx=1;
-%         delta=nan(upper_triangle_size,3);
-%         for ii=1:num_counts_shot-1
-            %if each shot is sorted in time then this will only produce counts that are one direction in time
-            %pre mask optimzation here
-            if do_pre_mask && ~between_sets  %pre mask optimzation using sortd masking
-                temp_1d_diff=pdist2([shot_txy(:,sorted_dir),zeros(num_counts_shot,1)]);
-%                     -delta_multiplier*shot_txy(ii,corr_opts.sorted_dir);
-                mask_idx=fast_sorted_mask(...
-                    temp_1d_diff,...
-                    prewindow(1),...
-                    prewindow(2));
-                delta=pdist2(shot_txy(mask_idx,:));
-            else
-                if between_sets
-                    delta=pdist2(shot_txy_1,delta_multiplier.*shot_txy_2);
-                    if isequal(shot_txy_1,shot_txy_2)
-                       delta=reshape(delta(~eye(size(delta))),[],1);%remove diagonal self count and reshape 
-                    else
-                        delta=reshape(delta,[],1);
-                    end
-                else
-                    delta=pdist2(shot_txy,delta_multiplier.*shot_txy);
-                    delta=reshape(delta(~eye(size(delta))),[],1);%remove diagonal self count and reshape
-                end
-            end
-%             delta_inc_size=size(delta_inc,1);
-            
-%             delta_idx=delta_idx+delta_inc_size; %increment the index
-%         end
-        %Radial correlations
-%         rad_delta=sqrt(sum(delta.^2,2));
-        rad_delta=delta;%
-        rad_increment=hist_adaptive_method(rad_delta,redges);
-        %rad_increment=histcounts(rad_delta,corr_opts.redges);
-        rad_bins=rad_bins+rad_increment;
-        %debug
-        %         sfigure(2)
-        %         plot(out.rad_centers,rad_increment)
-        %         pause(0.1)
-        %         rad_bins(shotnum,:)=rad_increment*2;
-        %         size(rad_delta)
-        %         size(delta)
-        
-        if mod(shotnum,update_interval)==0 && print_update
-            parfor_progress_imp;
-        end
-    end%loop over shots
-%     toc
-    % sum up the output of parfor
-%     rad_bins=col_vec(sum(rad_bins,1));
+    error('High mem not available yet')
 end %done calculating with either high or low mem
 
 if corr_opts.print_update
@@ -319,13 +204,19 @@ else
     norm_factor = 1;
 end
 
-out.rad_corr_density=rad_bins./(shots*norm_factor);
+out.ang_corr_density=ang_bins./(shots*norm_factor);
 if ~(isnan(corr_opts.rad_smoothing) || corr_opts.rad_smoothing==0)
-    out.rad_corr_density=gaussfilt(out.rad_centers,out.rad_corr_density,corr_opts.rad_smoothing);
+    out.ang_corr_density=gaussfilt(out.centers,out.ang_corr_density,corr_opts.ang_smoothing);
 end
 
 end
 
+function angs = cos_theta(P1,P2)
+angs = zeros(size(P2,1),1);
+for ii = 1:size(P2,1)
+    angs(ii,1) = dot(P1,P2(ii,:))/(norm(P1)*norm(P2(ii,:)));
+end
+end
 % if sum(sum(delta,2)==0)>0
 %     fprintf('warning duplicate count')
 % end
