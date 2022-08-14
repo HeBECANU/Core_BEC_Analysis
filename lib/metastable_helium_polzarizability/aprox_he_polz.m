@@ -33,8 +33,8 @@ n_gt_3_polz=7.065; %a_0^2 cgs vol polz units
 
 
 % first we preprocess the structure to get an array of osc strength and transition freq
-%dipole_mask=cellfun(@(x) strcmp(x.type,'E1'),transitions);
-dipole_mask=true(numel(transitions),1);
+dipole_mask=cellfun(@(x) strcmp(x.type,'E1'),transitions);
+%dipole_mask=true(numel(transitions),1);
 
 osc_st_freq_arr=cat(2,  cellfun(@(x) x.osc_strength.val, transitions(dipole_mask)),...
                     cellfun(@(x) x.frequency_hz.val, transitions(dipole_mask)) );
@@ -74,7 +74,7 @@ red_mat_elm_sq = osc_st_vec ...
 
 % equation 11
 polz_k_array=nan(numel(optical_freq),3);
-iimax=numel(transitions);
+iimax=numel(transitions(dipole_mask));
 for K=0:2
     prefactor= (-1)^(K+qnum_ground_j+1)*sqrt(2*K+1);
     polz_contriubutions=nan(numel(optical_freq),iimax);
@@ -93,14 +93,37 @@ for K=0:2
     polz_k_array(:,K+1)= prefactor*sum(polz_contriubutions,2);
 end
 
-% equation 16
+% equation 18
+qnum_ground_i=0;
+qnum_ground_f=qnum_ground_j+qnum_ground_i;
 
 polz_scalar=polz_k_array(:,1) * 1/(sqrt(3*(2*qnum_ground_j+1)));
-polz_vector=-polz_k_array(:,2) * sqrt(2*qnum_ground_j/(  (qnum_ground_j+1)*(2*qnum_ground_j+1)  ) );
-polz_tensor=-polz_k_array(:,2) * sqrt(...
-                                2*qnum_ground_j*(2*qnum_ground_j-1) ...
-                                /( 3*(qnum_ground_j+1)*(2*qnum_ground_j+1)*(2*qnum_ground_j+3)  ) ...
-                                );
+% eq 16 vector
+%polz_vector=polz_k_array(:,2) * sqrt(2*qnum_ground_j/(  (qnum_ground_j+1)*(2*qnum_ground_j+1)  ) ) *(-1);
+
+% eq 16 tensor
+% polz_tensor=polz_k_array(:,3) * ...
+%             sqrt(...
+%                 2*qnum_ground_j*(2*qnum_ground_j-1) ...
+%                 /( 3*(qnum_ground_j+1)*(2*qnum_ground_j+1)*(2*qnum_ground_j+3)  ) ...
+%             )*(-1);
+
+% eq 18 vector
+polz_vector=polz_k_array(:,2) * ((-1)^(qnum_ground_j+qnum_ground_i+qnum_ground_f))...
+                    * sqrt(2*qnum_ground_f*(2*qnum_ground_f+1)/(  qnum_ground_f+1 ) ) ...
+                    * Wigner6j(qnum_ground_f,1,qnum_ground_f,qnum_ground_j,qnum_ground_i,qnum_ground_j) ;
+
+
+% eq 18 tensor
+polz_tensor=polz_k_array(:,3) ...
+            * ((-1)^(qnum_ground_j+qnum_ground_i+qnum_ground_f))...
+            * sqrt(...
+                    2*qnum_ground_f*(2*qnum_ground_f-1)*(2*qnum_ground_f+1) ...
+                    /( 3*(qnum_ground_f+1)*(2*qnum_ground_f+3) ) ...
+                )* ...
+            Wigner6j(qnum_ground_f,2,qnum_ground_f,qnum_ground_j,qnum_ground_i,qnum_ground_j)...
+            *(-1)   ;
+
 if apply_polz_offset
     polz_scalar=polz_scalar+n_gt_3_polz*atom_u.polz;
 end
