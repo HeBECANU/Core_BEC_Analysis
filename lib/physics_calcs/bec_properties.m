@@ -83,6 +83,10 @@ u_eff_interaction=4*pi*(const.hb^2)*a_scat_len/mass;
 
 n_max_peak_density=mu_chem_pot/u_eff_interaction;
 
+% aprox quantum depletion number
+%eq. 11.51  BEC by Pitaevski and Stringari
+qd_num=atom_number*(5*sqrt(pi)/8)*sqrt((a_scat_len^3)*n_max_peak_density)
+
 %find the average density inside the elipsoid
 tf_volume=(4/3)*pi*prod(r_tf_radi);
 n_mean_density=atom_number/tf_volume;
@@ -116,6 +120,7 @@ details.a_bar=a_bar;
 details.tf_goodness=tf_goodness;
 details.density_peak=n_max_peak_density;
 details.density_mean=n_mean_density;
+details.qd_num_approx=qd_num;
 details.u_eff_interaction=u_eff_interaction;
 details.tan_contact= tan_constant;
 details.inputs=[];
