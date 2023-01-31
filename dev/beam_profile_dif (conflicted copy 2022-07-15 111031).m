@@ -1,5 +1,5 @@
 % beam profile difference
-clear all
+
 
 %fit probe beam
 % user param
@@ -10,12 +10,8 @@ clear all
 % testfiledir='C:\Users\BEC Machine\cloudstor\PROJECTS\Tune_out_v2_git\data\beam_profile\input_slide_rail_mon_20220228\';
 % filedir_1='Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\on';
 % filedir_2='Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\off';
-%8.258613971778164e+04,1.127058505071664e+05,1.815035943868997e+05,3.477740057911181e+05
-%2.183015106215963e+05,3.015308748971989e+05,4.937688122556711e+05,9.323161169456205e+05
-%15383.6,33623,39524,101631
-%(Gamma/1.15753696984198e+07)
 fildedir_dark = '';
-filedir = 'Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\';%varry_freq\freq_7.05_atten_5.541
+filedir = 'Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\freq_7.067_atten_5.42_mus_35_20.3604';
 
 %need Ilight, I atoms, and Idark
 hebec_constants
@@ -32,8 +28,7 @@ Isat=0.6;%const.c*const.epsilon0*Gamma^2*const.hb^2/(4*dipole_moment);
 Isat=omega0^3*Gamma*const.hb/(12*pi*const.c^2);
 lambda0=2*pi*const.c/omega0;
 sigma0=3*lambda0^2/(2*pi);
-f =17/10;%he 4  25/14;%he 3% 
-sigma_a = 3*lambda0^2/(2*pi)*1/f;
+sigma_a = 3*lambda0^2/(2*pi)*10/17;
 
 I0=0.0.*Isat;
 
@@ -47,7 +42,7 @@ sigma=sigma0/(1+4.*(det/Gamma).^2+I0/Isat);
 
 %5.713666252729541e+11 evap at 0.860
 
-OD_sat = 4.15;%1.58;%3;%
+OD_sat = 1.15;%1.58;%3;%
 
 % x=[];
 % y=[];
@@ -203,19 +198,17 @@ OD_meas = log((I_light-I_dark_1)./(I_atoms-I_dark_2));%log(I_light./(I_atoms.*ex
 %basic thresholding
 % A(abs(A)>3)=nan;
 % power htesholding
-I_min = 1;
-I_min_atoms = 0.1;
-OD_meas(((I_atoms<I_min_atoms)|(I_light<I_min))) = nan;
-ref_max = max(max(I_light));
+I_min = 0.01;
+OD_meas(((I_atoms<I_min)|(I_light<I_min))) = nan;
 % spike and averaging and interpolation
 
-OD_sat=20.6;%1.43;%100;%2.8;%8.05;
+OD_sat=2.8;%8.05;
 OD_mod = log((1-exp(-OD_sat))./(exp(-OD_meas)-exp(-OD_sat)));
 OD_actual = OD_mod+(1-exp(-OD_mod)).*I0./Isat;
 OD_actual(isnan(OD_actual)) = 0;
 
-sh=surf(xvals_sub*xy_factor,yvals_sub*xy_factor,real(OD_meas),...
-    'FaceAlpha',0.75);
+sh=pcolor(xvals_sub*xy_factor,yvals_sub*xy_factor,real(OD_meas));%,...
+%     'FaceAlpha',0.75);
 ifh=gca;
 shading interp
 % colormap hot
@@ -271,8 +264,8 @@ maximum = max(max(OD_meas));
     fit_pos_val_rows(:,3)=predict(fitobject,pos_val_rows(:,1:2));
     fit_pos_vals=reshape(fit_pos_val_rows,size(pos_val));
     %imagesc(fit_pos_vals(:,:,3))
-    sh=surf(fit_pos_vals(:,:,1)*xy_factor,fit_pos_vals(:,:,2)*xy_factor,fit_pos_vals(:,:,3),...
-        'FaceAlpha',0.8,'FaceColor',[100,200,53]./255,'edgecolor','none');
+%     sh=surf(fit_pos_vals(:,:,1)*xy_factor,fit_pos_vals(:,:,2)*xy_factor,fit_pos_vals(:,:,3),...
+%         'FaceAlpha',0.8,'FaceColor',[100,200,53]./255,'edgecolor','none');
 
 stfig('OD slice');
 hold on
@@ -310,8 +303,8 @@ stfig('integrated profile diff');
 
 E = @(b,x) 1./b(2).*besselj(1,b(1).*(x-b(3)))./(x-b(3))./b(1);
 fit_params_guess = [1,0.06,-200];
-fitobjectE=fitnlm(xvals_sub*xy_factor,trapz(yvals_sub,total_image{1}-total_image{2}),E,fit_params_guess);
-fitparamE=fitobjectE.Coefficients;
+fitobject=fitnlm(xvals_sub*xy_factor,trapz(yvals_sub,total_image{1}-total_image{2}),E,fit_params_guess);
+fitparamE=fitobject.Coefficients;
 
 subplot(2,1,1)
 hold on
@@ -346,10 +339,9 @@ plot(yvals_sub*xy_factor,X_OD);
 xlabel('z ($\mathrm{\mu}$m)')
 ylabel('Integrated Intensity OD')
 
-OD_meas(isnan(OD_meas)) = 0;
-num = 1/sigma_a.*trapz(yvals_sub,trapz(xvals_sub,OD_meas,2))
+num = 1/sigma.*trapz(yvals_sub,trapz(xvals_sub,OD_actual,2))
 fitparam{7,1}*(2*pi*fitparam{1,1}*fitparam{2,1})
-1/sigma_a*ans*(1+ref_max*0.1)
+1/sigma_a*ans/(Gamma/1.15753696984198e+07)
 
 % end
 

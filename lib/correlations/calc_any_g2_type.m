@@ -240,7 +240,9 @@ end
 
 out.in_shot_corr.(centers)=shotscorr.(centers);
 out.in_shot_corr.(corr_density)=shotscorr.(corr_density);
+if isequal(corr_opts.type,'1d_vol_cl')  || isequal(corr_opts.type,'1d_vol_bb')
 out.in_shot_corr.shots = shotscorr.relevant_shots;
+end
 if corr_opts.g2_norm
     out.between_shot_corr.(centers)=normcorr.(centers);
     out.between_shot_corr.(corr_density)=normcorr.(corr_density);

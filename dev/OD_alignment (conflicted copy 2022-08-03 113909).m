@@ -11,29 +11,7 @@ clear all
 % filedir_1='Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\on';
 % filedir_2='Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\off';
 fildedir_dark = '';
-filedir = 'Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\he3_vs_atten_no_he4_light';%he3_vs_atten_no_he4_light';
-
-del_shift = 0.0;
-
-% for he3_vs_atten_no_he4_light
-I_lim = [0.1,0.5,1.5,1.5,1.5,1.5,3.5,3.5,3.5,3.5,20];
-%indx everything except 2
-
-
-%scanning_freq_he3_370_MHz Ilim = 10, indx all - 0.25
-%scanning_freq_he3_369.5_MHz Ilim = 10 - 0.5
-%scanning_freq_he3_369.0_MHz Ilim = 10 - 0.75
-%scanning_freq_he3_370.5_MHz Ilim = 10 - 0
-
-%scanning_freq_he3 Ilim = 10, indx = 1:length(amp);% 0
-%scanning_freq_he3_2 I lim = 10, indx all 0
-
-
-
-%or
-
-%scan_across_freq_2
-% with I_lim = 10, and indx = [2:9,10,12];%
+filedir = 'Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\scan_across_freq_2';
 
 files = dir(filedir);
 % Get a logical vector that tells which is a directory.
@@ -57,22 +35,11 @@ subFolderNames = {subFolders(3:end).name}; % Start at 3 to skip . and ..
 % dist = [5.31,5.34,5.37,5.39,5.42,5.45,5.48,5.51,5.54,5.6,5.63];
 % I_lim = [0.01,0.05,0.1,0.1,0.25,0.3,0.3,0.3,0.4,0.5,0.5];
 
-dist = [6.8,7.04,7.067,7.08,7.0,7.1,7.2];
-% I_lim = [0.5,0.7,0.9,1,4,2.5,2.5];
+% dist = [6.8,7.067,7.0,7.1,7.2];
+% I_lim = [0.5,0.9,4,2.5,2.5];
 
-% dist = [7.04,7.05,7.06,7.07,7.08,7.09,7.1,7.11,7.12,7.13];
-% I_lim = [2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5];
-
-%scanning_atten
-% I_lim = [0.3,0.3,0.3,0.3,1,1.5,3.5,3.5,2.5,2.5,4,8];
-
-% I_lim = [0.3,0.6,0.6,1,1,1.5,3.5,3.5,2.5,2.5,4,8];
-% I_lim = [0.8,2,1.5,1.5,1.5,1.5,3.5,3.5,3.5,3.5,6.5,15];
-
-% I_lim = [0.1,0.5,1.5,1.5,1.5,1.5,3.5,3.5,3.5,3.5,6.5,15];
-
-% for he3_vs_atten_no_he4_light
-% I_lim = [0.1,0.5,1.5,1.5,1.5,1.5,3.5,3.5,3.5,3.5,20];
+dist = [7.04,7.05,7.06,7.07,7.08,7.09,7.1,7.11,7.12,7.13];
+I_lim = [2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5];
 
 %need Ilight, I atoms, and Idark
 hebec_constants
@@ -89,14 +56,12 @@ sigma0=const.hb*omega0*Gamma/(2*Isat);
 Isat=omega0^3*Gamma*const.hb/(12*pi*const.c^2);
 lambda0=2*pi*const.c/omega0;
 sigma0=3*lambda0^2/(2*pi);
-f =25/14;%he 3% 17/10;%he 4  
-sigma_a = 3*lambda0^2/(2*pi)*1/f;
 
 I0=0;
 
 sigma=sigma0/(1+4.*(det/Gamma).^2+I0/Isat);
 
-OD_sat = 15;%2.5;%1.58;
+OD_sat = 4;%2.5;%1.58;
 
 
 x=[];
@@ -121,7 +86,7 @@ if log_check
     log_table = readtable(fullfile(filedir,log_file));
     variable_vec = log_table{:,4};
     variable = unique(variable_vec);
-    dist = variable.';
+    dist = variable;
     var_str = 'detuning';
     var_num = size(variable);
     indx_list = 1:size(variable_vec,1);
@@ -139,7 +104,6 @@ for ii = 1:var_num
         files_total = dir(fullfile(filedir, '*.png'));
         files_total = {files_total.name};
         shot_list_c = sort([shot_list{ii}.*2,shot_list{ii}.*2-1]);
-        shot_list_c = shot_list_c(shot_list_c<length(files_total));
         files_total = files_total(shot_list_c);
         num_shots = size(files_total,2);
     else
@@ -148,9 +112,8 @@ for ii = 1:var_num
         files_total = {files_total.name};
         num_shots = size(files_total,2);
     end
-    max_vec = [];
-    outlier_cut = [];
-    for j=[2,1]
+
+    for j=1:2
         files = files_total((0+j):2:(num_shots-2+j));
 
         for i=1:length(files)
@@ -161,7 +124,6 @@ for ii = 1:var_num
             %%
             beam_image{j,i}=double(im_raw)/255;
             beam_image{j,i}=beam_image{j,i}-beam_image{j,i}(1,1);
-            
             % beam_image=sum(beam_image,3);
 
 %             if i == 1
@@ -198,24 +160,11 @@ for ii = 1:var_num
             %     subframe=subframe-im_background;
             %     subframe=subframe./max(subframe(:));
         end
-        max_vec(:,j) = cellfun(@(x) max(max(x)),beam_image(j,:));
-        outlier_cut(:,j) = isoutlier(max_vec(:,j));%logical(zeros(size(max_vec)));%
-
-    end
-    for j = 1:2
         total_image{j} = zeros(size(beam_image{j,1}));
-        nn = 1;
         for mm = 1:size(beam_image,2)
-            if ~outlier_cut(mm,1) && ~outlier_cut(mm,2)
-                total_image{j} = total_image{j}+beam_image{j,mm};
-                if j == 1
-                    temp = beam_image{2,mm}-beam_image{j,mm};
-                    max_temp(nn) = max(max(temp));
-                    nn = nn+1;
-                end
-            end
+        total_image{j} = total_image{j}+beam_image{j,mm};
         end
-        total_image{j} = total_image{j}./sum(~outlier_cut(:,1) & ~outlier_cut(:,2));
+        total_image{j} = total_image{j}./length(files);
         %     total_image{j}=total_image{j}./max(max(total_image{j}));
         sub_size=size(total_image{j});
         sub_size_m=pix_size*sub_size;
@@ -313,8 +262,8 @@ for ii = 1:var_num
     %basic thresholding
     % A(abs(A)>3)=nan;
     % power htesholding
-    I_min = I_lim(ii);%[10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10];% %0.6;%0.6;%8;%3.5;%[0.8,1.5,1.5,1.5,1.5,1.5,3.5,3.5,3.5,3.5,6.5,15]
-    I_min_atoms = 3e-3;
+    I_min = I_lim(ii); %
+    I_min_atoms = 5e-3;
     ref_max(ii) = max(max(I_light));
     OD_meas(logical((I_atoms<I_min_atoms)|(I_light<I_min))) = nan;%
     % spike and averaging and interpolation
@@ -423,7 +372,7 @@ for ii = 1:var_num
     E = @(b,x) 1./b(2).*besselj(1,b(1).*(x-b(3)))./(x-b(3))./b(1);
     fit_params_guess = [1,0.06,-200];
     fitobject=fitnlm(xvals_sub*xy_factor,trapz(yvals_sub,total_image{1}-total_image{2}),E,fit_params_guess);
-%     fitparam=fitobject.Coefficients;
+    fitparam=fitobject.Coefficients;
 
     subplot(2,1,1)
     hold on
@@ -458,78 +407,53 @@ for ii = 1:var_num
     xlabel('z ($\mathrm{\mu}$m)')
     ylabel('Integrated Intensity OD')
 
-    stfig('integrated OD');
+    stfig('integrated OD')
     hold on
     plot(yvals_sub,trapz(xvals_sub,OD_actual,2))
     num(ii) = 1/sigma.*trapz(yvals_sub,trapz(xvals_sub,OD_actual,2));
-    num_fit(ii) = 1/sigma_a.*fitparam{7,1}*(2*pi*fitparam{1,1}*fitparam{2,1})*(1+ref_max(ii).*2.68e-2);
-
     int_amp(ii) = max(trapz(xvals_sub,OD_actual,2));
-    if ii==10
-        dum=0;
-    end
 end
 %%
 stfig('spot size vs distance');
 clf
-subplot(2,1,1)
 errorbar(dist,cell2mat(x),cell2mat(dx),'kx')
 hold on
 errorbar(dist,cell2mat(y),cell2mat(dy),'bx')
-subplot(2,1,2)
-scatter(dist,cell2mat(x).*cell2mat(y),'kx')
 
-
-modelfun = @(beta,dist) (beta(1)*sqrt(1+((dist.*1e-3-beta(2))./(pi*beta(1).^2./(wavelen))).^2));
+modelfun = @(beta,dist) (beta(1)*sqrt(1+((dist.*1e-3-beta(2))./(pi*beta(1).^2/(wavelen))).^2));
 initials = [15e-5 100e-3];
 new_coeff = nlinfit(dist.*1e-3,2.*abs(cell2mat(x)),modelfun,initials);
 dist_f = linspace(-180,max(dist),1e4).';
 new_x = modelfun(new_coeff,dist_f.*1e-3);
-% hold on
-% plot(dist_f,new_x,'LineWidth',1.8)
+hold on
+plot(dist_f,new_x,'LineWidth',1.8)
 
 % end
 
 %%
 stfig('amp vs detuning');
-% clf
+clf
 b =[6.953052447686723e+01,8.104204261854445e+00];
 freq = (dist.*b(2)+b(1));
-indx = 1:length(amp);%[2:9,10,12];%[2:9,10,11];%1:11;%1:18;%1:15;%
-var = amp(indx).*(ref_max(indx).^(2.1799).*3e-3+1);%.*(ref_max(indx).*1.04387981875609e-01+1);%max_val;%
-errorbar(freq(indx)-126.5+del_shift,var,damp(indx),'x')
-amp_func = @(b,x) b(1)./(1+b(4)+4.*(2.*pi.*x(:,1)-b(2)).^2./b(3).^2);
-amp_guesses = [0.8,129*2*pi,5.2];
-fitobjecta=fitnlm(freq(indx).',var.',amp_func,amp_guesses)
+var = amp;%max_val;%
+errorbar(freq-126.5,var,damp,'kx')
+amp_func = @(b,x) b(1)./(1+4.*(2.*pi.*x(:,1)-b(2)).^2+b(3).^2);
+amp_guesses = [0.8,126*2*pi,5.2];
+fitobjecta=fitnlm(freq.',var.',amp_func,amp_guesses)
 xt=linspace(min(freq),max(freq));
 amp_fit=predict(fitobjecta,xt.');
 hold on
-% plot(xt-126.5,amp_fit)
+plot(xt-126.5,amp_fit)
 %%
 stfig('amp vs power');
 clf
-indx2 = [1,3:11];
-power = (ref_max);%ref_mean;%
+power = ref_max;%ref_mean;%
 int_y = (amp).*(2*pi.*cell2mat(x).*cell2mat(y));
-amp_y = amp;
-damp_y = sqrt(damp.^2+offset.^2+doffset.^2);
-amp_y(1) = 2.6;
-damp_y(1) = 0.25;
-weights = 1./damp_y.^2;
-% errorbar(power,int_y,int_y.*sqrt((damp./amp).^2+(cell2mat(dx)./cell2mat(x)).^2+(cell2mat(dy)./cell2mat(y)).^2),'kx')
-
-amp_func = @(b,x) b(1)./(1+(x).^b(3).*b(2));
-amp_guesses = [0.85,11,2];
-fitobjecta=fitnlm(power(indx2),amp_y(indx2).',amp_func,amp_guesses,'Weights',weights(indx2))
-xt=linspace(0,max(power).*1.1);
-
+errorbar(power,int_y,int_y.*sqrt((damp./amp).^2+(cell2mat(dx)./cell2mat(x)).^2+(cell2mat(dy)./cell2mat(y)).^2),'kx')
+amp_func = @(b,x) b(1)./(1+(x).*b(2));
+amp_guesses = [0.85,11];
+fitobjecta=fitnlm(power(:),int_y(:).',amp_func,amp_guesses)
+xt=linspace(0,max(power));
 amp_fit=predict(fitobjecta,xt.');
-
-plot(xt./max(power),amp_fit,'linewidth',2)
 hold on
-errorbar(power(indx2)./max(power),amp_y(indx2),damp_y(indx2),'kx')
-box on
-xlim([0,1.1])
-xlabel('$\sqrt{I_0}$ (arb. unit)')
-ylabel('$D_0$')
-set(gca,'FontSize',17)
+plot(xt,amp_fit)

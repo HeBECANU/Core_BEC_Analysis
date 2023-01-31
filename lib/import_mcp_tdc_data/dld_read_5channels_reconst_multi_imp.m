@@ -423,6 +423,13 @@ end
 
 if reconst_4_corners_nomcp_flag == 1    %only reconstruct 4 corner events if we've flagged that we will
 
+    x1_vec = dld_output_sorted(dld_output_sorted(:,1)==0,2);
+    x1_index = find(dld_output_sorted(:,1)==0);
+    [~,I_tol,IC_tol] = uniquetol(x1_vec,2e-6/bin_time,'DataScale',1);
+    lgc = true(length(x1_vec),1);
+    lgc(I_tol) = false;
+    dld_output_sorted(x1_index(lgc)) = nan;
+
     number_detections_matrix = size(dld_output_sorted);                 %% Will equal [5*n + 1 2] for n detections ideally, the +1 is a master trigger to throw out
     number_detections = number_detections_matrix(1);                    %% Possibly overestimates size since errors will reduce this below what it should be
     number_successes = 0;                                               %% Tally successful hits
