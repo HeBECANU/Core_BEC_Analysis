@@ -5,7 +5,7 @@
 %im_raw=imread('./data/beam_profile/20180724T211918.841.png');
 %im_raw=imread('C:\Users\BEC Machine\cloudstor\PROJECTS\Tune_out_v2_git\data\beam_profile\output_of_fiber_6.png');
 
-testfiledir='Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\temp';
+testfiledir='Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\bragg_2_beam';%'Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\temp';
 % 'C:\Users\BEC Machine\cloudstor\PROJECTS\Tune_out_v2_git\data\beam_profile\input_slide_rail_mon_20220228\';
 % testfiledir='Y:\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\beam_images\atoms_off\';
 
@@ -16,7 +16,10 @@ y=[];
 % dist = [310,320,330,350,400,450,500,550];
 % dist = [310,320,330,380,400,420,450,500,580];
 % dist = [100,110,120,140,160,180,50,80,90];
-dist = [110,50,70,90];
+
+dist = [125:5:210,220,230,80];
+% dist = [140:10:230];
+
 % dist = 1:10;
 % dist = [330, 340, 350, 400, 450, 500, 550, 560, 570];
 % dist = [0,100,150,200,250,300,350,400,450,500,550,580,50];
@@ -295,17 +298,19 @@ end
 
 %%
 stfig('gaussian prop');
-clf
+% clf
+raw_data = cell2mat(x);
+data_unc = cell2mat(dx);
 modelfun = @(beta,dist) (beta(1)*sqrt(1+((dist.*1e-3-beta(2))./(pi*beta(1).^2/(wavelen))).^2));
-initials = [1.4e-3 300e-3];
-new_coeff = nlinfit(dist,2.*abs(cell2mat(x)),modelfun,initials);
-dist_f = linspace(-780,max(dist),1e4).';
+initials = [1.0e-3 600e-3];
+new_coeff = nlinfit(dist,2.*abs(raw_data),modelfun,initials);
+dist_f = linspace(0,10*max(dist),1e4).';
 new_x = modelfun(new_coeff,dist_f);
 hold on
-errorbar(dist,2.*abs(cell2mat(x)),2.*abs(cell2mat(dx)),'kx')
+errorbar(dist,2.*abs(raw_data),2.*abs(data_unc),'kx')
 plot(dist_f,new_x,'LineWidth',1.8)
 xlabel('Displacement (mm)')
 ylabel('Beam Waist (mm)')
-xlim([-780,max(dist)])
+xlim([0,10.*max(dist)])
 box on
 set(gca,'FontSize',18)

@@ -11,7 +11,7 @@ function [bec_centres,bec_widths,bec_counts,centre_OK] = find_dist_cen(data, opt
 %     opts.partition.t_win
 %     opts.visual
 if isfield(opts_cent,'hotspot_mask') && opts_cent.hotspot_mask
-    data=hotspot_mask(data); %mask outhot spots
+    data=hotspot_mask(data); %mask out hot spots
     counts_txy=data.masked.counts_txy;
 else
     counts_txy=data.counts_txy;

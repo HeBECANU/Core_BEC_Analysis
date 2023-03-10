@@ -1,24 +1,26 @@
 wavelen = 1083.3e-9;
 
 % starting z position (waist location) for x profile
-zy=0.0001;
+zy=0.00000001;%0.141;%
 
 % initial x waist and radius of curvature of the beam at focus, in m 
-w0y=246e-6;
+w0y=109e-6;%178e-6;%
 zry = Rayleigh_len(w0y,wavelen);
 R0y=zy*(1+(zry/zy)^2);
 
 %desired beam siez
-w2y = 1.38e-3;%1000e-6;%
+w2y = 1.42e-3;%1000e-6;%
 
 % Raylenx=Rayleigh_len(w0x,lambda_dip)
 % divx=divergence(lambda_dip,w0x)
 
 
-f1 = 0.1;
-f2 = 0.2;
-z0 = pi*w2y*w0y/wavelen*f1/f2+f1;%8.133743243150532e-01;%300e-3+5.95e-1;
+f1 = 0.05;
+f2 = 0.1;
+z0 = (pi*w2y*w0y/wavelen*f1/f2+f1);%8.133743243150532e-01;%300e-3+5.95e-1;
 dist1 = f1+f2+f1.^2/(z0-f1);
+
+% z0 = z0-0.141;
 
 fig_num = 101;
 
