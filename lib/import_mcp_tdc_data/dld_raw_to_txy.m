@@ -13,7 +13,7 @@ for i=start_file:end_file
     file_no = num2str(i);
     filename_read = [filename_raw,file_no];
     
-    [hits_sorted] = dld_read_5channels_reconst_multi_imp(filename_read,1,0,1,0);
+    [hits_sorted] = dld_read_5channels_reconst_multi_imp(filename_read,1,0,1,0);%1,0,1,0
     
     filename_write = [filename_raw,'_txy_forc',file_no,'.txt'];
     

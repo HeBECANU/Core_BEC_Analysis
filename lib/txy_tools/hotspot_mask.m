@@ -25,6 +25,9 @@ if nargin<2 || isempty(anal_args)
                                       [18.8e-3,-28.72e-3,2e-3,0];
                                       [2.48e-3,-34.8e-3,2e-3,0];
                                   ];
+     
+%new detector
+%      anal_opts.hotspot_mask.circ_mask=[[3.44e-3,18.96e-3,5.5e-3,0]];
 end
 
 

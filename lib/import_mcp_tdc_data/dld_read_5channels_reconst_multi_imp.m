@@ -33,7 +33,7 @@ reconst_3_corners_flag = reconst_3_corners_flag_call; %boolean variable: if 1 re
 
 max_group_time = 3400; %maximum time between first and last event in group
 dead_time = 400; %time after 1 group to wait before looking for next group
-tsum = 3200;
+tsum = 3200;%3200;
 tolerance = 200;    %tolerance in bins
 
 bin_time = 25e-12;                                          %% DLD bin size of 25 ps
@@ -52,12 +52,14 @@ dld_output_raw =tdc_importer(filename_input);
 % number_triggers_matrix = size(dld_output_raw);
 % num_trigs = number_triggers_matrix(1);  %number of clicks on TDC
 %no time improvement
- num_trigs = size(dld_output_raw,1);
+num_trigs = size(dld_output_raw,1);
 
 
 [~, NewRowNumber] = sort(dld_output_raw(:,2));
 
 dld_output_sorted = dld_output_raw(NewRowNumber,:);
+
+% dld_output_sorted = dld_output_raw;
 
 t_zero = dld_output_raw(1,2); %time of triggerpulse
 
@@ -423,18 +425,50 @@ end
 
 if reconst_4_corners_nomcp_flag == 1    %only reconstruct 4 corner events if we've flagged that we will
 
+
+    dld_output_sorted_temp = dld_output_sorted;
+    mcp_vec = dld_output_sorted_temp(dld_output_sorted_temp(:,1)==4,2);
+    
+    x1_vec = dld_output_sorted_temp(dld_output_sorted_temp(:,1)==0,2);
+    x1_index = find(dld_output_sorted_temp(:,1)==0);
+    [~,I_tol,IC_tol] = uniquetol(x1_vec,0.5e-6/bin_time,'DataScale',1);
+    lgc = true(length(x1_vec),1);
+    lgc(I_tol) = false;
+    dld_output_sorted(x1_index(lgc)) = nan;
+% %     
+%     x2_vec = dld_output_sorted_temp(dld_output_sorted_temp(:,1)==1,2);
+%     x2_index = find(dld_output_sorted_temp(:,1)==1);
+%     [~,I_tol,IC_tol] = uniquetol(x2_vec,0.5e-6/bin_time,'DataScale',1);
+%     lgc = true(length(x2_vec),1);
+%     lgc(I_tol) = false;
+%     dld_output_sorted(x2_index(lgc)) = nan;
+    
+%     y1_vec = dld_output_sorted_temp(dld_output_sorted_temp(:,1)==2,2);
+%     y1_index = find(dld_output_sorted_temp(:,1)==2);
+%     [~,I_tol,IC_tol] = uniquetol(y1_vec,5e-6/bin_time,'DataScale',1);
+%     lgc = true(length(y1_vec),1);
+%     lgc(I_tol) = false;
+%     dld_output_sorted(y1_index(lgc)) = nan;
+%     
+%     y2_vec = dld_output_sorted_temp(dld_output_sorted_temp(:,1)==3,2);
+%     y2_index = find(dld_output_sorted_temp(:,1)==3);
+%     [~,I_tol,IC_tol] = uniquetol(y2_vec,3e-6/bin_time,'DataScale',1);
+%     lgc = true(length(y2_vec),1);
+%     lgc(I_tol) = false;
+%     dld_output_sorted(y2_index(lgc)) = nan;
+    
     number_detections_matrix = size(dld_output_sorted);                 %% Will equal [5*n + 1 2] for n detections ideally, the +1 is a master trigger to throw out
     number_detections = number_detections_matrix(1);                    %% Possibly overestimates size since errors will reduce this below what it should be
     number_successes = 0;                                               %% Tally successful hits
     which_row = 0;                                                      %% Index of matrix row to write to
-    T_sum = tsum;    %Already defined                                                   %% Is precisely the time taken for signal to travel 8cm, speed 1e6m/s, bins 25e-12
-    tolerance_throw = 200;                                              %% Tolerance in what data to throw away
-    tolerance_keep = 200;                                               %% Tolerance in what data to keep
-    search_no = 36;                                                     %% Seach over 9 (=36/4) complete hits
+    T_sum = tsum;%+1000;%-2000;    %Already defined                                                   %% Is precisely the time taken for signal to travel 8cm, speed 1e6m/s, bins 25e-12
+    tolerance_throw = 200;%+10000;                                              %% Tolerance in what data to throw away
+    tolerance_keep = 200;%200;%+10000;                                               %% Tolerance in what data to keep
+    search_no = 9*4;%36;                                                     %% Seach over 9 (=36/4) complete hits
     T_spread = 0;                                                       %% Spreads in times reconstructed
     T_sum_spread = 0;
-    T_sum_x = 0;
-    T_sum_y = 0;
+    T_sum_x = 3390;
+    T_sum_y = 3275;
 
     %%%%%%Loop Constants%%%%%
     T_sum_tol_throw = T_sum + tolerance_throw;
@@ -482,9 +516,9 @@ if reconst_4_corners_nomcp_flag == 1    %only reconstruct 4 corner events if we'
                             x1 = x1_val;
                             x2 = x2_val;
                             which_row = which_row + 1;
-                            tx = 0.5*(x1+x2-T_sum);                     %% Stores the value if everything goes correctly
-                            five_channel_output_4corners(which_row,2) = x1 - tx;
-                            five_channel_output_4corners(which_row,3) = x2 - tx;
+                            tx = 0.5*(x1+x2-T_sum_x);                     %% Stores the value if everything goes correctly
+                            five_channel_output_4corners(which_row,2) = x1 ;%- tx;
+                             five_channel_output_4corners(which_row,3) = x2 ;%- tx;
 
                             %x1_index = count;
                             x2_index = count + dummy;   %if not frozen now, then risk dummy moving on
@@ -541,25 +575,53 @@ if reconst_4_corners_nomcp_flag == 1    %only reconstruct 4 corner events if we'
 
                         if dld_output_sorted(count+dummy3,1) == 3       %% Pick out values of y2 (channel = 3)
                             y2_val = dld_output_sorted(count+dummy3,2);
-                            if and(abs(y1_val-y2_val) < (T_sum_tol_keep), abs(x1+x2-y1_val-y2_val) < two_tolerance_keep)
+                            if and(abs(y1_val-y2_val) < (T_sum_tol_keep), abs(x1+x2-y1_val-y2_val) < two_tolerance_keep)%-86.6
                                 how_many_y = how_many_y + 1;
                                 if how_many_y > 1
                                     break
                                 else
                                     y1 = y1_val;
                                     y2 = y2_val;
-                                    ty = 0.5*(y1+y2-T_sum);
+                                    ty = 0.5*(y1+y2-T_sum_y);
                                     t = (tx + ty)/2;
-                                    five_channel_output_4corners(which_row,4) = y1 - ty;
-                                    five_channel_output_4corners(which_row,5) = y2 - ty;
+                                    
+                                    rows_mcp = max(count+dummy3-search_no,1):min(count+dummy3+search_no,number_detections);%1:number_detections;%
+%                                     mcp_vec = dld_output_sorted(rows_mcp(dld_output_sorted(rows_mcp,1)==7),2);
+%                                     mcp_vec = dld_output_sorted(dld_output_sorted(:,1)==4,2);
+%                                     [val_x,index_x] = min(abs(mcp_vec-tx));
+%                                     [val_y,index_y] = min(abs(mcp_vec-ty));
+%                                     
+%                                     val = val_x+val_y;
+%                                     [val,index] = min(abs(mcp_vec-t));
+                                    if true;%val<20e-9/bin_time && index_x==index_y
+%                                         index = index_x;
+                                    five_channel_output_4corners(which_row,4) = y1 ;%- ty;
+                                    five_channel_output_4corners(which_row,5) = y2 ;%- ty;
                                     five_channel_output_4corners(which_row,1) = t;
+                                    
+%                                     five_channel_output_4corners(which_row,6) = mcp_vec(index);
 
                                     dld_output_sorted(count,1) = NaN;   %now that we've read the data, NaN the entries in dld_output_sorted we've read for later removal
                                     dld_output_sorted(x2_index,1) = NaN;
                                     dld_output_sorted(count+dummy2,1) = NaN;
                                     dld_output_sorted(count+dummy3,1) = NaN;
+%                                     mcp_ind = rows_mcp;%find(dld_output_sorted(max(count+dummy3-search_no,1):min(count+dummy3+search_no,number_detections),1)==4);
+%                                     mcp_ind = mcp_ind(dld_output_sorted(rows_mcp,1)==4);
+                                    %                                     mcp_ind = find(dld_output_sorted(:,1)==4);
+
+%                                     dld_output_sorted(mcp_ind(index),1) = NaN;
 
                                     number_successes = number_successes + 1;
+                                    
+                                    
+                                    
+                                    dld_pulses_used(which_row,:) = [count,x2_index,count+dummy2,count+dummy3];%,mcp_ind(index)];
+                                    
+%                                     mcp_diff(which_row) = val;
+                                    
+                                    else
+                                        how_many_y = how_many_y - 1;
+                                    end
 
                                     %                                T_spread = T_spread + abs(tx-ty)^2;     %this is just used for statistics on tsum.  Comment out normally
                                     %                                T_sum_x = T_sum_x +(x1+x2-2*tx);
@@ -590,8 +652,19 @@ if reconst_4_corners_nomcp_flag == 1    %only reconstruct 4 corner events if we'
     three_channel_output_4corners(:,1)=five_channel_output_4corners(:,1)*bin_time;
     three_channel_output_4corners(:,2)=(five_channel_output_4corners(:,2)-five_channel_output_4corners(:,3))*v_perp_x*bin_time;
     three_channel_output_4corners(:,3)=(five_channel_output_4corners(:,4)-five_channel_output_4corners(:,5))*v_perp_y*bin_time;
+    
+%     three_channel_output_4corners(:,2)=2.*(five_channel_output_4corners(:,2)-five_channel_output_4corners(:,6)-3380/2)*v_perp_x*bin_time;
+%     three_channel_output_4corners(:,3)=2.*(five_channel_output_4corners(:,4)-five_channel_output_4corners(:,6)-3260/2)*v_perp_y*bin_time;
 
-    %three_channel_output_4corners;
+    % testing pulses
+%      tsum_x = five_channel_output_4corners(:,2)+five_channel_output_4corners(:,3)-five_channel_output_4corners(:,6).*2;
+%      tsum_y = five_channel_output_4corners(:,4)+five_channel_output_4corners(:,5)-five_channel_output_4corners(:,6).*2;
+%      mask = (tsum_x+tsum_y)>6575&tsum_x<6920;
+%     mask=(five_channel_output_4corners(:,3)-five_channel_output_4corners(:,2))<30e-9/bin_time;%three_channel_output_4corners(:,3)>0e-3 & three_channel_output_4corners(:,2)>0e-3;
+%     three_channel_output_4corners = three_channel_output_4corners(mask,:);
+%     
+%     three_channel_output_4corners(:,2)=(five_channel_output_4corners(mask,3)-five_channel_output_4corners(mask,2))*v_perp_x*bin_time;
+%     three_channel_output_4corners(:,3)=(five_channel_output_4corners(mask,5)-five_channel_output_4corners(mask,4))*v_perp_y*bin_time;
 
 
 else
@@ -1210,7 +1283,7 @@ end
 %%%%Now we have matched every mcp trigger where possible, reconstructing if necessary.  
 %%%%All that remains is to try to match up events with 2x or 2y plus one other corner.
 
-if reconst_3_corners_flag == 1    %again, check flag to see if we're reconstructing
+if reconst_3_corners_flag ==  1   %again, check flag to see if we're reconstructing
 
     event_counter_nomcp_reconst_xpair = 1;
     event_counter_nomcp_reconst_ypair = 1;
